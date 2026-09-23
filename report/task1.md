@@ -1,8 +1,14 @@
 # Task 1 — Understand the failure
 
-**Answer:** The evidence points to two main problems: yaw-dependent disturbance rejection in B/C, and changed payload loading aggravated by reduced torque capacity in D/E. Run A shows tracking error even with current headroom. The right first step is to establish the torque budget and identify the disturbance, before changing gains.
+**Answer [Hyp]:** The evidence points to two main problems: yaw-dependent disturbance rejection in B/C, and changed payload loading aggravated by reduced torque capacity in D/E. Run A shows tracking error even with current headroom. The right first step is to establish the torque budget and identify the disturbance, before changing gains.
 
 **Evidence boundary:** The only observed results are the summaries in the [assessment](../Robotics%20Controls%20Technical%20Assessment.pdf). The controller structure, raw time series, trajectory timing, payload mass, and temperature history are unknown. Calculations below use the supplied model. Later simulator results test possible explanations; they do not establish what happened on hardware.
+
+**Claim labels used below:**
+- **[Obs]** a number in the assessment summaries
+- **[Calc]** a consequence of the supplied model under stated assumptions
+- **[Hyp]** an interpretation the evidence supports but does not prove
+- **[Sim]** a finding from this project's simulator, not a hardware observation
 
 ## 1. What each run tells us
 
@@ -58,7 +64,7 @@ $$
 
 This leaves roughly 0.273 N·m below the nominal ceiling for acceleration and viscous damping at that angle. At exactly zero speed, the supplied tanh friction term is zero; the 0.040 N·m allowance is a conservative moving-load allowance, not a measured static friction torque.
 
-**Verdict:** The observed run is not exhausting the nominal current capacity. Finite feedback response, imperfect motion compensation, or timing/estimation errors are plausible. Full trajectory feasibility cannot be certified without the shaped reference's velocity and acceleration. The summaries do not prove that inertia or gravity feed-forward is absent.
+**Verdict [Calc → Hyp]:** The observed run is not exhausting the nominal current capacity. Finite feedback response, imperfect motion compensation, or timing/estimation errors are plausible. Full trajectory feasibility cannot be certified without the shaped reference's velocity and acceleration. The summaries do not prove that inertia or gravity feed-forward is absent.
 
 ### Runs B/C: compute the yaw disturbance before interpreting saturation
 
@@ -88,11 +94,11 @@ $$
 
 These are near-zero-roll holding budgets. They do not include substantial corrective roll acceleration or velocity once tracking has already deteriorated. For mathematically exact stationary holding, modeled friction and roll gravity are zero: coupling plus the disturbance bound is 0.186 N·m for B and 0.297 N·m for C.
 
-**Verdict:** Both runs have nominal-model torque headroom at 3.2 A for near-zero-roll holding. C becomes marginal at 2.4 A once correction/friction reserve is included. The 0.337 versus 0.336 N·m comparison is too close, and too conservative, to prove that exact holding is physically impossible. It does justify reshaping C under a policy that requires operating reserve.
+**Verdict [Calc]:** Both runs have nominal-model torque headroom at 3.2 A for near-zero-roll holding. C becomes marginal at 2.4 A once correction/friction reserve is included. The 0.337 versus 0.336 N·m comparison is too close, and too conservative, to prove that exact holding is physically impossible. It does justify reshaping C under a policy that requires operating reserve.
 
-B→C is particularly informative: modeled coupling increases **1.82×**, observed RMS error **1.86×**, and peak error **1.80×**. This supports yaw coupling as a major contributor. It does not identify the feedback gains or establish a particular delay-induced failure.
+**[Obs + Calc]** B→C is particularly informative: modeled coupling increases **1.82×**, observed RMS error **1.86×**, and peak error **1.80×**. **[Hyp]** This supports yaw coupling as a major contributor. It does not identify the feedback gains or establish a particular delay-induced failure.
 
-The observed current peaks exceed the coupling-only requirement considerably. That gap could reflect corrective dynamics, poorly damped response, noisy control effort, additional loads, or inaccurate coupling coefficients. Comparing these peaks is not a measurement of controller efficiency because their time alignment is unknown.
+**[Obs + Calc]** The observed current peaks exceed the coupling-only requirement considerably. That gap could reflect corrective dynamics, poorly damped response, noisy control effort, additional loads, or inaccurate coupling coefficients. Comparing these peaks is not a measurement of controller efficiency because their time alignment is unknown.
 
 ### Runs D/E: load uncertainty prevents a unique torque calculation
 
@@ -104,19 +110,19 @@ $$
 
 Its angular dependence depends on the shift direction. A general planar gravity representation is $a\sin q_r+c\cos q_r$. A lateral component can produce a directional load over the sweep. Neither the mass nor the shift direction is supplied, so assigning a specific payload torque or mass would require an assumption.
 
-D's bias is substantial: $4.6^2/9.1^2\approx26\%$ of its mean-square error is associated with the nonzero mean. The remaining fluctuation has RMS approximately 7.9°. Thus, removing a constant bias alone would leave considerable tracking error.
+**[Calc from Obs]** D's bias is substantial: $4.6^2/9.1^2\approx26\%$ of its mean-square error is associated with the nonzero mean. The remaining fluctuation has RMS approximately 7.9°. Thus, removing a constant bias alone would leave considerable tracking error.
 
-E reduces torque capacity by 25% while RMS error increases by **38%** relative to D. This is consistent with actuator limits contributing materially to the poor tracking.
+**[Obs + Calc]** E reduces torque capacity by 25% while RMS error increases by **38%** relative to D. **[Hyp]** This is consistent with actuator limits contributing materially to the poor tracking.
 
-**Verdict:** D and E are current-limited under the observed controller, and E has less physical capacity for the same motion. The summaries do not establish whether the entire trajectory is fundamentally infeasible for every controller. That requires payload torque and trajectory timing. Slow the request if dynamic torque is excessive; restrict or reject positions if their static holding demand exceeds capacity. Slowing cannot solve an excessive static load.
+**Verdict [Obs → Hyp]:** D and E are current-limited under the observed controller, and E has less physical capacity for the same motion. The summaries do not establish whether the entire trajectory is fundamentally infeasible for every controller. That requires payload torque and trajectory timing. Slow the request if dynamic torque is excessive; restrict or reject positions if their static holding demand exceeds capacity. Slowing cannot solve an excessive static load.
 
 ## 3. Leading explanation and competing causes
 
-**B/C: inadequate rejection of the yaw-dependent disturbance.** Faster yaw increases the modeled disturbance, and the errors increase by a similar factor. Predictable coupling compensation is therefore a justified candidate. Feedback delay and estimator behavior may worsen rejection, but their contribution cannot be identified from aggregate errors.
+**[Hyp] B/C: inadequate rejection of the yaw-dependent disturbance.** Faster yaw increases the modeled disturbance, and the errors increase by a similar factor. Predictable coupling compensation is therefore a justified candidate. Feedback delay and estimator behavior may worsen rejection, but their contribution cannot be identified from aggregate errors.
 
-**D/E: changed load demand interacting with the torque ceiling.** A gravity-model mismatch is a plausible explanation for D's bias. Thermal derating then leaves less corrective torque in E. Request limiting and saturation-aware control are needed even if load compensation improves.
+**[Hyp] D/E: changed load demand interacting with the torque ceiling.** A gravity-model mismatch is a plausible explanation for D's bias. Thermal derating then leaves less corrective torque in E. Request limiting and saturation-aware control are needed even if load compensation improves.
 
-**A: imperfect tracking without evidence of current exhaustion.** Motion feed-forward, feedback response, and timing deserve examination before raising the current limit or assuming a larger motor is necessary.
+**[Obs + Calc → Hyp] A: imperfect tracking without evidence of current exhaustion.** Motion feed-forward, feedback response, and timing deserve examination before raising the current limit or assuming a larger motor is necessary.
 
 | Alternative | What the summaries leave open | How it changes the decision |
 |---|---|---|
@@ -126,7 +132,7 @@ E reduces torque capacity by 25% while RMS error increases by **38%** relative t
 | Voltage/back-EMF limits | Bus voltage, duty cycle, and roll speed are not logged | Add electrical feasibility limits if voltage is exhausted |
 | Sensor/reference offset or asymmetric sampling | D's signed mean need not come exclusively from gravity | Check calibration and sweep coverage before interpreting the bias as payload identification |
 
-The existing reconstructed PD controller has **no integrator** yet produces E-like saturation cycling. It also matches approximate RMS errors while missing B/C/D's observed saturation. This demonstrates that the summaries admit multiple explanations; the reconstruction is not identification of the original controller. See [Task 4](task4.md).
+**[Sim]** The existing reconstructed PD controller has **no integrator** yet produces E-like saturation cycling. It also matches approximate RMS errors while missing B/C/D's observed saturation. This demonstrates that the summaries admit multiple explanations; the reconstruction is not identification of the original controller. See [Task 4](task4.md).
 
 ## 4. Timing, sensing, electrical, and thermal limits
 

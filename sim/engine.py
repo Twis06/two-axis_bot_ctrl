@@ -11,6 +11,7 @@ Timeline of one 1 kHz drive tick at t = k ms:
 Everything random draws from one numpy Generator seeded by `seed`.
 """
 import math
+from dataclasses import replace
 
 import numpy as np
 
@@ -47,8 +48,8 @@ def simulate(cfg, controller, roll_ref, yaw, seed=0, safety=None):
 
     # Independent latency processes per direction (bursts hit the shared bus
     # in reality; independent draws are the harsher assumption for ordering).
-    lat_cmd = LatencyModel(tc, rng)
-    lat_fb = LatencyModel(tc, rng)
+    lat_cmd = LatencyModel(replace(tc, blackout=tc.blackout + tc.command_blackout), rng)
+    lat_fb = LatencyModel(replace(tc, blackout=tc.blackout + tc.feedback_blackout), rng)
     ch_cmd = Channel(lat_cmd)
     ch_fb = Channel(lat_fb, enabled=tc.feedback_over_can)
     d_seq = bounded_disturbance(rng, cfg.duration, pc.d_amp, pc.d_bw_hz, fs=tc.f_drive)

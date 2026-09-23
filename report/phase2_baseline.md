@@ -1,5 +1,7 @@
 # Phase 2 — Baseline Controller
 
+> Historical pre-hardening design and recorded results. See [Task 2](task2.md) and [current evidence](task2_numbers.md) for the revised controller, fault handling, gains, and verification. Re-running the old phase script evaluates the current code and can therefore change its generated numbers.
+
 Code: `ctrl/baseline.py`, `ctrl/governor.py`, `ctrl/supervisor.py`, `ctrl/loopshape.py`. Evidence: `exp/phase2_eval.py` → [phase2_numbers.md](phase2_numbers.md), `figs/p2_*.png`. Tests: `tests/test_ctrl.py` (10) plus `tests/test_sim.py` (18).
 
 ## 1. Structure

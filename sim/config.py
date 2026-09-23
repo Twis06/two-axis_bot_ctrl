@@ -65,6 +65,8 @@ class TimingConfig:
     drop_prob: float = 0.0           # message loss (fault injection)
     # Fault injection: CAN silent (all messages lost) in [t0, t1)
     blackout: tuple = ()
+    command_blackout: tuple = ()
+    feedback_blackout: tuple = ()
 
 
 @dataclass(frozen=True)

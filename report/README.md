@@ -1,11 +1,13 @@
 # Assessment answers
 
+Current execution priorities and agent handoffs: [EXECUTION_PLAN.md](../EXECUTION_PLAN.md).
+
 Read the answers in the order of the five tasks in the [assessment](../Robotics%20Controls%20Technical%20Assessment.pdf).
 
 | Assessment task | Answer | Current state |
 |---|---|---|
 | 1. Understand the failure | [task1.md](task1.md) | Complete working answer; distinguishes observations, calculations, and hypotheses |
-| 2. Build a baseline | [task2.md](task2.md) | Implemented baseline and recorded evaluation; hardware qualification remains |
+| 2. Build a baseline | [task2.md](task2.md) | Hardening in progress; governor blocker and loaded recovery review remain |
 | 3. Decide whether learning belongs | [task3.md](task3.md) | Provisional decision; adaptive comparison not yet performed |
 | 4. Make evidence | [task4.md](task4.md) | Simulator and baseline evidence available; final-design comparison pending |
 | 5. Test your explanation | [task5.md](task5.md) | Prospective test protocol; prediction and new test pending |
@@ -19,7 +21,7 @@ The task documents are the primary narrative. The phase documents preserve the d
 - **Simulated:** outputs recorded in the existing generated reports; these are not additional hardware observations.
 - **Proposed:** work not yet performed.
 
-The documentation reorganization did not rerun experiments. Existing test and simulation results are quoted as recorded results.
+Task 2 has been re-evaluated after controller hardening; see [current numbers](task2_numbers.md). Historical phase reports and Task 4 tables retain their original recorded results.
 
 ## Supporting material
 
@@ -29,7 +31,8 @@ The documentation reorganization did not rerun experiments. Existing test and si
 | Development plan | [PLAN.md](../PLAN.md) |
 | Initial analytic investigation | [phase0_analysis.md](phase0_analysis.md), [generated calculations](phase0_numbers.md) |
 | Simulator assumptions and reconstruction | [phase1_sim.md](phase1_sim.md), [generated results](phase1_numbers.md) |
-| Baseline design and evaluation | [phase2_baseline.md](phase2_baseline.md), [generated results](phase2_numbers.md) |
+| Current hardened baseline evidence | [Task 2 numbers](task2_numbers.md), [trial data](task2_results.json) |
+| Historical baseline design and evaluation | [phase2_baseline.md](phase2_baseline.md), [generated results](phase2_numbers.md) |
 | Generated plots | [figs/](figs/) |
 
 ## Remaining submission work

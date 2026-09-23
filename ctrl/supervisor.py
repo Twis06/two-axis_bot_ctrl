@@ -36,6 +36,7 @@ class DriveSupervisor(DriveSafety):
     def reset(self):
         super().reset()
         self.fault = None
+        self.seen_command = False
         self.ok_since = None
         self.T = self.T_amb
         self.limit = self.i_nom
@@ -57,9 +58,12 @@ class DriveSupervisor(DriveSafety):
         if self.thermal:
             self.thermal_step(i_meas, dt)
         fallback_i = -self.damping * v / self.k_t
-        fresh = cmd is not None and cmd_age <= self.cmd_timeout and cmd.valid
-        if cmd is not None and cmd_age > self.cmd_timeout:
-            self._event(t, "cmd_timeout")
+        fresh = (cmd is not None and 0 <= cmd_age <= self.cmd_timeout and cmd.valid
+                 and all(math.isfinite(x) for x in (cmd.t_cmd, cmd.i_cmd, cmd.q_ref)))
+        if fresh:
+            self.seen_command = True
+        elif self.seen_command and self.fault is None:
+            self._latch(t, "cmd_timeout" if cmd_age > self.cmd_timeout else "invalid_command")
 
         if self.fault is None:
             err = abs(q_enc - cmd.q_ref) if fresh else 0.0
@@ -76,7 +80,7 @@ class DriveSupervisor(DriveSafety):
                 self._latch(t, "overtemp")
         else:
             # Re-arm once the host reference has been re-aligned with the axis
-            if fresh and abs(q_enc - cmd.q_ref) < self.rearm_err and \
+            if fresh and abs(v) < 0.8 * self.v_max and abs(q_enc - cmd.q_ref) < self.rearm_err and \
                     (not self.thermal or self.T < self.T_trip - 10):
                 self.ok_since = t if self.ok_since is None else self.ok_since
                 if t - self.ok_since >= self.rearm_time:

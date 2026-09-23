@@ -58,6 +58,8 @@ class RollGovernor:
         self.kappa = 1.0
         self.limited = False     # reshaped this tick (s < 1)
         self.rejected = False    # request outside the feasible set
+        self.blocked = False     # no static position is holdable
+        self.accel_limited = False
 
     def available(self, i_limit):
         return self.k_t * i_limit * (1 - self.reserve) - self.d_margin
@@ -72,7 +74,7 @@ class RollGovernor:
               and abs(q) <= self.q_range for q in self._grid]
         i0 = min(range(len(ok)), key=lambda i: (not ok[i], abs(self._grid[i])))
         if not ok[i0]:
-            iv = (0.0, 0.0)                      # nothing holdable: park at 0 (passive side)
+            iv = None                            # no holdable position; caller must fall back
         else:
             lo = hi = i0
             while lo > 0 and ok[lo - 1]:
@@ -106,7 +108,13 @@ class RollGovernor:
             self.kappa = max(self.kappa_min, self.kappa - self.kappa_drop * ts)
         else:
             self.kappa = min(1.0, self.kappa + self.kappa_rise * ts)
-        lo, hi = self.feasible_interval(tau_av, tau_extra, extra_fn)
+        interval = self.feasible_interval(tau_av, tau_extra, extra_fn)
+        self.blocked = interval is None
+        if self.blocked:
+            self.rejected = self.limited = True
+            self.s = 0.0
+            return self.q, 0.0, 0.0
+        lo, hi = interval
 
         # -- choose path speed s with look-ahead braking -----------------------
         s_allow = 1.0
@@ -134,7 +142,28 @@ class RollGovernor:
 
         # -- follower: exact when unprojected, smooths projection edges ---------
         a = a_t + self.w ** 2 * (q_t - self.q) + 2 * self.w * (v_t - self.v)
-        v = max(-self.v_max, min(self.v_max, self.v + a * ts))
+        # Bound the follower's own motor-torque request, including braking.
+        # Signed inertia is essential: deceleration can cancel a moving load.
+        def torque(acc):
+            vn = self.v + acc * ts
+            qn = self.q + 0.5 * (self.v + vn) * ts
+            return (self.J * acc + self.b * vn + self.tau_c * math.tanh(vn / 0.02)
+                    + static_load(qn, self.tau_g, tau_extra, extra_fn) + tau_couple)
+        a = max((-self.v_max - self.v) / ts, min((self.v_max - self.v) / ts, a))
+        self.accel_limited = abs(torque(a)) > tau_av
+        if self.accel_limited:
+            # Over a 2 ms step the nominal torque map is monotonic in a.
+            low, high = (-self.v_max - self.v) / ts, (self.v_max - self.v) / ts
+            target = max(-tau_av, min(tau_av, torque(a)))
+            for _ in range(40):
+                mid = (low + high) / 2
+                if torque(mid) < target:
+                    low = mid
+                else:
+                    high = mid
+            a = (low + high) / 2
+            self.limited = True
+        v = self.v + a * ts
         self.q += 0.5 * (self.v + v) * ts
         self.v, self.a = v, a
         return self.q, self.v, self.a

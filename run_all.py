@@ -14,6 +14,7 @@ STEPS = [
     ("phase 0 analysis", [sys.executable, "analysis/phase0.py"]),
     ("phase 1 reproduce runs A-E", [sys.executable, "exp/reproduce_runs.py"]),
     ("phase 2 baseline evaluation", [sys.executable, "exp/phase2_eval.py"]),
+    ("task 2 hardened baseline evidence", [sys.executable, "-m", "exp.task2_eval"]),
 ]
 QUICK = 2
 

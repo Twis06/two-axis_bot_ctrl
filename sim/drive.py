@@ -100,5 +100,7 @@ class Drive:
             applied = self.fifo.popleft()
         else:
             applied = tgt
+        # A newly reduced limit also applies to commands already in the delay line.
+        applied = max(-lim, min(lim, applied))
         return dict(raw=raw, tgt=tgt, applied=applied, clipped=clipped, lim=lim,
                     mode=mode, cmd_age=cmd_age)

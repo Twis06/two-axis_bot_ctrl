@@ -1,5 +1,7 @@
 # Plan — Roll-Axis Safe Control Take-Home
 
+> Current execution sequence and acceptance gates: [EXECUTION_PLAN.md](EXECUTION_PLAN.md). This file is retained as the earlier development plan.
+
 > This is the historical development plan. Read [the task-organized answers](report/README.md) for the current assessment narrative. [Task 1](report/task1.md) qualifies earlier causal and feasibility claims; phase completion labels below describe recorded project progress, not a fresh verification.
 
 **Thesis to test:** Error in the yaw runs (B/C) comes from rejecting the disturbance with feedback alone, through about 5 ms of lag. The fix is yaw feed-forward. Runs D/E are a separate problem: an unmodeled gravity load plus a real torque shortfall at 2.4 A. The right response there is to reshape or reject the request, not to track it harder.

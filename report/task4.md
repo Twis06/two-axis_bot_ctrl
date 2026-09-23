@@ -2,6 +2,8 @@
 
 **Status:** Simulator, reconstructed legacy controller, deterministic baseline, and recorded evaluations exist. A baseline-versus-final comparison is pending the Task 3 decision. Results below are transcribed from existing reports, not newly rerun for this document.
 
+> For the revised Task 2 controller, use [the regenerated evidence](task2_numbers.md). The tables below preserve the earlier investigation and are not current-controller performance claims.
+
 ## Simulator and reproducibility
 
 Run from the repository root:

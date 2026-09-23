@@ -54,7 +54,7 @@ def gain_for(wc, T, alpha, **kw):
 
 
 def design(T_design, alpha=16, pm_req=45.0, gm_req=6.0, T_check=None, pm_check=30.0,
-           wc_grid=np.linspace(10, 120, 221)):
+           wc_grid=np.linspace(10, 120, 221), corners=()):
     """Largest crossover meeting PM/GM at T_design and PM >= pm_check at T_check."""
     best = None
     for wc in wc_grid:
@@ -63,6 +63,12 @@ def design(T_design, alpha=16, pm_req=45.0, gm_req=6.0, T_check=None, pm_check=3
         ok = pm >= pm_req and gm >= gm_req
         if ok and T_check is not None:
             ok = margins(K, wc, T_check, alpha)[0] >= pm_check
+        if ok:
+            for delay, inertia, motor_ratio in corners:
+                pm_c, gm_c, _ = margins(K * motor_ratio, wc, delay, alpha, J=inertia)
+                if pm_c < pm_check or gm_c < gm_req:
+                    ok = False
+                    break
         if ok:
             best = (float(wc), K)
     if best is None:

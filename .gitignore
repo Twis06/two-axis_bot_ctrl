@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Assessment brief: third-party material, kept local only.
+# Remove this line if you have permission to publish it.
+Robotics Controls Technical Assessment.pdf

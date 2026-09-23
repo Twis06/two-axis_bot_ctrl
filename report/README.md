@@ -7,7 +7,7 @@ Read the answers in the order of the five tasks in the [assessment](../Robotics%
 | Assessment task | Answer | Current state |
 |---|---|---|
 | 1. Understand the failure | [task1.md](task1.md) | Complete working answer; distinguishes observations, calculations, and hypotheses |
-| 2. Build a baseline | [task2.md](task2.md) | Hardening in progress; governor blocker and loaded recovery review remain |
+| 2. Build a baseline | [task2.md](task2.md) | Hardening in progress; governor contract closed ([Packet 2A](packets/2A.md)); fault-class recovery, loaded re-arm cycling, and yaw-authority behaviour remain (Packet 2B) |
 | 3. Decide whether learning belongs | [task3.md](task3.md) | Provisional decision; adaptive comparison not yet performed |
 | 4. Make evidence | [task4.md](task4.md) | Simulator and baseline evidence available; final-design comparison pending |
 | 5. Test your explanation | [task5.md](task5.md) | Prospective test protocol; prediction and new test pending |

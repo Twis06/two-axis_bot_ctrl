@@ -100,23 +100,46 @@ The calculation includes the 1.2 ms current lag separately from effective pure d
 
 ## 4. Reference governor: accept, reshape, derate, reject
 
-Available modeled torque is `0.8 Kt I_limit - 0.05 N·m`: a chosen 20% reserve plus the supplied disturbance bound. The governor advances the roll path on its own clock, using a 0.4 s look-ahead sampled at 13 points and a bounded path-clock acceleration. It accounts for gravity, friction, inertia, damping, and current yaw coupling. Future yaw coupling is not fully budgeted by this roll look-ahead; separate yaw admission and monitoring remain necessary.
+Available modeled torque is `0.8 Kt I_limit - 0.05 N·m`. That is a chosen 20% reserve plus the supplied disturbance bound. The governor was rewritten in [Packet 2A](packets/2A.md); its review history and gate result are recorded there.
 
-A projected reference is smoothed before reaching the controller. Review found that this follower could demand about 20 N·m for an abrupt 80° request even when the path budget was below 0.22 N·m. The follower now limits its own **signed motor-torque demand**, including braking, using the nominal model. The output acceleration and velocity remain kinematically consistent. This matters because simply limiting acceleration magnitude can remove useful braking torque.
+At each 500 Hz tick it emits exactly one of four references:
 
-| Decision | Condition | Action |
+| Mode | Reference emitted | Path clock |
 |---|---|---|
-| Accept | Requested path fits the modeled envelope | Preserve path-clock rate near one |
-| Reshape | Dynamic demand is excessive but positions remain holdable | Slow the roll path; request reduced yaw amplitude where authorized |
-| Derate | Drive lowers its active current limit | Recompute the envelope; enforce the new target limit after the command-delay queue |
-| Restrict position | Some requested positions are outside the static feasible interval | Project to its boundary and report rejection of that portion |
-| Reject request | No modeled position is holdable, or required yaw coordination is unavailable | Freeze path progression, flag rejection, and request local fallback |
+| PATH | The admitted path on its own clock σ, slowed by a 0.4 s, 48-point torque look-ahead with planned braking | Runs at rate s ∈ [0, 1] |
+| JOIN | Minimum-jerk segment between stationary holdable points (start-up, realignment, re-joining after a jump). Offsets ≤ 2° are blended out instead. | Frozen, or running for blends |
+| STOP | Constant deceleration to rest, re-planned every tick. It stays within the budget unless that would leave the holdable interval; it then uses the reserve. | Frozen |
+| HOLD | Stationary at a restricted point until the path point and the path 10 ms ahead are holdable again | Frozen |
 
-An empty static feasible set is explicitly represented as empty. It is never silently replaced with “zero is a safe parking position.” Slowing motion cannot make an excessive static load holdable.
+Consistency and scope:
 
-For nominal yaw coupling with the selected reserve, ±75° at 2.2 Hz is accepted at 3.2 A but reduced to approximately ±54° at 2.4 A by the offline admission function. Online yaw monitoring requests a 20% reduction after sufficient saturation occupancy in a 0.5 s window, with a 0.6 s hold-off. This is a reactive backstop, not proof of future feasibility.
+- Velocity is analytic or integrated trapezoidally, and acceleration is the step average, so the emitted (q, v, a) are mutually consistent in every mode.
+- There is no reference-tracking follower and no root finding.
+- A requested hold is never moved to cancel a disturbance. Excessive predicted coupling is reported, not compensated.
+- Velocity kinks and position jumps in the plan are found by the look-ahead and approached at a low crossing speed.
 
-**Limits of the governor:** its feasibility claims depend on the nominal load model and sampled look-ahead. Unknown payload torque can exceed the prediction. Saturation then reduces its permitted path rate, but this cannot identify the payload or guarantee clearance. Smooth bounded references and the tested sweep ranges are the supported input class; the tests are not a proof of exact geometric containment for every discontinuous path. Voltage headroom remains an actuator constraint in the simulator, not an explicit voltage-aware governor calculation.
+| Status | Condition | Action |
+|---|---|---|
+| accepted | The requested path fits the modeled envelope | Path clock at 1 |
+| reshaped | Dynamic demand is excessive but positions are holdable | Slow the path clock |
+| joining | Entering or re-entering the path | JOIN, or a start-offset blend |
+| restricted | Part of the request is outside the static feasible interval, or braking room was lost after a limit drop | Stop short of it and hold, labelled `static`, `dynamic` or `braking` |
+| over_budget | Predicted torque at the emitted reference exceeds the budget (e.g. yaw coupling) | Reported. The host asks the yaw planner for the scale that fits; without a planner it flags the request incompatible and keeps control. |
+| rejected | No holdable position; non-finite input; inconsistent plan; a state beyond actuator capacity | Latch. The host falls back until `replan()`. |
+
+An empty static feasible set is explicitly represented as empty. It is never silently replaced with "zero is a safe parking position". Slowing motion cannot make an excessive static load holdable. A stationary reference left outside the reserved interval by a derate returns to the boundary using the reserve (restricted). It is rejected only if that would exceed actuator capacity.
+
+Yaw admission:
+
+- For nominal yaw coupling with the selected reserve, the offline admission function accepts ±75° at 2.2 Hz at 3.2 A, and reduces it to about ±54° at 2.4 A.
+- When predicted coupling breaks the budget, the host requests a proportional yaw reduction at once.
+- The saturation-based YawMonitor (a 20% reduction after sufficient saturation occupancy in a 0.5 s window) remains as a reactive backstop. The two paths share one hold-off.
+
+**Limits of the governor:**
+
+- Feasibility is judged with the nominal load model and a sampled look-ahead, so an unknown payload can exceed the prediction. Saturation lowers the permitted path rate; this evidence persists across realignment. It cannot identify the payload or guarantee clearance.
+- Voltage headroom is an actuator constraint in the simulator, not a governor calculation.
+- The plan must supply consistent (q, v, a). A zero-order-hold setpoint staircase at ≥50 Hz is rejected as inconsistent, so it needs an interpolating front end.
 
 ## 5. Fault handling and recovery
 
@@ -127,7 +150,9 @@ For nominal yaw coupling with the selected reserve, ±75° at 2.2 Hz is accepted
 | Tracking error >12° for 40 ms | Drive latches tracking fault | Same recovery conditions |
 | Filtered local speed >25 rad/s | Drive latches overspeed | Speed must fall below 20 rad/s as well as satisfy the other conditions |
 | Assumed winding temperature >130°C | Drive latches overtemperature | Temperature below 120°C plus other recovery conditions |
-| Host request rejection | Drive fallback; host rejection remains latched | Explicit host reset/replan |
+| Host request rejection (no holdable position, non-finite input, inconsistent plan, state beyond capacity) | Drive fallback; host rejection remains latched with its reason | Explicit `replan()` |
+| Predicted coupling over budget, yaw planner available | Governor reports `over_budget`; host requests the yaw scale that fits at once | Automatic, as the yaw blend takes effect |
+| Predicted coupling over budget, no yaw planner | Reported as `incompatible` (sticky); control is kept, because passive fallback cannot resist coupling | Explicit `replan()` |
 
 Drive reference alignment means error below 2°. During the handshake the host sends a valid, aligned reference with zero requested current while drive fallback remains authoritative. The drive does not re-enable solely because the reference was moved to the measured position; speed, temperature, freshness, and persistence must also pass.
 
@@ -137,22 +162,28 @@ The active current **target** is clamped after the modeled 1 ms delay queue, so 
 
 ## 6. How the baseline currently performs (simulated, diagnostic)
 
-These numbers come from [task2_numbers.md](task2_numbers.md), generated by the current working code. The controller is **not frozen**, and these are not accepted final results. The A–E trajectories are the documented reconstruction assumptions, not hardware trajectories. Yaw feed-forward uses the known-plan mode.
+These numbers come from [task2_numbers.md](task2_numbers.md), generated by the code after [Packet 2A](packets/2A.md).
+
+- The controller is **not frozen**, and these are not accepted final results.
+- The A–E trajectories are the documented reconstruction assumptions, not hardware trajectories.
+- Yaw feed-forward uses the known-plan mode.
 
 | Run | Legacy RMS | Original-request RMS / peak | Governed RMS / peak | Path-clock rate | Events |
 |---|---:|---:|---:|---:|---:|
-| A: shaped ±45° moves | 3.50° | 0.65° / 2.15° | 0.69° / 2.25° | 100 % | 0 |
+| A: shaped ±45° moves | 3.50° | 0.74° / 2.54° | 0.68° / 2.27° | 100 % | 0 |
 | B: yaw 1.5 Hz, roll held | 3.57° | 0.22° / 0.45° | 0.22° / 0.45° | 100 % | 0 |
 | C: yaw 2.2 Hz, roll held | 7.64° | 0.25° / 0.49° | 0.25° / 0.49° | 100 % | 0 |
-| D: 0.7 kg lateral payload, ±80° sweep | 10.23° | 76.3° / 163° | 4.05° / 9.52° | 83 % | 0 |
-| E: as D at 2.4 A | 12.02° | 77.6° / 165° | 4.30° / 10.5° | 50 % | 0 |
+| D: 0.7 kg lateral payload, ±80° sweep | 10.23° | 76.9° / 162° | 4.06° / 9.54° | 83 % | 0 |
+| E: as D at 2.4 A | 12.02° | 78.9° / 164° | 4.35° / 10.5° | 52 % | 0 |
 
 - **A–C:** the requested motion is delivered at full path rate, with sub-degree error and no events.
-- **D/E:** the request is *not* delivered as asked. The governor slows the path (83 % and 50 % clock rate), so error against the original wall clock is very large. Governed error only measures how well the slowed reference is followed. It is not completion of the original motion.
+- **D/E:** the request is *not* delivered as asked. The governor slows the path (83 % and 52 % clock rate), so error against the original wall clock is very large. Governed error only measures how well the slowed reference is followed. It is not completion of the original motion.
 - **Stress sweeps** (20 sampled plants per run, [task2_numbers.md](task2_numbers.md)):
   - A–C: no fault events; governed p95 RMS error 1.6–2.5°.
-  - D/E, with payload 0.3–1.0 kg: fault events in 5/20 and 7/20 trials; governed peak p95 about 25°.
-- **Communication faults:** 60 ms outages in either direction recover. However, they end with yaw reduced to 0.8×, which is under investigation. Payload E plus a feedback-only loss produces a watchdog trip and a 21.8° governed peak.
+  - D/E, with payload 0.3–1.0 kg: fault events in 5/20 and 7/20 trials; governed peak p95 about 19°; 38–51 % of time at the command limit (p95).
+- **Communication faults:**
+  - 60 ms outages in either direction recover, with governed RMS 0.38° and the yaw amplitude unchanged.
+  - Payload E plus a feedback-only loss cycles through watchdog trip and re-arm (§8 item 2): 37 trips at seed 7, a median of 33 over seeds 1–10.
 
 ## 7. Why it should remain well behaved: delay, saturation, quantization, parameters
 
@@ -178,7 +209,7 @@ Full evidence: [task2_robustness.md](task2_robustness.md), regenerated by `pytho
   - back-calculation anti-windup, with the integrator bounded to ±Kt·I_limit
   - the drive re-clamping the delayed target to the newest limit
 - **Simulated:**
-  - **Governed path:** a 30° / 0.1 s request needs about 1.2 N·m against 0.448 N·m available. The governor reshapes it: the axis comes within 1° at 0.14 s, with 2.1° overshoot, 0.3 % time at the limit and no events.
+  - **Governed path:** a 30° / 0.1 s request needs about 1.2 N·m against 0.448 N·m available. The governor reshapes it: the axis comes within 1° at 0.17 s, with 1.1° overshoot, no time at the limit and no events.
   - **Governor off:**
     - Anti-windup trades overshoot for a slow approach (open finding, §3).
     - With the real supervisor, the watchdog trips and re-arms 6 times. Motion stays bounded, but there is no repeated-trip lockout.
@@ -212,17 +243,25 @@ Full evidence: [task2_robustness.md](task2_robustness.md), regenerated by `pytho
 
 ## 8. Open issues before the baseline can be frozen
 
-1. **Governor drift (blocker, reproduced).** A stationary hold drifts when the yaw or load torque exceeds the budget.
-   - Standalone reproducer: `RollGovernor.reset(0)`, then 1,000 × `step(0.002, Hold(0).eval, 3.2, tau_couple=c)`.
-   - At c = 0.4 N·m the held reference moves to −0.64 rad. At 0.8 N·m it runs away to −37.4 rad at −20 rad/s. Neither case is flagged as rejected.
-   - The integrated nominal B, C and coordinated-derate runs show no reference drift.
-   - In the uncoordinated-derate case the governed reference departs 28° from the hold. That run is 58 % in fallback, where the reference is re-aligned to the measured angle, so the cause has not been separated.
-   - See [EXECUTION_PLAN.md](../EXECUTION_PLAN.md) Packet 2A.
-2. **Anti-windup against feed-forward clipping** (§3).
-3. **No repeated-trip lockout.** An unfollowable request can cycle watchdog trip → re-arm.
-4. **Yaw reduced to 0.8× after brief communication outages.** Recovery or a monitor artefact: not yet diagnosed.
-5. **Loaded D/E recovery:** fault events in 5–7 of 20 stress trials, and a 21.8° peak with feedback loss.
-6. **Information mode:** the yaw feed-forward assumes a known future plan. A causal mode is not yet available.
+**Resolved in Packet 2A: governor drift.** The former blocker was a stationary hold that drifted when yaw or load torque exceeded the budget: −0.64 rad at 0.4 N·m, a −37 rad runaway at 0.8 N·m, and 5.4 rad through the host.
+
+- The hold now stays exactly in place and reports `over_budget` with a reason, standalone and through drive, transport and plant.
+- The governor was rewritten and went through three independent review rounds. The findings of each round are regression tests in `tests/test_governor_contract.py`.
+- Remaining limitations and declared tolerances are in the [Packet 2A report](packets/2A.md).
+
+Open, in [Packet 2B](../EXECUTION_PLAN.md) scope unless noted:
+
+1. **Anti-windup against feed-forward clipping** (§3).
+2. **No repeated-trip lockout, and no recovery by fault class. This is a regression after 2A, and 2B must close it first.** An unfollowable loaded request cycles through watchdog trip and re-arm.
+   - Payload E with a feedback-only loss, seeds 1–10: watchdog trips went from a median of 4 to a median of 33 (range 0–37), and fallback from about 3 % to up to 18.6 %. The governed peak is lower.
+   - Monte Carlo D/E: the same trials cycle, but more often (117 and 139 trips in total, against 79 and 127).
+   - Cause: after a re-arm the governor resumes the request at its nominal-budget speed.
+3. **No yaw authority.** Without a yaw planner, the saturation-based yaw monitor still rejects the request into passive fallback. A 0.4 N·m reproducer runs away (skipped test M8c). Coupling beyond actuator capacity cannot be contained at the roll axis while the yaw reduction takes 0.5 s to blend in.
+4. **Loaded D/E recovery:** fault events in 5–7 of 20 stress trials (see item 2).
+5. **Information mode:** the yaw feed-forward assumes a known future plan. A causal mode is not yet available.
+6. **Unmodelled payload** (Task 3): the governor judges feasibility with the nominal model. D/E spend 38–51% of stress-trial time (95th percentile) at the command limit.
+
+Yaw reduced to 0.8× after brief outages is no longer observed: all three 60 ms outage cases end at yaw scale 1.00. The re-join now reserves the recent coupling peak, so the saturation that triggered the yaw monitor does not occur (Simulated).
 
 ## 9. Verification and reporting
 
@@ -236,7 +275,26 @@ python3 -m exp.task2_robustness
 
 Install the dependencies from `requirements.txt` first. `python3 run_all.py` includes this evidence generation alongside the historical analysis scripts.
 
-The safety regressions cover stale/nonfinite feedback, feedback-only communication loss while outgoing commands remain fresh, timeout recovery dwell, nonfinite commands, overspeed re-arm, mid-queue derating, empty feasible sets, follower torque demand, absent yaw plans, unavailable coordination, and the combined linear loop corner. Existing plant, numerical integration, quantization, delay, and controller tests also remain required.
+The safety regressions cover:
+
+- stale or non-finite feedback;
+- feedback-only communication loss while outgoing commands remain fresh;
+- timeout recovery dwell and non-finite commands;
+- overspeed re-arm and mid-queue derating;
+- empty feasible sets, absent yaw plans and unavailable coordination;
+- the combined linear loop corner.
+
+`tests/test_governor_contract.py` adds the Packet 2A governor contract:
+
+- hold without drift;
+- (q, v, a) consistency;
+- path jumps, velocity kinks and inconsistent plans;
+- fast moves, derates during motion and lost braking room;
+- restricted holds and their resumption;
+- non-finite inputs, and budget/capacity labelling;
+- host-level yaw coordination and idle reporting.
+
+Existing plant, numerical integration, quantization, delay, and controller tests also remain required.
 
 The new evaluation reports A–E over five seeds, ten fault/electrical/payload cases, and twenty sampled plants for each of A–E. Unlike the earlier headline comparison, it shows both:
 

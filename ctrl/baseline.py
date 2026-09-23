@@ -36,7 +36,8 @@ class BaselineController(Controller):
 
     def __init__(self, T_design=7.0e-3, T_check=11.0e-3, alpha=16, wi_ratio=0.1,
                  T_act=4.0e-3, use_yaw_ff=True, use_governor=True, use_yaw_monitor=True,
-                 fb_stale=0.015, i_max=P.I_MAX, load_model=None, anti_windup=True):
+                 fb_stale=0.015, i_max=P.I_MAX, load_model=None, anti_windup=True,
+                 over_budget_escalate=0.3):
         self.alpha, self.wi_ratio = alpha, wi_ratio
         self.wc, self.K = loopshape.design(
             T_design, alpha, T_check=T_check,
@@ -46,6 +47,12 @@ class BaselineController(Controller):
         self.use_governor, self.use_yaw_monitor = use_governor, use_yaw_monitor
         self.fb_stale, self.i_max = fb_stale, i_max
         self.anti_windup = anti_windup   # False only for ablation tests
+        # Predicted over-budget torque (e.g. yaw coupling) is never absorbed by
+        # moving the reference (governor contract). With a yaw planner the host asks
+        # at once for the yaw scale that fits; without one, over-budget persisting
+        # for over_budget_escalate is reported as an incompatible request while the
+        # axis stays under control (passive fallback cannot resist coupling).
+        self.over_budget_escalate = over_budget_escalate
         # nominal model (never the true, perturbed plant)
         self.J, self.b, self.tau_c, self.tau_g, self.k_t = P.J_R, P.B_VISC, P.TAU_C, P.TAU_G, P.K_T
         self.k_yv, self.k_ya = P.K_YV, P.K_YA
@@ -64,8 +71,14 @@ class BaselineController(Controller):
         self.k_aw = self.wc if self.anti_windup else 0.0
         self.initialised = False
         self.request_blocked = False
+        self.reject_reason = ""
+        self.incompatible = ""        # sustained over-budget without yaw coordination
+        self.notices = []             # (t, status, reason) whenever the disposition changes
+        self.over_since = None
+        self.last_shrink = -1e9
         self.was_saturated = False
         self.mon.reset()
+        self.gov.cpl_peak, self.gov.kappa = 0.0, 1.0   # new run: no coupling/load history
         if self.load_model is not None:
             self.load_model.reset()
 
@@ -75,16 +88,73 @@ class BaselineController(Controller):
         self.integ = 0.0
         self.initialised = True
 
+    INFEASIBILITY = ("", "static", "dynamic", "braking")
+
+    def _note(self, t, status, reason):
+        # Routine accepted/reshaped detail changes every tick; log those by status only.
+        key = lambda st, rs: (st, "" if st in ("accepted", "reshaped") else rs)
+        if not self.notices or key(*self.notices[-1][1:]) != key(status, reason):
+            self.notices.append((t, status, reason))
+            del self.notices[:-200]
+
+    def _gov_telemetry(self, status):
+        return dict(gov_status=float(self.gov.STATUS.index(status)),
+                    gov_over_budget=float(status == "over_budget"),
+                    gov_braking_short=float(self.gov.braking_short),
+                    gov_infeasibility=float(self.INFEASIBILITY.index(self.gov.infeasibility)),
+                    gov_incompatible=float(bool(self.incompatible)))
+
+    def _incompatible(self, why, t=None):
+        """Report (sticky until replan()) a request the axis cannot honour and that
+        only yaw coordination could fix. Control is kept: handing over to passive
+        fallback would let the coupling drive the axis."""
+        if not self.incompatible:
+            self.incompatible = why
+            self.notices.append((t, "incompatible", why))
+
+    def _shrink_yaw(self, ctx, t, factor):
+        """One shared hold-off for both yaw-reduction paths (governor, monitor)."""
+        if t - max(self.last_shrink, self.mon.t_last) < self.mon.hold_off:
+            return
+        ctx.yaw_planner.request_scale(t, ctx.yaw_planner.scale(t) * factor)
+        self.last_shrink = self.mon.t_last = t
+
+    def _coupling_is_cause(self, tau_cpl, room, i_lim):
+        """Coupling contributes to breaking the budget: it exceeds the room the
+        reference leaves and is a significant share (5 %) of the budget. Negligible
+        coupling on an over-budget reference is not a yaw problem."""
+        return abs(tau_cpl) > max(room, 0.05 * self.gov.available(i_lim))
+
+    def _cpl_factor(self, room):
+        """Yaw scale factor that brings the recent peak coupling within room; halve
+        it when the reference alone already exceeds the budget (room <= 0)."""
+        if room <= 0:
+            return 0.5
+        peak = max(self.gov.cpl_peak, 1e-9)
+        return max(0.0, min(0.9, 0.9 * room / peak))
+
+    def replan(self):
+        """Host acknowledgement after a rejection or incompatibility: clear the
+        latched decision; the next update realigns to the measured state."""
+        self.request_blocked, self.reject_reason, self.incompatible = False, "", ""
+        self.over_since = None
+        self.initialised = False
+
     def _idle(self, ctx, q, reason, valid=False):
         """Freeze the path and reset feedback memory; drive controls fallback/re-arm."""
         if self.initialised:
             self._realign(q, self.gov.sigma)
         self.was_saturated = False
+        self.over_since = None
+        # Idle is never "accepted": rejected if blocked, else restricted with the reason.
+        status = "rejected" if self.request_blocked else "restricted"
+        self._note(ctx.t, status, self.reject_reason if self.request_blocked else reason)
         self.telemetry = dict(q_c=q, tau_ff=0.0, tau_fb=0.0, integ=0.0,
                               gov_limited=1.0, gov_rejected=float(self.request_blocked),
                               gov_s=0.0, gov_lag=ctx.t - self.gov.sigma if self.initialised else 0.0,
                               gov_kappa=1.0, sat=0.0, stale=float(reason == "feedback_stale"),
-                              request_rejected=float(self.request_blocked), host_fallback=1.0)
+                              request_rejected=float(self.request_blocked), host_fallback=1.0,
+                              **self._gov_telemetry(status))
         return Command(ctx.t, 0.0, q, valid=valid)
 
     # ------------------------------------------------------------------
@@ -106,15 +176,27 @@ class BaselineController(Controller):
         stale = (t - fb.t_meas) > self.fb_stale
         i_lim = min(fb.i_limit, self.i_max)
 
-        # Drive in fallback (fault latched or timeout): re-align so it can re-arm.
-        if fb.mode != 0:
-            return self._idle(ctx, fb.q, "drive_fallback", valid=True)
-
         # --- yaw coupling feed-forward (host's own plan, looked ahead) -----
         tau_cpl = 0.0
         if self.use_yaw_ff and ctx.yaw_at is not None:
             _, yd, ydd = ctx.yaw_at(t + self.T_act)
             tau_cpl = self.k_yv * yd + self.k_ya * ydd
+
+        # Drive in fallback (fault latched or timeout): re-align so it can re-arm.
+        # Local damping cannot resist coupling, so still ask yaw to back off if the
+        # predicted coupling does not fit even a static hold here.
+        if fb.mode != 0:
+            if math.isfinite(tau_cpl):
+                room = (self.gov.available(i_lim) - self.tau_c
+                        - abs(self.tau_g * math.sin(fb.q)))
+                self.gov.cpl_peak = max(self.gov.cpl_peak, abs(tau_cpl))
+                if self._coupling_is_cause(tau_cpl, room, i_lim):
+                    if ctx.yaw_planner is not None:
+                        self._shrink_yaw(ctx, t, self._cpl_factor(room))
+                    else:
+                        self._incompatible("predicted coupling exceeds the hold budget during "
+                                           "drive fallback; no yaw coordination", t)
+            return self._idle(ctx, fb.q, "drive_fallback", valid=True)
 
         # --- governed reference --------------------------------------------
         extra = self.load_model.torque if self.load_model is not None else None
@@ -123,7 +205,26 @@ class BaselineController(Controller):
                                           saturated=self.was_saturated)
             if self.gov.blocked:
                 self.request_blocked = True
+                self.reject_reason = self.gov.reason
                 return self._idle(ctx, fb.q, "no_holdable_position")
+            if self.gov.over_budget:
+                self.over_since = t if self.over_since is None else self.over_since
+                # Torque left for coupling once the reference itself is paid for.
+                room = self.gov.available(i_lim) - self.gov._demand(
+                    q_c, v_c, a_c, 0.0, extra, 0.0)
+                if not self._coupling_is_cause(tau_cpl, room, i_lim):
+                    pass                 # not a coupling problem; the governor reports it
+                elif ctx.yaw_planner is not None:
+                    self._shrink_yaw(ctx, t, self._cpl_factor(room))
+                elif abs(tau_cpl) > room + (self.gov._capacity(self.gov.available(i_lim))
+                                            - self.gov.available(i_lim)):
+                    self._incompatible("predicted coupling exceeds actuator capacity; "
+                                       "no yaw coordination", t)
+                elif t - self.over_since >= self.over_budget_escalate:
+                    self._incompatible("predicted torque exceeds budget for %.1f s and no "
+                                       "yaw coordination can reduce it" % (t - self.over_since), t)
+            else:
+                self.over_since = None
         else:
             q_c, v_c, a_c = ctx.ref
 
@@ -164,12 +265,16 @@ class BaselineController(Controller):
             shrink = self.mon.update(t, saturated)
             if shrink is not None:
                 if ctx.yaw_planner is None:
+                    # Pre-2A behaviour, kept in 2A: see Packet 2B (no yaw authority).
                     self.request_blocked = True
+                    self.reject_reason = "yaw reduction needed but no yaw coordination"
                     return self._idle(ctx, fb.q, "yaw_coordination_unavailable")
-                ctx.yaw_planner.request_scale(t, ctx.yaw_planner.scale(t) * shrink)
+                self._shrink_yaw(ctx, t, shrink)
 
+        self._note(t, self.gov.status, self.gov.reason)
         self.telemetry = dict(q_c=q_c, tau_ff=tau_ff, tau_fb=tau_fb, integ=self.integ,
                               gov_limited=float(self.gov.limited), gov_rejected=float(self.gov.rejected),
                               gov_s=self.gov.s, gov_lag=t - self.gov.sigma, gov_kappa=self.gov.kappa,
-                              sat=float(saturated), stale=float(stale), request_rejected=0.0, host_fallback=0.0)
+                              sat=float(saturated), stale=float(stale), request_rejected=0.0, host_fallback=0.0,
+                              **self._gov_telemetry(self.gov.status))
         return Command(t, i_cmd, q_c)

@@ -1,6 +1,6 @@
 # Task 2 — Build a baseline
 
-> **Status: frozen deterministic baseline (Packet 2C).** Code identity: the baseline fingerprint printed at the top of [task2_numbers.md](task2_numbers.md) and [task2_robustness.md](task2_robustness.md). It is a sha256 over the controller and simulator modules in `exp/evidence.py` `BASELINE_SOURCES`. Every number below comes from those two generated files, whose rows cite run_ids in [task2_runs.json](task2_runs.json), or from a packet report named beside it. Change history and review rounds: [2A](packets/2A.md) (governor contract), [2B](packets/2B.md) (fault classes, recovery, information access), [2C](packets/2C.md) (freeze).
+> **Status: frozen deterministic baseline (Packet 2C).** Code identity: the baseline fingerprint printed at the top of [task2_numbers.md](task2_numbers.md) and [task2_robustness.md](task2_robustness.md). It is a sha256 over the controller and simulator modules in `exp/evidence.py` `BASELINE_SOURCES`. Every number below comes from those two generated files or from a packet report named beside it. Rows of `task2_numbers.md` cite run_ids resolved in [task2_runs.json](task2_runs.json). `task2_robustness.md` carries the fingerprint and git state but no per-run manifests (2C review I-B; to be routed through the same run records in 4B). Change history and review rounds: [2A](packets/2A.md) (governor contract), [2B](packets/2B.md) (fault classes, recovery, information access), [2C](packets/2C.md) (freeze).
 >
 > Evidence labels: **Observed** (the A–E hardware summaries only), **Calculated**, **Simulated**, **Proposed**. Nothing here is a hardware observation. The simulator is a reconstruction whose trajectories and payload are assumptions (Task 1).
 
@@ -97,7 +97,7 @@ design crossover 28 rad/s = 4.46 Hz
 
 - Feed-forward has priority in the clamp. Feed-forward is clipped to ±Kt·I_limit first, and feedback gets the headroom that remains.
 - The integrator uses conditional integration: it skips any step that would push further into a clipped feedback share. The integral torque is also bounded to ±Kt·I_limit.
-- The earlier back-calculation on the total clamp wound the integrator against feed-forward clipping. With the governor off, 30° in 0.1 s took 1.11 s to settle within 1°. Now it takes 0.60 s, and max |integrator| falls from 0.448 N·m to 0.037 N·m (robustness §2b, Simulated).
+- The earlier back-calculation on the total clamp wound the integrator against feed-forward clipping. With the governor off, 30° in 0.1 s took 1.11 s to settle within 1°, with the integrator at its 0.448 N·m bound (Packet 2B §3, pre-2B tree). Frozen baseline: 0.60 s, max |integrator| 0.037 N·m (robustness §2b, Simulated).
 - The back-calculation-on-headroom correction proposed earlier was tested and was worse (1.37 s; 2B §3).
 
 **Gains.** The revised gain search enforces, as declared design criteria (not requirements from a standard):
@@ -165,9 +165,10 @@ The available modeled torque is `0.8 Kt I_limit − 0.05 N·m`, a 20% reserve pl
 |---|---|---|
 | Feedback missing, non-finite, stale, future-dated, or non-positive limit | Invalid zero-current command, so the drive falls back: fresh outgoing commands cannot conceal lost sensing. Path frozen. | Fresh feedback, then a comm re-arm and a re-join |
 | Drive comm fault | Re-align to the measured position; the drive re-arms by itself | Automatic re-join |
-| Drive tracking fault | Suspend the request; acknowledge only while a brake-to-rest *and* hold are predicted feasible from the measured (q, v) within actuator capacity, including a coupling bound; then brake from the measured velocity and hold | Only `replan()` |
+| Drive tracking fault | Suspend the request. Acknowledge only while a brake-to-rest *and* hold are predicted feasible from the measured (q, v) within actuator capacity, including a coupling bound: the largest predicted coupling over the last 1 s, so a catch waits while yaw is active and becomes possible about 1 s after it goes quiet (2C review I-A). Then brake from the measured velocity and hold. | Only `replan()` |
 | Drive lockout | Rejection with the reason | Not in this run |
 | Coupling beyond capacity for a static hold, or over budget for 0.3 s without a yaw planner | Incompatible: suspend the roll request, request a coordinated stop, keep active control | `replan()` |
+| Roll saturated with significant yaw coupling for > 5% of a complete 0.5 s window (yaw monitor) | With a planner: request 0.8× yaw. Without one: incompatible, as above. Under periodic yaw this is usually the trigger that fires, because over-budget is intermittent and the 0.3 s timer rarely completes (2C review m6) | as above |
 | Coupling over budget with a yaw planner | Request the yaw scale that fits (proportional); the saturation-based yaw monitor is a backstop | Automatic |
 | Non-finite command computed on the host | Latched rejection with its cause; the drive also refuses non-finite targets | `replan()` |
 
@@ -210,8 +211,8 @@ M2 is the useful-motion failure of this baseline. The nominal-model governor adm
 
 ### 6.3 Faults and limits (seed 7)
 
-- **60 ms outages, feedback-only, command-only and both:** one comm fault each, automatic re-arm, governed RMS 0.57–0.62°.
-  - Net progress is 91–92% (the path clock is frozen during the outage and the re-join), so these runs are "not tracked".
+- **60 ms outages, feedback-only, command-only and both:** one comm fault each, automatic re-arm, governed RMS 0.62°.
+  - Net progress is 92% (the path clock is frozen during the outage and the re-join), so these runs are "not tracked".
   - The yaw scale matches the no-outage run: no outage-attributable yaw request (2B §9 I3).
 - **Burst storm and 5% message loss:** no events; governed RMS 0.61° and 0.52°.
 - **Mid-run derate to 2.4 A with 1.5× coupling:**
@@ -219,9 +220,12 @@ M2 is the useful-motion failure of this baseline. The nominal-model governor adm
   - Without it, the request is suspended with a coordinated stop for 61% of the run, and net progress is 16%.
 - **Combined corner (4 ms CAN each way, J −30%, Kt +15%):** 0.93° governed RMS, no events.
 - **20 V bus, R +25%, fast sweep:** reshaped to 58% progress, 0.92° governed RMS.
-- **Payload E with a 100 ms feedback loss, both CoM directions:** comm fault and re-arm only, no watchdog trip at seed 7. Governed peak 12.0° and 13.2°.
+- **Payload E with a 100 ms feedback loss, both CoM directions:** comm fault and re-arm only, no watchdog trip at seed 7. Governed peak 12.0° and 13.1°.
   - Across seeds 1–5, the +35 mm case trips once per run and is then caught and held (2B §5.1; before 2B it was 14–16 trips).
-- **C with a 0.7 kg +35 mm payload, feedback loss, no yaw coordination:** incompatible at 0.81 s, during the yaw ramp-up and before the outage. Roll saturates under the coupling plus the unmodelled payload. The run is suspended with a coordinated stop for 90% of its length, reaching 10% progress.
+- **C with a 0.7 kg +35 mm payload, feedback loss, no yaw coordination:** incompatible at 0.81 s, during the yaw ramp-up and before the outage. Roll saturates under the coupling plus the unmodelled payload (yaw monitor trigger). The run is suspended with a coordinated stop for 90% of its length, reaching 10% progress.
+  - The roll hold is kept near 0° until the outage.
+  - It then falls in passive fallback, is re-armed, and parks at q_c = −39.6°, with q −38.9° at the end.
+  - Original-request RMS after 4 s is 39.7° (rebuilt from the run's manifest).
 
 Small governed error during fallback or suspension is not tracking.
 
@@ -238,7 +242,7 @@ Small governed error during fallback or suspension is not tracking.
 | E (0.3–1.0 kg) | 14.21° | 6/20 | 9 | 6/20 | 0/20 |
 
 - **A and C "not tracked" cases:** the request-window path RMS is 2.0–3.2°, just over the assumed 2° threshold, for heavier or weaker sampled plants. Two C plants also reach only 93% progress. There are no events.
-- **D/E:** the same stressed plants fault as before 2B. They now end suspended after one or two trips, with no lockout.
+- **D/E:** the faulting trials are the same stressed plants as before 2B (D 5/20; E 6/20, against 7/20 before). They now end suspended after one or two trips, with no lockout in this set.
 
 **Information-mode comparison (Packet 2B §5.4, Simulated; medians of 5 seeds, governed RMS for B / C):**
 
@@ -305,13 +309,16 @@ Full evidence: [task2_robustness.md](task2_robustness.md). **Calculated** means 
    - Loaded sweeps are slowed to 51–83% progress.
    - Loaded finite moves can be admitted and then trip once (M2), ending suspended.
    - This is the Task 3 question.
-2. **Delivered motion after a tracking fault is zero until a replan.** Nothing in the simulator replans.
-   - C with 0.7 kg at +35 mm and an outage parks about 44° from its 0° hold request.
+2. **Delivered motion after a tracking fault or incompatibility is zero until a replan.** Nothing in the simulator replans.
+   - In the Packet 2B pre-freeze outage matrix (tracking fault; 3 directions × 5 seeds), C with 0.7 kg at +35 mm parks at a median of −43.6° from its 0° hold request.
    - Before 2B it recovered automatically at the second attempt, a policy that also cycled 14–16 times in E.
+   - The frozen seed-7 row (incompatibility, §6.3) parks at −39.6°.
 3. **The causal yaw estimate costs accuracy near the budget edge:** C +0.15° RMS, one yaw reduction to 0.88× during ramp-up, and more quantization jitter. Estimator uncertainty is not propagated into the governor budget; its residual shares the 0.05 N·m disturbance margin.
-4. **The catch after a tracking fault is a nominal-model prediction.** Repeated failures are bounded by the lockout (3 within 30 s), whose thresholds are assumptions.
+4. **The catch after a tracking fault is a nominal-model prediction,** using a nominal-model coupling estimate. Repeated failures are bounded by the lockout (3 within 30 s), whose thresholds are assumptions.
+   - The lockout is reachable. With 1.5× the modelled coupling, a 0.7 kg payload and yaw that never stops (no planner, coordinated stop not honoured), three catches failed within 0.9 s and the drive locked out: 67.5% passive fallback, ending at −48.7° (2C review probe, Simulated).
+   - In the frozen Monte Carlo, 1/5 faulted D trials and 3/6 faulted E trials trip twice; none lock out.
 5. **Passive fallback is motion reduction, not a hold:** up to 36° of travel under a lateral payload in the tested outages.
-6. **Without yaw authority,** coupling beyond capacity is reported and the roll request is stopped; containing the yaw disturbance itself is outside the roll axis's power.
+6. **Without yaw authority,** coupling beyond capacity is reported and the roll request is stopped; containing the yaw disturbance itself is outside the roll axis's power. If the coordinated stop is honoured, the axis is caught and held about 1 s after yaw goes quiet (§5).
 7. **Interface assumptions:**
    - Plans must be consistent (q, v, a) streams.
    - The acknowledgement has no session nonce: a real drive needs a boot counter in `fault_id` (2B review M1).
@@ -326,7 +333,7 @@ python3 -m exp.task2_eval                        # task2_numbers.md, task2_resul
 python3 -m exp.task2_robustness                  # task2_robustness.md, figures
 ```
 
-Both evaluation scripts publish through `exp.manifest.staged_publish`. Outputs appear only after the whole evaluation succeeds and no source file has changed meanwhile. Every table row cites a run_id or run-set id, resolved in `task2_runs.json` (the full run specification and 4A metrics per run) and `task2_results.json`.
+Both evaluation scripts publish through `exp.manifest.staged_publish`. Outputs appear only after the whole evaluation succeeds and no source file has changed meanwhile. Every row of `task2_numbers.md` cites a run_id or run-set id, resolved in `task2_runs.json` (the full run specification and 4A metrics per run) and `task2_results.json`. The robustness document carries only the fingerprint and git state.
 
 The regression suites:
 
@@ -354,6 +361,6 @@ It is the comparator for Task 3 and the controller for the Task 5 prediction.
 - payload and thermal behaviour;
 - fallback clearance and a coordinated yaw stop.
 
-A ±2° RMS / ±5° peak target is not specified by the assessment and is not used to label runs successful. D/E deliberately trade delivered progress for staying within the modelled torque.
+A ±2° RMS / ±5° peak target is not specified by the assessment and is not used to label runs successful. D/E deliberately trade delivered progress for staying within the *nominal-model* torque budget; the unmodelled payload still puts nominal E at the command limit 5.5% of the time (146 saturation entries).
 
 Implementation: [controller](../ctrl/baseline.py), [governor](../ctrl/governor.py), [yaw/roll estimator](../ctrl/yaw_estimator.py), [supervisor](../ctrl/supervisor.py), [fault classes](../ctrl/interfaces.py), [gain derivation](../ctrl/loopshape.py), [drive model](../sim/drive.py), [evidence plumbing](../exp/evidence.py).

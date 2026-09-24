@@ -7,7 +7,7 @@ Read the answers in the order of the five tasks in the [assessment](../Robotics%
 | Assessment task | Answer | Current state |
 |---|---|---|
 | 1. Understand the failure | [task1.md](task1.md) | Complete working answer; distinguishes observations, calculations, and hypotheses |
-| 2. Build a baseline | [task2.md](task2.md) | Frozen deterministic baseline ([Packet 2C](packets/2C.md), independent review pending); governor contract ([2A](packets/2A.md)) and fault-class recovery / causal yaw information ([2B](packets/2B.md)) reviewed |
+| 2. Build a baseline | [task2.md](task2.md) | Frozen deterministic baseline ([Packet 2C](packets/2C.md): independent review PASS WITH ISSUES, findings resolved); governor contract ([2A](packets/2A.md)) and fault-class recovery / causal yaw information ([2B](packets/2B.md)) reviewed |
 | 3. Decide whether learning belongs | [task3.md](task3.md) | Provisional decision; adaptive comparison not yet performed |
 | 4. Make evidence | [task4.md](task4.md) | Metrics and run provenance in place ([Packet 4A](packets/4A.md)); matched baseline validation (4B) and final-design comparison pending |
 | 5. Test your explanation | [task5.md](task5.md) | Prospective test protocol; prediction and new test pending |

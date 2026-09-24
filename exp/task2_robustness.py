@@ -20,6 +20,7 @@ import numpy as np
 from scipy.interpolate import pade
 
 from ctrl.baseline import BaselineController
+from exp import manifest as MF
 from exp.common import run
 from exp import scenarios as S
 from sim import params as P
@@ -315,9 +316,10 @@ def section_saturation(out, ctl):
             "why the governor budgets torque to stay out of saturation, and why the drive "
             "watchdog and fallback exist.",
             "- Mechanisms: the governor budgets torque at 80 % of the reported limit minus the "
-            "0.05 N·m disturbance bound; back-calculation anti-windup (gain 28 /s); the "
-            "integral torque is bounded to ±Kt·I_limit; the drive re-clamps the delayed "
-            "target to the newest limit.", "",
+            "0.05 N·m disturbance bound; feed-forward has priority in the clamp and the "
+            "integrator uses conditional integration (no integration deeper into a clip, "
+            "Packet 2B); the integral torque is bounded to ±Kt·I_limit; the drive re-clamps "
+            "the delayed target to the newest limit.", "",
             "### 2b. Simulated: 30° requested in 0.1 s (needs ≈ 1.2 N·m, capacity 0.448 N·m)", "",
             "Nominal plant, 14-bit encoder, random CAN, 3.2 A limit. Rows B–D switch the "
             "governor off *only* to force saturation. B and C use a drive without the "
@@ -327,21 +329,18 @@ def section_saturation(out, ctl):
             "Reading (checked against the traces in the figure):",
             "- **A (normal baseline):** the governor reshapes the request; the loop reaches the "
             "target with a brief braking clip and no supervisor event.",
-            "- **B vs C (anti-windup ablation, governor off):** anti-windup lowers overshoot but "
-            "makes the approach much *slower*. During the inertial feed-forward clip, "
-            "back-calculation drives the integrator to its −Kt·I_limit bound, the wrong sign "
-            "for the remaining positive error, and it must then unwind. The bound prevents "
-            "unbounded windup (without it the integrator reached 6.7 N·m, see "
-            "`tests/test_hardening.py`) but the anti-windup is **not yet correct for "
-            "feed-forward saturation**. Proposed fix (not implemented): saturate feed-forward "
-            "first and back-calculate only against the feedback headroom, or integrate "
-            "conditionally.",
-            "- **D (real supervisor, governor off):** each 12°/40 ms watchdog trip is followed "
-            "by re-alignment, re-arm and another attempt. Motion stays bounded but the drive "
-            "cycles through faults; there is no repeated-trip lockout.",
-            "- These ungoverned cases are deliberately off-nominal. They matter because the "
-            "governor has an open contract defect (Task 2 blocker), so the loop cannot yet "
-            "rely on it to prevent them.", ""]
+            "- **B vs C (anti-windup ablation, governor off):** with anti-windup the integrator "
+            "stays near zero through the inertial feed-forward clip (max |integrator| column), so "
+            "the approach is not slowed by unwinding. Pre-2B, back-calculation on the total clamp "
+            "drove it to its −Kt·I_limit bound and settling took 1.11 s (Packet 2B §3). The "
+            "remaining approach time is the ~2° Coulomb-friction band removed by the integrator.",
+            "- **D (real supervisor, governor off):** a watchdog trip suspends the request; the "
+            "host acknowledges the fault only for a predicted-feasible brake-and-hold, and the "
+            "request does not resume without a replan (Packet 2B). Repeated tracking faults "
+            "lock the drive out (3 within 30 s).",
+            "- These ungoverned cases are deliberately off-nominal: they force saturation to "
+            "exercise the anti-windup and the fault path, which the governed baseline (row A) "
+            "avoids.", ""]
     return logs
 
 
@@ -451,26 +450,28 @@ def figures(ctl, sat_logs):
     plt.close(fig)
 
 
+def _code_hash():
+    """Same declared closed source set and hash as the Task 2 run manifests."""
+    return MF.code_hash(MF.source_hashes(MF.declared_sources("exp.task2_robustness")))
+
+
 def fingerprint():
-    """Source provenance: git HEAD, dirty flag and a hash of the code under test."""
-    import hashlib
-    import subprocess
-    files = sorted(list((ROOT / "ctrl").glob("*.py")) + list((ROOT / "sim").glob("*.py"))
-                   + [Path(__file__)])
-    h = hashlib.sha256()
-    for f in files:
-        h.update(f.read_bytes())
-    try:
-        head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
-                              capture_output=True, text=True).stdout.strip()
-        dirty = subprocess.run(["git", "status", "--porcelain", "ctrl", "sim", "exp"], cwd=ROOT,
-                               capture_output=True, text=True).stdout.strip() != ""
-    except OSError:
-        head, dirty = "unknown", True
-    return f"git {head}{' + uncommitted changes' if dirty else ''}; sha256(ctrl, sim, this script) = {h.hexdigest()[:16]}"
+    """Baseline fingerprint (same as task2_numbers.md) and git state."""
+    from exp.evidence import baseline_fingerprint
+    g = MF.git_state(MF.ROOT, [])
+    return (f"baseline fingerprint `{baseline_fingerprint()[0][:16]}` (exp/evidence.py BASELINE_SOURCES); "
+            f"git `{(g or {}).get('commit', '?')[:12]}`{' (dirty)' if (g or {}).get('dirty') else ''}")
+
+
+def _unchanged(hashes):
+    def check(stage):
+        if _code_hash() != hashes:
+            raise RuntimeError("source files changed during the evaluation")
+    return check
 
 
 def main():
+    start = _code_hash()
     ctl = BaselineController()
     out = ["# Task 2 — robustness evidence", "",
            "Generated by `python -m exp.task2_robustness`. **Calculated** = roots of the "
@@ -479,12 +480,12 @@ def main():
            "hardware observation.", "",
            f"Controller under test: K = {ctl.K:.4f} N·m/rad, ωc = {ctl.wc:.1f} rad/s, "
            f"α = {ctl.alpha}, integral zero {ctl.wi_ratio * ctl.wc:.1f} rad/s, 500 Hz.", "",
-           f"**Provenance:** {fingerprint()}. The controller is *not frozen* "
-           "(EXECUTION_PLAN.md, Task 2 open): these are diagnostic results for the current "
-           "working implementation, not accepted final evidence.", "",
-           "**Information mode:** yaw feed-forward uses the known yaw plan with 4 ms look-ahead "
-           "(simulated yaw follows its plan exactly). A causal, estimate-only mode is not yet "
-           "implemented; its robustness is untested.", ""]
+           f"**Provenance:** {fingerprint()}. Frozen baseline (Packet 2C); the same code "
+           "hash is published in [task2_numbers.md](task2_numbers.md).", "",
+           "**Information mode:** the default causal mode. Yaw coupling feed-forward is "
+           "predicted 4 ms ahead from the yaw encoder in the delayed feedback (Kalman "
+           "estimate, Packet 2B); the yaw plan is not read. Rows in §1 and §3 that hold roll "
+           "with yaw still are unaffected by the mode.", ""]
     section_delay(out, ctl)
     print("delay done", flush=True)
     section_crosscheck(out, ctl)
@@ -495,10 +496,13 @@ def main():
     print("parameters done", flush=True)
     section_quant(out)
     print("quantization done", flush=True)
-    figures(ctl, sat_logs)
     out += ["Figures: [delay](figs/task2_delay_robustness.png), "
             "[saturation step](figs/task2_saturation.png)."]
-    (ROOT / "report" / "task2_robustness.md").write_text("\n".join(out) + "\n")
+    with MF.staged_publish(ROOT / "report", check=_unchanged(start)) as stage:
+        global FIGS
+        FIGS = stage / "figs"
+        figures(ctl, sat_logs)
+        (stage / "task2_robustness.md").write_text("\n".join(out) + "\n")
     print("\n".join(out))
 
 

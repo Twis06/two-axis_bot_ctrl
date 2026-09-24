@@ -96,7 +96,8 @@ class Drive:
             # Clamping NaN with min/max would return the limit itself: refuse it.
             raw, mode = 0.0, 1
             self.safety._event(t, "nonfinite_target")
-        lim = min(self.i_limit(t), self.safety.current_limit())
+        lim_sched, lim_safety = self.i_limit(t), self.safety.current_limit()
+        lim = min(lim_sched, lim_safety)
         self.active_limit = lim
         clipped = abs(raw) >= lim * (1 - 1e-9)   # at or beyond the limit
         tgt = max(-lim, min(lim, raw))
@@ -108,6 +109,6 @@ class Drive:
         # A newly reduced limit also applies to commands already in the delay line.
         applied = max(-lim, min(lim, applied))
         return dict(raw=raw, tgt=tgt, applied=applied, clipped=clipped, lim=lim,
-                    mode=mode, cmd_age=cmd_age, fault=getattr(self.safety, "fault", None) or "",
+                    mode=mode, cmd_age=cmd_age, lim_sched=lim_sched, lim_safety=lim_safety, fault=getattr(self.safety, "fault", None) or "",
                     fault_id=getattr(self.safety, "fault_id", 0),
                     locked=getattr(self.safety, "locked", False))

@@ -23,7 +23,8 @@ from sim.timing import Channel, LatencyModel
 
 LOG_KEYS = ("t", "q", "qd", "i", "i_raw", "i_tgt", "clipped", "vlim", "i_lim", "mode",
             "q_ref", "qd_ref", "qdd_ref", "err", "q_enc", "qy", "qyd", "qydd", "tau_couple",
-            "d", "cmd_age", "fb_age", "burst", "qy_plan", "fault_id", "locked", "T_wind")
+            "d", "cmd_age", "fb_age", "burst", "qy_plan", "fault_id", "locked", "T_wind",
+            "i_lim_sched", "i_lim_safety")
 
 
 class Log(dict):
@@ -131,6 +132,9 @@ def simulate(cfg, controller, roll_ref, yaw, seed=0, safety=None, yaw_plan=None)
         row["qy_plan"][k] = plan.eval(t)[0] if plan is not yaw else qy
         row["fault_id"][k], row["locked"][k] = dr["fault_id"], dr["locked"]
         row["T_wind"][k] = getattr(safety, "T", float("nan"))
+        # Where the active limit comes from: the configured schedule (derating) or
+        # the supervisor's own (thermal) limit, inf when it has none.
+        row["i_lim_sched"][k], row["i_lim_safety"][k] = dr["lim_sched"], dr["lim_safety"]
 
         if not all(math.isfinite(v) for v in x):
             raise FloatingPointError(f"plant state diverged at t={t:.4f}: {x}")

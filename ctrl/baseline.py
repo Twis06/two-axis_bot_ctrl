@@ -47,6 +47,9 @@ from ctrl.yaw_estimator import KinematicEstimator
 from sim import params as P
 
 
+NOTICE_CAP = 2000      # disposition-change log length (4A: long fault-heavy runs)
+
+
 class BaselineController(Controller):
     name = "baseline"
     YAW_INFO = ("estimate", "plan")
@@ -125,7 +128,7 @@ class BaselineController(Controller):
         key = lambda st, rs: (st, "" if st in ("accepted", "reshaped") else rs)
         if not self.notices or key(*self.notices[-1][1:]) != key(status, reason):
             self.notices.append((t, status, reason))
-            del self.notices[:-200]
+            del self.notices[:-NOTICE_CAP]
 
     MODES = ("sync", "path", "join", "stop", "hold")
 
@@ -293,7 +296,6 @@ class BaselineController(Controller):
             return self._idle(ctx, fb.q, "request_rejected")
         if not self.initialised:
             self._realign(fb.q, t)
-        stale = (t - fb.t_meas) > self.fb_stale
 
         # Drive in fallback (fault latched or timeout): re-align so it can re-arm
         # (tracking faults: only once acknowledged, see _drive_fault). Local damping
@@ -389,19 +391,19 @@ class BaselineController(Controller):
         # 0.1 s took 1.12 s to settle within 1 deg. With the feed-forward-priority
         # clamp, back-calculation on the feedback headroom still drove it to cancel
         # the proportional term (1.37 s); this rule: 0.60 s, |integ| <= 0.04 N m.
-        if not stale and fb.mode == 0:
-            clipped_fb = fb_c != tau_fb and (x > 0) == (tau_fb > fb_c)
-            if not (self.anti_windup and clipped_fb):
-                self.integ += self.ts * self.K * self.wi * x
-            # Bound the integral torque to what the actuator can produce.
-            if self.anti_windup:
-                tau_cap = self.k_t * i_lim
-                self.integ = max(-tau_cap, min(tau_cap, self.integ))
+        # (Stale feedback and drive fallback returned above: this sample is fresh.)
+        clipped_fb = fb_c != tau_fb and (x > 0) == (tau_fb > fb_c)
+        if not (self.anti_windup and clipped_fb):
+            self.integ += self.ts * self.K * self.wi * x
+        # Bound the integral torque to what the actuator can produce.
+        if self.anti_windup:
+            tau_cap = self.k_t * i_lim
+            self.integ = max(-tau_cap, min(tau_cap, self.integ))
         # The limit is active on this command (either share clipped).
         saturated = ff_c != tau_ff or fb_c != tau_fb
         if self.load_model is not None:
             self.load_model.update(ctx, fb, q_c, v_c, a_c, i_cmd, saturated=saturated,
-                                   stale=stale, integ=self.integ)
+                                   stale=False, integ=self.integ)
 
         # --- yaw monitor: roll saturating -> ask yaw to shrink ------------------
         self.was_saturated = saturated
@@ -426,7 +428,7 @@ class BaselineController(Controller):
         self.telemetry = dict(q_c=q_c, tau_ff=tau_ff, tau_fb=tau_fb, integ=self.integ,
                               gov_limited=float(self.gov.limited), gov_rejected=float(self.gov.rejected),
                               gov_s=self._path_speed(), gov_lag=t - self.gov.sigma, gov_kappa=self.gov.kappa,
-                              sat=float(saturated), stale=float(stale), request_rejected=0.0, host_fallback=0.0,
+                              sat=float(saturated), stale=0.0, request_rejected=0.0, host_fallback=0.0,
                               tau_cpl=tau_cpl, i_unsat=tau / self.k_t, **self._flags(),
                               **self._gov_telemetry(self.gov.status))
         return Command(t, i_cmd, q_c, ack=self.fault_ack)

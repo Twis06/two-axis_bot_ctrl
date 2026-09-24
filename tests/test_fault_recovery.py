@@ -396,5 +396,66 @@ class TestReview2B(unittest.TestCase):
         self.assertEqual(float(np.max(log.c_gov_s[k])), 0.0)
 
 
+# ---------------------------------------------------------------------------
+# Independent 2C review (scratchpad/review2C). Reproducers first.
+# ---------------------------------------------------------------------------
+class EnvSine:
+    """A e(t) sin(w t): raised-cosine ramp up over 1 s, steady to t1, down to rest by t1 + 1."""
+    def __init__(self, A, f, t1=2.0):
+        self.A, self.w, self.t1 = A, 2 * math.pi * f, t1
+
+    def _e(self, t):
+        k = math.pi
+        if t <= 0:
+            return 0.0, 0.0, 0.0
+        if t < 1:
+            return 0.5 * (1 - math.cos(k * t)), 0.5 * k * math.sin(k * t), 0.5 * k * k * math.cos(k * t)
+        if t < self.t1:
+            return 1.0, 0.0, 0.0
+        if t < self.t1 + 1:
+            x = t - self.t1
+            return 0.5 * (1 + math.cos(k * x)), -0.5 * k * math.sin(k * x), -0.5 * k * k * math.cos(k * x)
+        return 0.0, 0.0, 0.0
+
+    def eval(self, t):
+        e, ed, edd = self._e(t)
+        w, A = self.w, self.A
+        s, c = math.sin(w * t), math.cos(w * t)
+        return A * e * s, A * (ed * s + e * w * c), A * (edd * s + 2 * ed * w * c - e * w * w * s)
+
+
+class TestReview2C(unittest.TestCase):
+    def test_IA_catch_is_acknowledged_once_yaw_goes_quiet(self):
+        # Host-only: latched watchdog trip at rest; yaw ramps to 90 deg at 2.2 Hz,
+        # then to rest by 2.5 s. The frozen coupling peak kept ack = 0 forever.
+        from sim import params as P
+        c = BaselineController()
+        c.reset(SimConfig())
+        ref, yaw = Hold(0.0), EnvSine(R(90), 2.2, t1=1.5)
+        acks = []
+        for k in range(int(5.0 / TS)):
+            t = k * TS
+            qy = round(yaw.eval(t)[0] / P.ENC_LSB) * P.ENC_LSB
+            # At -30 deg the hold (0.10 N m) plus the 0.33 N m coupling exceeds capacity.
+            cmd = c.update(Context(t, ref.eval(0), (0, 0, 0), ref.eval, Hold(0).eval, None),
+                           Feedback(k, t, R(-30), qy, 0.0, 3.2, 1, fault="watchdog_trip", fault_id=1))
+            acks.append((t, cmd.ack))
+        self.assertEqual(acks[-1][1], 1)
+        # ...but not while the full-amplitude yaw is still running (bound covers it).
+        self.assertTrue(all(a == 0 for t, a in acks if 1.2 < t < 1.6))
+
+    def test_IA_axis_returns_to_active_control_after_the_coordinated_stop(self):
+        # Closed loop: 0.7 kg +35 mm, coupling x1.5, yaw 100 deg at 2.2 Hz ramped to rest
+        # by 3 s, no planner. The frozen peak left 100 % fallback after 4 s in 12/12 runs.
+        for seed in (1, 2):
+            with self.subTest(seed=seed):
+                cfg = replace(SimConfig(), duration=6.0).with_(
+                    plant=dict(m_payload=0.7, k_yv=.012, k_ya=.0012))
+                sc = S.Scenario("Cstop", cfg, Hold(0.0), EnvSine(R(100), 2.2), "")
+                log, _ = run(sc, BaselineController, seed=seed, governed_yaw=False)
+                self.assertNotIn("lockout", [e[1] for e in log.events])
+                self.assertLess(np.mean(log.mode[log.t > 5.0] > 0), 0.05)
+
+
 if __name__ == "__main__":
     unittest.main()

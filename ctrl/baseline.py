@@ -39,6 +39,7 @@ Design choices, each traceable to Phase 0/1:
     load estimate is the Phase 3 candidate (ctrl/adaptive.py).
 """
 import math
+from collections import deque
 
 from ctrl import loopshape
 from ctrl.governor import RollGovernor, YawMonitor
@@ -48,6 +49,8 @@ from sim import params as P
 
 
 NOTICE_CAP = 2000      # disposition-change log length (4A: long fault-heavy runs)
+CPL_WINDOW = 1.0       # s: coupling bound for a tracking-fault catch = max |predicted
+                       # coupling| over this window (>= 2 periods of the B/C yaw sines)
 
 
 class BaselineController(Controller):
@@ -110,6 +113,7 @@ class BaselineController(Controller):
         self.yest.reset()
         self.rest.reset()
         self.v_meas = 0.0             # estimated roll velocity (0 until the estimate is ready)
+        self._cpl_hist = deque()      # (t, |predicted coupling|) over CPL_WINDOW
         self.gov.cpl_peak, self.gov.kappa = 0.0, 1.0   # new run: no coupling/load history
         self.gov.resume()
         if self.load_model is not None:
@@ -160,6 +164,9 @@ class BaselineController(Controller):
             self.gov.suspend(why)
             self.notices.append((t, "suspended", why))
 
+    def _cpl_window_max(self):
+        return max((c for _, c in self._cpl_hist), default=0.0)
+
     def _drive_fault(self, t, fb, i_lim, tau_cpl):
         """Host side of recovery by fault class. Returns the fault class."""
         cls = fault_class(fb.fault)
@@ -178,7 +185,10 @@ class BaselineController(Controller):
             extra = self.load_model.torque if self.load_model is not None else None
             # Re-evaluated every tick and withdrawn when it stops fitting: the drive
             # needs the acknowledgement on every command of its re-arm dwell.
-            cpl_bound = max(abs(tau_cpl), self.gov.cpl_peak)
+            # Bound = largest predicted coupling over the last CPL_WINDOW (not a
+            # peak frozen at the fault: 2C review I-A), so a catch waits while yaw
+            # is active and becomes possible once yaw has gone quiet.
+            cpl_bound = max(abs(tau_cpl), self._cpl_window_max())
             ok = self.rest.ready and self.gov.catch_plan(
                 fb.q, self.v_meas, i_lim, cpl_bound, extra) is not None
             self.fault_ack = fb.fault_id if ok else 0
@@ -290,6 +300,9 @@ class BaselineController(Controller):
             return self._idle(ctx, fb.q, "missing_yaw_plan")
         # --- yaw coupling feed-forward (predicted at t + T_act) -------------
         tau_cpl = self._coupling(ctx, fb) if self.use_yaw_ff else 0.0
+        self._cpl_hist.append((t, abs(tau_cpl)))
+        while self._cpl_hist and self._cpl_hist[0][0] < t - CPL_WINDOW:
+            self._cpl_hist.popleft()
         if fb.mode != 0 or fb.locked:
             self._drive_fault(t, fb, i_lim, tau_cpl)
         if self.request_blocked:
@@ -305,7 +318,9 @@ class BaselineController(Controller):
             if math.isfinite(tau_cpl):
                 extra = self.load_model.torque if self.load_model is not None else None
                 room = self.gov.available(i_lim) - self.gov._hold(fb.q, 0.0, extra)
-                self.gov.cpl_peak = max(self.gov.cpl_peak, abs(tau_cpl))
+                # Decays as it does while the governor steps (it does not step here).
+                self.gov.cpl_peak = max(abs(tau_cpl), self.gov.cpl_peak
+                                        * math.exp(-self.ts / self.gov.cpl_tau))
                 if self._coupling_is_cause(tau_cpl, room, i_lim):
                     if ctx.yaw_planner is not None:
                         self._shrink_yaw(ctx, t, self._cpl_factor(room))

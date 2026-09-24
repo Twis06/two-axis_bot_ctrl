@@ -46,22 +46,34 @@ class TestFeedbackSafety(unittest.TestCase):
                 self.assertFalse(self.c.update(self.context(0), fb).valid)
 
     def test_missing_yaw_plan_requires_explicit_feedback_only_mode(self):
+        # Packet 2B: the plan look-ahead is an explicit mode; without a plan it
+        # refuses to run. The default (estimate) mode needs no plan.
         ctx = replace(self.context(0), yaw_at=None)
-        self.assertFalse(self.c.update(ctx, Feedback(0, 0, 0, 0, 0, 3.2, 0)).valid)
+        planned = BaselineController(yaw_info="plan")
+        planned.reset(SimConfig())
+        self.assertFalse(planned.update(ctx, Feedback(0, 0, 0, 0, 0, 3.2, 0)).valid)
         fb_only = BaselineController(use_yaw_ff=False)
         fb_only.reset(SimConfig())
         self.assertTrue(fb_only.update(ctx, Feedback(0, 0, 0, 0, 0, 3.2, 0)).valid)
+        self.assertTrue(self.c.update(ctx, Feedback(0, 0, 0, 0, 0, 3.2, 0)).valid)
 
-    def test_uncoordinated_yaw_saturation_rejects_request(self):
+    def test_uncoordinated_yaw_saturation_keeps_control_and_reports(self):
         # Known yaw acceleration demands 0.8 Nm: cannot be rejected with 0.448 Nm.
+        # Pre-2B this test pinned rejection to passive fallback; the 2A review showed
+        # passive damping lets the coupling run the axis away (~800 deg at 0.4 N m).
+        # Packet 2B contract: report incompatibility, request a coordinated stop and
+        # keep active control (plan mode: the synthetic yaw has no position).
+        c = BaselineController(yaw_info="plan")
+        c.reset(SimConfig())
         ctx = self.context(0, lambda t: (0, 0, 1000.0))
         valid = []
         for k in range(350):
             t = k*.002
-            cmd = self.c.update(replace(ctx, t=t), Feedback(k, t, 0, 0, 0, 3.2, 0))
+            cmd = c.update(replace(ctx, t=t), Feedback(k, t, 0, 0, 0, 3.2, 0))
             valid.append(cmd.valid)
-        self.assertFalse(valid[-1])
-        self.assertTrue(self.c.telemetry.get('request_rejected', False))
+        self.assertTrue(all(valid))
+        self.assertTrue(c.incompatible)
+        self.assertEqual(c.telemetry['coord_stop'], 1.0)
 
 
 class TestLoopCorner(unittest.TestCase):

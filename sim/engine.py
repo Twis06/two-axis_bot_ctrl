@@ -23,7 +23,7 @@ from sim.timing import Channel, LatencyModel
 
 LOG_KEYS = ("t", "q", "qd", "i", "i_raw", "i_tgt", "clipped", "vlim", "i_lim", "mode",
             "q_ref", "qd_ref", "qdd_ref", "err", "q_enc", "qy", "qyd", "qydd", "tau_couple",
-            "d", "cmd_age", "fb_age", "burst")
+            "d", "cmd_age", "fb_age", "burst", "qy_plan", "fault_id", "locked", "T_wind")
 
 
 class Log(dict):
@@ -36,7 +36,11 @@ class Log(dict):
             raise AttributeError(k) from e
 
 
-def simulate(cfg, controller, roll_ref, yaw, seed=0, safety=None):
+def simulate(cfg, controller, roll_ref, yaw, seed=0, safety=None, yaw_plan=None):
+    """yaw drives the plant and the yaw encoder. yaw_plan, if given, is what the
+    host believes yaw will do (Context.yaw_at / yaw_planner); default: yaw itself,
+    i.e. a yaw axis that follows its plan exactly (plan-mismatch tests pass both)."""
+    plan = yaw if yaw_plan is None else yaw_plan
     rng = np.random.default_rng(seed)
     tc, pc = cfg.timing, cfg.plant
     plant = RollPlant(pc)
@@ -66,7 +70,7 @@ def simulate(cfg, controller, roll_ref, yaw, seed=0, safety=None):
     tele = {}
     x = (cfg.q0, 0.0, 0.0)
     host_seq = 0
-    drive_mode = 0
+    drive_mode, drive_fault = 0, ("", 0, False)
     fb_age = float("nan")
 
     for k in range(N):
@@ -76,9 +80,10 @@ def simulate(cfg, controller, roll_ref, yaw, seed=0, safety=None):
         q_enc = enc.read(q)
 
         # 1-2: drive
-        ch_fb.send(t, k, Feedback(k, t, q_enc, enc_y.read(qy), i, drive.active_limit, drive_mode))
+        ch_fb.send(t, k, Feedback(k, t, q_enc, enc_y.read(qy), i, drive.active_limit, drive_mode,
+                                  *drive_fault))
         dr = drive.tick(t, q_enc, ch_cmd.poll(t), i)
-        drive_mode = dr["mode"]
+        drive_mode, drive_fault = dr["mode"], (dr["fault"], dr["fault_id"], dr["locked"])
 
         # 3: host
         if k % div == 0:
@@ -87,8 +92,8 @@ def simulate(cfg, controller, roll_ref, yaw, seed=0, safety=None):
             if fb is not None:
                 fb_age = t - fb.t_meas
             ref = roll_ref.eval(t)
-            cmd = controller.update(Context(t, ref, (qy, qyd, qydd), roll_ref.eval, yaw.eval,
-                                            yaw if hasattr(yaw, "request_scale") else None), fb)
+            cmd = controller.update(Context(t, ref, plan.eval(t), roll_ref.eval, plan.eval,
+                                            plan if hasattr(plan, "request_scale") else None), fb)
             ch_cmd.send(t + tc.t_compute, host_seq, cmd)
             host_seq += 1
             for key, val in getattr(controller, "telemetry", {}).items():
@@ -123,6 +128,9 @@ def simulate(cfg, controller, roll_ref, yaw, seed=0, safety=None):
         row["cmd_age"][k] = dr["cmd_age"]
         row["fb_age"][k] = fb_age
         row["burst"][k] = lat_cmd.burst_until > t
+        row["qy_plan"][k] = plan.eval(t)[0] if plan is not yaw else qy
+        row["fault_id"][k], row["locked"][k] = dr["fault_id"], dr["locked"]
+        row["T_wind"][k] = getattr(safety, "T", float("nan"))
 
         if not all(math.isfinite(v) for v in x):
             raise FloatingPointError(f"plant state diverged at t={t:.4f}: {x}")
@@ -131,5 +139,6 @@ def simulate(cfg, controller, roll_ref, yaw, seed=0, safety=None):
     log.events = list(safety.events)
     log.meta = dict(seed=seed, controller=controller.name, wd_trips=getattr(safety, "wd_trips", 0),
                     cfg=cfg, T_winding=getattr(safety, "T", None),
-                    yaw_scale=getattr(yaw, "scale_log", None))
+                    yaw_scale=getattr(plan, "scale_log", None),
+                    notices=list(getattr(controller, "notices", []) or []))
     return log

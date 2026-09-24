@@ -8,6 +8,7 @@ Fixed hardware behaviour (not a design choice):
 Pluggable `DriveSafety` (the design choice, extended in Phase 2) decides what
 target to use: the host command, or a local fallback.
 """
+import math
 from collections import deque
 
 
@@ -91,6 +92,10 @@ class Drive:
         cmd = latest_cmd[3] if latest_cmd else None
         cmd_age = t - cmd.t_cmd if cmd else float("inf")
         raw, mode = self.safety.decide(t, q_enc, cmd, cmd_age, self.dt, i_meas)
+        if not math.isfinite(raw):
+            # Clamping NaN with min/max would return the limit itself: refuse it.
+            raw, mode = 0.0, 1
+            self.safety._event(t, "nonfinite_target")
         lim = min(self.i_limit(t), self.safety.current_limit())
         self.active_limit = lim
         clipped = abs(raw) >= lim * (1 - 1e-9)   # at or beyond the limit
@@ -103,4 +108,6 @@ class Drive:
         # A newly reduced limit also applies to commands already in the delay line.
         applied = max(-lim, min(lim, applied))
         return dict(raw=raw, tgt=tgt, applied=applied, clipped=clipped, lim=lim,
-                    mode=mode, cmd_age=cmd_age)
+                    mode=mode, cmd_age=cmd_age, fault=getattr(self.safety, "fault", None) or "",
+                    fault_id=getattr(self.safety, "fault_id", 0),
+                    locked=getattr(self.safety, "locked", False))

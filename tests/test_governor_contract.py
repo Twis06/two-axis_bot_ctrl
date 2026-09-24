@@ -230,7 +230,7 @@ class TestJoinReservesCoupling(unittest.TestCase):
 
 class TestHostIntegration(unittest.TestCase):
     def test_host_hold_reference_does_not_drift_under_excess_yaw_coupling(self):
-        c = BaselineController()
+        c = planned()
         c.reset(SimConfig())
         ref = Hold(0.0)
         yaw = lambda t: (0.0, 0.0, 1000.0)       # 0.8 N m of predicted coupling
@@ -419,6 +419,13 @@ class ConstAcc:
         return (0.0, 0.0, self.acc)
 
 
+def planned():
+    """Plan-look-ahead host (Packet 2B yaw_info="plan"). The synthetic ConstAcc /
+    lambda yaw inputs carry acceleration without the matching position, so only the
+    plan mode sees their coupling; they exercise the predicted-coupling logic."""
+    return BaselineController(yaw_info="plan")
+
+
 def sim(yaw, roll=Hold(0.0), dur=1.5, ctrl=None, cfg=None, seed=1):
     from dataclasses import replace
     from ctrl.supervisor import DriveSupervisor
@@ -439,24 +446,22 @@ class TestReviewHost(unittest.TestCase):
     def test_M8b_coordinated_overbudget_shrinks_yaw_before_drive_trips(self):
         from sim.trajectories import GovernedYaw
         yaw = GovernedYaw(ConstAcc(1000.0))           # 0.8 N m predicted coupling
-        log, c = sim(yaw, dur=1.0)
+        log, c = sim(yaw, dur=1.0, ctrl=planned())
         shrinks = [t for t, s in yaw.scale_log[1:]]
         self.assertTrue(shrinks)
         first_event = min([e[0] for e in log.events] or [1e9])
         self.assertLess(shrinks[0], first_event)
         self.assertLess(shrinks[0], 0.02)
 
-    @unittest.skip("Packet 2B (no yaw authority): YawMonitor still rejects to passive "
-                   "fallback without a planner; pre-2A behaviour pinned by test_hardening")
     def test_M8c_no_planner_saturation_does_not_hand_over_to_passive_fallback(self):
         # 0.4 N m constant coupling (inside the 0.448 N m capacity): the YawMonitor
-        # path rejects -> passive damping -> runaway (~800 deg). Reproducer for 2B.
-        log, c = sim(ConstAcc(500.0), dur=1.5)
+        # path rejected -> passive damping -> runaway (~800 deg). Closed in 2B.
+        log, c = sim(ConstAcc(500.0), dur=1.5, ctrl=planned())
         self.assertFalse(c.request_blocked)
         self.assertLess(np.max(np.abs(log.q)), R(10))
 
     def test_M8d_coupling_beyond_capacity_is_reported_before_the_drive_trips(self):
-        log, c = sim(ConstAcc(1000.0), dur=0.5)             # 0.8 N m > capacity
+        log, c = sim(ConstAcc(1000.0), dur=0.5, ctrl=planned())  # 0.8 N m > capacity
         inc = np.asarray(log.c_gov_incompatible)
         t_inc = log.t[np.argmax(np.nan_to_num(inc) > 0.5)]
         first_event = min([e[0] for e in log.events] or [1e9])
@@ -488,10 +493,15 @@ class TestReviewHost(unittest.TestCase):
         self.assertEqual(np.asarray(log.c_gov_status)[-1], idx)
 
     def test_m3_over_budget_timer_restarts_after_idle(self):
-        cfg = SimConfig().with_(timing=dict(feedback_blackout=((0.10, 0.26),)))
+        # 38 rad/s: 0.304 N m, over budget but within capacity, so only the escalation
+        # timer runs; the blackout is short enough that the coupling cannot push the
+        # passive axis to where holding exceeds capacity. (45 rad/s is incompatible at
+        # once, which since Packet 2B suspends the request and stops the timer.)
+        cfg = SimConfig().with_(timing=dict(feedback_blackout=((0.10, 0.14),)))
         c = BaselineController()
-        log, c = sim(Ramp(45.0), dur=0.35, ctrl=c, cfg=cfg)
-        self.assertGreaterEqual(c.over_since or 0.0, 0.26)
+        log, c = sim(Ramp(38.0), dur=0.35, ctrl=c, cfg=cfg)
+        self.assertFalse(c.incompatible)
+        self.assertGreaterEqual(c.over_since or 0.0, 0.14)
 
 
 # ---------------------------------------------------------------------------
@@ -683,7 +693,7 @@ class TestReview2Host(unittest.TestCase):
     def test_M8b_outcome_coordinated_coupling_within_capacity_is_contained(self):
         from sim.trajectories import GovernedYaw
         yaw = GovernedYaw(ConstAcc(500.0))            # 0.4 N m: over budget, within capacity
-        log, c = sim(yaw, dur=1.5)
+        log, c = sim(yaw, dur=1.5, ctrl=planned())
         self.assertLess(np.max(np.abs(log.q)), R(2))
         self.assertFalse(log.events)
         self.assertFalse(c.request_blocked)
@@ -691,7 +701,7 @@ class TestReview2Host(unittest.TestCase):
     def test_m4_coupling_on_an_over_budget_reference_still_shrinks_yaw(self):
         from sim.trajectories import GovernedYaw
         yaw = GovernedYaw(Hold(0.0))
-        c = BaselineController()
+        c = planned()
         c.reset(SimConfig())
         big = lambda t: (0.0, 0.0, 300.0)             # 0.24 N m of coupling
         for k in range(50):

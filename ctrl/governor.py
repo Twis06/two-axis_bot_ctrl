@@ -13,6 +13,7 @@ Decision rule, used throughout:
            input is invalid -> hold the reference, latch, caller falls back
 """
 import math
+from collections import deque
 
 from sim import params as P
 
@@ -89,13 +90,18 @@ class RollGovernor:
         # Saturation back-off is evidence of unmodelled load: kept across reset()
         # (realignment); only a new run clears it.
         self.kappa = 1.0
+        # A suspended request (host: tracking fault, incompatible yaw) is brought to
+        # rest and held; kept across reset() (realignment) until resume().
+        self.suspended = ""
         self.reset(0.0)           # defined state before the host's first reset()
 
     def reset(self, q, v=0.0, t=0.0):
         """(Re)start at measured position q with the path clock at t. If q is not
         on the path, the first step plans a join. The clock then (re)starts at the
         fastest speed whose one-step velocity change fits the budget (_s_start)."""
-        self.q, self.v, self.a = q, 0.0, 0.0
+        # A moving start (v != 0) only exists for a suspended governor catching the
+        # axis after a tracking fault: it brakes from (q, v). Otherwise from rest.
+        self.q, self.v, self.a = q, (v if self.suspended else 0.0), 0.0
         self.sigma, self.s = t, 1.0
         self.blend = None         # start-offset blend while on the path
         self.pq, self.pv = q, 0.0  # last path-only position/velocity (jump detection)
@@ -114,6 +120,45 @@ class RollGovernor:
         self.braking_short = False
         self.speed_capped = False
         self._set_flags()
+
+    def suspend(self, reason):
+        """Stop the request's traversal and hold (status restricted, with reason).
+        The clock stays frozen; resume() re-joins the path from the hold."""
+        self.suspended = reason or "request suspended"
+
+    def resume(self):
+        self.suspended = ""
+
+    def catch_plan(self, q, v, i_limit, tau_couple=0.0, extra_fn=None):
+        """Predicted rest position of the brake-to-rest a suspended governor would
+        run from the measured state (q, v), or None if it does not fit. tau_couple is
+        a coupling *bound* (the caller passes the recent peak, not the instantaneous
+        value, so the verdict does not follow the coupling's phase). Both the braking
+        and the final hold are judged against actuator capacity: the alternative to
+        a catch is passive damping, which resists neither load nor coupling. The
+        final hold must also lie inside the governor's holdable interval. A model
+        prediction, not a guarantee; the drive's lockout bounds repeated failures."""
+        tau_av = self.available(i_limit)
+        cap, cpl = self._capacity(tau_av), abs(tau_couple)
+        if not _finite(q, v, tau_av, cpl):
+            return None
+        iv = self.feasible_interval(tau_av, 0.0, extra_fn)
+        if iv is None:
+            return None
+        q_end = q
+        if abs(v) > 1e-9:
+            saved = self.q, self.v
+            self.q, self.v = q, v
+            try:
+                a_b = self._brake_decel(cap, 0.0, extra_fn, cpl)
+            finally:
+                self.q, self.v = saved
+            if a_b is None:
+                return None
+            q_end = q + math.copysign(v * v / (2 * a_b), v)
+        if not iv[0] <= q_end <= iv[1] or self._hold(q_end, 0.0, extra_fn) + cpl > cap:
+            return None
+        return q_end
 
     def _set_flags(self):
         st = self.status
@@ -282,6 +327,8 @@ class RollGovernor:
         lo, hi = interval
         ctx = (ts, ref_at, lo, hi, tau_av, tau_extra, extra_fn, tau_couple)
         inside = lo - 1e-9 <= self.q <= hi + 1e-9
+        if self.suspended:
+            return self._step_suspended(ctx, inside)
         if self.mode == "stop":
             return self._step_stop(*ctx)
         if self.mode == "join":
@@ -299,6 +346,26 @@ class RollGovernor:
         return self._step_path(*ctx)
 
     # -- modes ----------------------------------------------------------------------
+    def _step_suspended(self, ctx, inside):
+        """Suspended: brake to rest (STOP), then hold where it stops. A stationary
+        reference outside the holdable interval returns to its boundary as usual."""
+        ts, ref_at, lo, hi, tau_av, tau_extra, extra_fn, tau_couple = ctx
+        if self.mode == "stop":
+            self.seg["then"] = "hold"
+            return self._step_stop(*ctx)
+        if self.mode == "join" and self.seg is not None and self.seg.get("cap"):
+            return self._step_join(*ctx)          # return-to-boundary in progress
+        if abs(self.v) > 1e-9:
+            return self._begin_stop(ctx, "restricted", self.suspended,
+                                    "" if inside else self._room_label())
+        if not inside:
+            return self._return_to_boundary(ctx, self.suspended + "; reference outside "
+                                            "the holdable interval")
+        self._enter_hold(lo, hi)
+        over = self._demand(self.q, 0.0, 0.0, tau_extra, extra_fn, tau_couple) > tau_av
+        return self._finish("over_budget" if over else "restricted", self.suspended,
+                            self.q, 0.0, 0.0, "")
+
     def _room_label(self):
         """'braking' only when a recent limit drop took the room away; otherwise the
         reference simply met a static boundary."""
@@ -713,24 +780,40 @@ def admit_yaw_sine(A, f, i_limit, **kw):
 
 class YawMonitor:
     """Online yaw derate: if roll spends > sat_frac of a window at the current
-    limit, ask the yaw planner for a smaller amplitude (x shrink per trigger).
-    Covers coupling that is larger than modelled (Phase 1 finding)."""
+    limit while yaw coupling is significant, ask the yaw planner for a smaller
+    amplitude (x shrink per trigger). Covers coupling larger than modelled
+    (Phase 1 finding).
 
-    def __init__(self, window=0.5, sat_frac=0.05, shrink=0.8, hold_off=0.6):
+    Occupancy is (samples saturated with yaw active) / (all valid samples) over a
+    complete window: at least `complete` of the window's expected samples at the
+    host period dt. The host clears the history whenever it idles (feedback
+    loss, drive fallback): a window spanning an outage mixes two regimes and is
+    not evidence about either. The hold-off (t_last) survives clear()."""
+
+    def __init__(self, window=0.5, sat_frac=0.05, shrink=0.8, hold_off=0.6, complete=0.9):
         self.window, self.sat_frac, self.shrink, self.hold_off = window, sat_frac, shrink, hold_off
+        self.complete = complete
 
-    def reset(self):
-        self.hist = []
+    def reset(self, dt=None):
+        self.hist = deque()
+        self.n_sat = 0
         self.t_last = -1e9
+        self.dt = dt
 
-    def update(self, t, saturated):
-        self.hist.append((t, saturated))
+    def clear(self):
+        self.hist.clear()
+        self.n_sat = 0
+
+    def update(self, t, flagged):
+        self.hist.append((t, bool(flagged)))
+        self.n_sat += bool(flagged)
         while self.hist and self.hist[0][0] < t - self.window:
-            self.hist.pop(0)
-        frac = sum(s for _, s in self.hist) / len(self.hist)
-        if frac > self.sat_frac and t - self.t_last > self.hold_off and \
-                self.hist[-1][0] - self.hist[0][0] > 0.8 * self.window:
+            self.n_sat -= self.hist.popleft()[1]
+        need = self.complete * self.window / self.dt if self.dt else 0
+        if len(self.hist) < need or self.hist[-1][0] - self.hist[0][0] <= 0.8 * self.window:
+            return None
+        if self.n_sat / len(self.hist) > self.sat_frac and t - self.t_last > self.hold_off:
             self.t_last = t
-            self.hist.clear()
+            self.clear()
             return self.shrink
         return None

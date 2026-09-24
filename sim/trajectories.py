@@ -106,3 +106,16 @@ class GovernedYaw:
         b, bd, bdd = self.base.eval(t)
         s, sd, sdd = self._s(t)
         return s * b, sd * b + s * bd, sdd * b + 2 * sd * bd + s * bdd
+
+
+class FollowingYaw:
+    """Actual yaw motion that follows a host plan imperfectly: delayed by `lag`
+    and scaled by `gain` (plan-mismatch tests of the look-ahead information mode).
+    Scale requests go to the plan, as they would on the robot."""
+
+    def __init__(self, plan, lag=0.010, gain=1.1):
+        self.plan, self.lag, self.gain = plan, lag, gain
+
+    def eval(self, t):
+        q, qd, qdd = self.plan.eval(t - self.lag)
+        return self.gain * q, self.gain * qd, self.gain * qdd

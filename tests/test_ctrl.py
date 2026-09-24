@@ -94,8 +94,12 @@ class TestSupervisor(unittest.TestCase):
             _, mode = s.decide(t, R(15), Command(t, 1.0, R(10)), 0.002, dt)
             t += dt
         self.assertEqual(mode, 1)
-        for _ in range(100):                          # host re-aligned q_ref
+        for _ in range(100):                          # host re-aligned q_ref only
             _, mode = s.decide(t, R(15), Command(t, 1.0, R(15)), 0.002, dt)
+            t += dt
+        self.assertEqual(mode, 1)     # Packet 2B: a tracking fault also needs the ack
+        for _ in range(100):                          # re-aligned and acknowledged
+            _, mode = s.decide(t, R(15), Command(t, 1.0, R(15), ack=s.fault_id), 0.002, dt)
             t += dt
         self.assertEqual(mode, 0)
 

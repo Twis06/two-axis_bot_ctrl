@@ -152,6 +152,32 @@ def primary(log, dwells):
     return (float(np.sqrt(np.mean(e[m] ** 2)) * DEG) if m.any() else float("nan")), int(m.sum())
 
 
+def dwell_mask(log, dwells):
+    sig = np.asarray(log.c_gov_sigma)
+    m = np.zeros(len(sig), bool)
+    for d0, _ in dwells:
+        m |= (sig >= d0) & (sig < d0 + 0.5) & np.isfinite(sig)
+    return m
+
+
+def gate_evidence(log, dwells, t_from=None):
+    """Per-run evidence for exp.task3_gate (R3): limit compliance, availability split,
+    and learned correction applied while the estimator reports itself unusable."""
+    learn = np.nan_to_num(np.asarray(log.get("c_learn_usable", np.zeros(len(log.t))), float))
+    ff = np.nan_to_num(np.asarray(log.get("c_learn_ff", np.zeros(len(log.t))), float))
+    has_learn = "c_learn_usable" in log
+    dm = dwell_mask(log, dwells)
+    sel = np.ones(len(log.t), bool) if t_from is None else np.asarray(log.t) >= t_from
+    return dict(
+        target_over_limit=float(np.max(np.abs(log.i_tgt) - log.i_lim)),
+        applied_while_unusable=int(np.sum((np.abs(ff) > 0) & (learn < 0.5))) if has_learn else 0,
+        learn_usable_in_dwells=float(np.mean(learn[dm] > 0.5)) if (has_learn and dm.any()) else 0.0,
+        learn_applied_max_Nm=float(np.max(np.abs(ff))) if has_learn else 0.0,
+        learn_usable_during_challenge=float(np.mean(learn[sel] > 0.5)) if has_learn else 0.0,
+        lockout=any(e[1] == "lockout" for e in log.events),
+    )
+
+
 def _work(job):
     global _BOOK
     if _BOOK is None:
@@ -186,7 +212,7 @@ def _work(job):
                clip_pct=stats["clip_pct"], i2=float(np.sum(log.i ** 2) * 1e-3),
                learn_usable_max=learn_max, learn_usable_fraction=learn_frac,
                learn_first_usable_s=learn_first,
-               events=[e[1] for e in log.events][:6])
+               events=[e[1] for e in log.events][:6], **gate_evidence(log, dwells))
     new = {k: _BOOK.runs[k] for k in _BOOK.runs if k not in before}
     return dict(row=row, records=new, code=_BOOK.code, env=_BOOK.env, defs=_BOOK.defs)
 
@@ -218,6 +244,7 @@ def table(h, rows):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2) - 1))
+    ap.add_argument("--challenges", default=None, help="supplementary challenge results JSON for the gate (R3)")
     ap.add_argument("--out", default=None, help="publish directory (default report/); use a staging "
                     "directory for corrections awaiting review (R1/R4)")
     args = ap.parse_args(argv)
@@ -310,18 +337,31 @@ def main(argv=None):
                "**The ceiling exceeds the registered gate.** The oracle improves the registered primary metric by "
                f"at least 10 % (median, paired) over the stronger deterministic comparator. This establishes "
                "potential headroom but is not deployable controller evidence.")
-    adaptive_gate = (adaptive_red >= gate and adaptive_usable >= 0.8 * len(adaptive_rows)
-                     and adaptive_lost == 0 and adaptive_wd == 0 and adaptive_suspended == 0
-                     and adaptive_rejected == 0)
-    adaptive_verdict = (f"**The adaptive candidate {'passes' if adaptive_gate else 'fails'} the registered gate.** "
-                        f"Its median paired reduction is {100 * adaptive_red:+.1f} % against `int1`; "
-                        f"{adaptive_usable}/{len(adaptive_rows)} held-out runs obtain a usable estimate "
-                        f"(required ≥80 %), it loses {adaptive_lost} comparator-completed sequences, and it "
-                        f"records {adaptive_wd} watchdog trips, {adaptive_suspended} suspensions, and "
-                        f"{adaptive_rejected} request rejections. "
+    from exp.task3_gate import adoption_gate
+    challenge_rows = None
+    if args.challenges and Path(args.challenges).exists():
+        import json as _json
+        challenge_rows = _json.loads(Path(args.challenges).read_text())["rows"]
+    gate_result = adoption_gate(H, ref, "adaptive", challenge_rows)
+    adaptive_gate = gate_result["overall"] == "pass"
+    fmtv = lambda v: "—" if v is None else (f"{v:.3f}" if isinstance(v, float) else str(v))
+    gate_lines = ["", "### Adoption gate (machine-audited, exp/task3_gate.py)", "",
+                  table(["Criterion", "Status", "Value", "Threshold"],
+                        [[c["name"], f"**{c['status']}**", fmtv(c["value"]), fmtv(c["threshold"])]
+                         for c in gate_result["criteria"]]), "",
+                  f"Overall: **{gate_result['overall']}** ({gate_result['pairs']} held-out pairs, "
+                  f"candidate `adaptive` against comparator `{ref}`). `incomplete` means required evidence "
+                  "is missing; it is never counted as a pass."]
+    adaptive_verdict = (f"**The adaptive candidate's gate result is {gate_result['overall'].upper()}.** "
+                        f"Median paired reduction {100 * adaptive_red:+.1f} % against `{ref}`; "
+                        f"{adaptive_usable}/{len(adaptive_rows)} held-out runs ever obtain a usable estimate "
+                        f"(required ≥80 %); {adaptive_lost} comparator-completed sequences lost; "
+                        f"{adaptive_wd} watchdog trips, {adaptive_suspended} suspensions, {adaptive_rejected} "
+                        "rejections. "
                         + ("The candidate is eligible for adoption review." if adaptive_gate else
                            "The deterministic baseline remains the current controller; a redesigned candidate "
-                           "would require a new registered comparison."))
+                           "would require a new registered comparison.")
+                        + "\n" + "\n".join(gate_lines))
     verdict = ceiling_verdict + "\n\n" + adaptive_verdict
     fp_full, _ = baseline_fingerprint()
     g = MF.git_state(MF.ROOT, [])
@@ -354,7 +394,7 @@ def main(argv=None):
                    "Events", "run_id"], urows), "",
             "The primary metric excludes samples in drive fallback; faults, suspensions and completions are "
             "reported beside it so a stopped controller cannot look good on it."]
-    results = dict(tuning=tune, comparator=ref, meets_criteria=meets,
+    results = dict(tuning=tune, comparator=ref, meets_criteria=meets, adoption_gate=gate_result,
                    adaptive_configuration=dict(estimator="PayloadEstimator", stationarity_counts=2,
                                                worker_delay_ms=[2.0, 8.0], feed_forward_only=True),
                    margins={str(k): v for k, v in marg.items()}, rows=rows,

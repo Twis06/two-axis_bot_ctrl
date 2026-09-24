@@ -107,5 +107,63 @@ class TestMismatchRunner(unittest.TestCase):
         self.assertAlmostEqual(log_m.qy[k], 1.1 * log_m.qy_plan[k - 10], places=3)
 
 
+def _clog(n=2000):
+    t = np.arange(n) / 1000.0
+    z = np.zeros(n)
+    log = Log(t=t, q=z.copy(), mode=z.copy(), c_q_c=z.copy(), c_gov_mode=np.full(n, 1.0), c_suspended=z.copy(),
+              c_host_fallback=z.copy(), c_fault_ack=z.copy(), fault_id=z.copy(), c_replans=z.copy(),
+              c_gov_status=z.copy())
+    log.events = []
+    log.meta = dict(notices=[(0.0, "accepted", "")])
+    return log
+
+
+class TestControllerContracts(unittest.TestCase):
+    """exp.task4b_eval.controller_contracts detects each violation it reports."""
+
+    def _fault(self, log, t0, fid, hold_q, ack=True):
+        t = log.t
+        log.events += [(t0, "watchdog_trip"), (t0 + 0.05, "rearm_after_watchdog_trip")]
+        log["fault_id"][t >= t0] = fid
+        if ack:
+            log["c_fault_ack"][t >= t0 + 0.01] = fid
+        m = t >= t0 + 0.06
+        log["mode"][(t >= t0) & (t < t0 + 0.05)] = 1                  # drive fallback until the re-arm
+        log["c_gov_mode"][(t >= t0) & (t < t0 + 0.06)] = 3             # catch: STOP, then HOLD
+        log["c_suspended"][t >= t0] = 1
+        log["c_gov_mode"][m] = T.HOLD_MODE
+        log["c_q_c"][m] = hold_q
+        log["c_gov_status"][t >= t0] = 3
+        log.meta["notices"].append((t0, "suspended", "tracking fault"))
+
+    def test_clean_hold_and_rebase(self):
+        log = _clog()
+        self._fault(log, 0.5, 1, 0.1)
+        self._fault(log, 1.0, 2, 0.3)
+        c = T.controller_contracts(log)
+        self.assertEqual(c["hold_drift_deg"], 0.0)
+        self.assertEqual(c["rebases"], 1)
+        self.assertEqual((c["rearms"], c["rearms_unacked"], c["reason_missing"]), (2, 0, 0))
+
+    def test_violations_are_detected(self):
+        log = _clog()
+        self._fault(log, 0.5, 1, 0.1, ack=False)
+        log["c_q_c"][1500:] = 0.2                        # hold drifts without a new fault
+        log["c_suspended"][1800:] = 0                    # resumes without a replan
+        log.meta["notices"] = [(0.0, "restricted", "")]  # no reason
+        log["c_q_c"][1800:] = 0.9                        # position jump with the host active
+        c = T.controller_contracts(log)
+        self.assertGreater(c["hold_drift_deg"], 5.0)
+        self.assertEqual(c["rearms_unacked"], 1)
+        self.assertEqual(c["resumes_without_replan"], 1)
+        self.assertGreater(c["reason_missing"], 0)
+        self.assertGreater(c["jumps"], 0)
+
+    def test_over_tracking_band_matches_reviewer(self):
+        b = T.over_tracking_band(4.3e-3, 1.7e-3, 4.0e-3)
+        self.assertAlmostEqual(b["b110"][0], 2.97, delta=0.1)
+        self.assertAlmostEqual(b["peak"], 1.27, delta=0.01)
+
+
 if __name__ == "__main__":
     unittest.main()

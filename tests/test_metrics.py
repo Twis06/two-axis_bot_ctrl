@@ -592,8 +592,24 @@ class TestReviewRound2(unittest.TestCase):
             self.assertEqual((tgt / "old.md").read_text(), "only copy")
             self.assertEqual(names, ["new.md", "old.md", "x.md"])
 
-    def test_N4_undeclared_imports_can_be_required_empty(self):
+    def test_N4_loaded_sources_scans_sys_modules(self):
+        """The sys.modules scan itself (review 4B m5): a project module under
+        exp/ appears, a module outside the project does not."""
+        import tempfile as _tf
         import types
+        from unittest import mock
+        inside = types.ModuleType("fake_inside")
+        inside.__file__ = str(MF.ROOT / "exp" / "task2_robustness.py")
+        with _tf.TemporaryDirectory() as d:
+            outside = types.ModuleType("fake_outside")
+            outside.__file__ = str(Path(d) / "x.py")
+            Path(outside.__file__).write_text("")
+            with mock.patch.dict(sys.modules, {"fake_inside": inside, "fake_outside": outside}):
+                got = MF.loaded_sources()
+        self.assertIn((MF.ROOT / "exp" / "task2_robustness.py").resolve(), got)
+        self.assertNotIn(Path(outside.__file__).resolve(), got)
+
+    def test_N4_undeclared_imports_can_be_required_empty(self):
         from unittest import mock
         sc = M.m1(SimConfig())
         # The imports made by other tests in this process are not this test's

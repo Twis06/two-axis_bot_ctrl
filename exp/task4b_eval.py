@@ -153,7 +153,126 @@ def fallback_excursion(log):
     return worst
 
 
-def row_stats(log, stats, rid, ev):
+HOLD_MODE = BaselineController.MODES.index("hold")
+GOV_V_MAX = 20.0          # rad/s, RollGovernor.v_max (the governor's own speed cap)
+
+
+def controller_contracts(log):
+    """Controller-side contracts checked from the log (not the simulator clamp
+    and not the scorer's definitions). Returns counts and worst values:
+
+    hold   between faults, a suspended hold's reference is stationary: over
+           samples that are suspended, drive normal, host active and governor
+           mode HOLD (the braking segment after a catch is mode STOP), q_c is
+           constant within each fault epoch (epochs split at non-transient
+           fault events). A new hold position after a new fault is a re-base,
+           reported separately, not a stationary hold.
+    ack    every rearm_after_<tracking fault> is preceded, after that fault, by
+           host telemetry acknowledging the drive's fault_id (c_fault_ack).
+    resume the request never resumes (c_suspended 1 -> 0) without a replan()
+           since the suspension began (c_replans increments).
+    reason every suspended / restricted / rejected sample is covered by a
+           controller notice (log.meta['notices']) with a non-empty reason.
+    jump   between consecutive host ticks with the host active, |dq_c| / ts
+           stays within the governor's speed cap (no position jump).
+    """
+    t = np.asarray(log.t, float)
+    out = dict(hold_samples=0, hold_drift_deg=0.0, hold_positions_deg=[], rebases=0,
+               rearms=0, rearms_unacked=0, resumes=0, resumes_without_replan=0,
+               reason_samples=0, reason_missing=0, reason_unknown=False, jump_max_rad_s=0.0, jumps=0)
+    if "c_q_c" not in log or "c_gov_mode" not in log:
+        return out
+    qc = np.asarray(log.c_q_c, float)
+    susp = np.asarray(log.get("c_suspended", np.zeros(len(t))), float) == 1
+    idle = np.asarray(log.get("c_host_fallback", np.zeros(len(t))), float) == 1
+    mode = np.asarray(log.mode)
+    gmode = np.asarray(log.c_gov_mode, float)
+    faults = sorted(float(a) for a, b in log.events if b not in SM.TRANSIENT_FAULTS and not b.startswith("rearm_after_"))
+    edges = [-1.0] + faults + [float("inf")]
+    hold = susp & (mode == 0) & ~idle & (gmode == HOLD_MODE) & np.isfinite(qc)
+    for a, b in zip(edges[:-1], edges[1:]):
+        m = hold & (t >= a) & (t < b)
+        if m.any():
+            v = qc[m]
+            out["hold_samples"] += int(m.sum())
+            out["hold_drift_deg"] = max(out["hold_drift_deg"], float(np.ptp(v)) * DEG)
+            out["hold_positions_deg"].append(round(float(v[0]) * DEG, 2))
+    out["rebases"] = max(0, len(out["hold_positions_deg"]) - 1)
+    ack = np.asarray(log.get("c_fault_ack", np.full(len(t), np.nan)), float)
+    fid = np.asarray(log.get("fault_id", np.full(len(t), np.nan)), float)
+    for te, name in log.events:
+        if not name.startswith("rearm_after_") or name[len("rearm_after_"):] in SM.TRANSIENT_FAULTS:
+            continue
+        out["rearms"] += 1
+        k = int(round(te / (t[1] - t[0])))
+        f_now = fid[max(0, k - 1)]
+        t_f = max([f for f in faults if f <= te] or [0.0])
+        w = (t >= t_f) & (t <= te)
+        if not np.any(ack[w] == f_now):
+            out["rearms_unacked"] += 1
+    rp = np.asarray(log.get("c_replans", np.zeros(len(t))), float)
+    ends = np.where(susp[:-1] & ~susp[1:])[0]
+    starts = np.where(~susp[:-1] & susp[1:])[0]
+    for e in ends:
+        out["resumes"] += 1
+        s0 = starts[starts < e]
+        s0 = s0[-1] if s0.size else 0
+        if not np.nanmax(rp[e + 1:e + 3]) > np.nanmin(rp[s0:e + 1]):
+            out["resumes_without_replan"] += 1
+    notices = getattr(log, "meta", {}).get("notices") or []
+    nt = np.array([n[0] if n[0] is not None else -1.0 for n in notices], float)
+    st = np.asarray(log.get("c_gov_status", np.full(len(t), np.nan)), float)
+    need = susp | np.isin(st, [3, 5])
+    div = T_DIV
+    th = t - (np.arange(len(t)) % div) * (t[1] - t[0])
+    idx = np.searchsorted(nt, th + 1e-9, side="right") - 1
+    out["reason_samples"] = int(need.sum())
+    if len(notices) >= 2000 and nt.size and nt[0] > 0:
+        out["reason_unknown"] = True       # notice log truncated at its cap
+    good = np.array([i >= 0 and bool(notices[i][2]) for i in idx]) if len(notices) else np.zeros(len(t), bool)
+    out["reason_missing"] = int(np.sum(need & ~good))
+    k = np.arange(0, len(t), div)
+    act = ~idle[k] & np.isfinite(qc[k])
+    dq = np.abs(np.diff(qc[k])) / (div * (t[1] - t[0]))
+    pair = act[1:] & act[:-1]
+    if pair.any():
+        out["jump_max_rad_s"] = float(np.max(dq[pair]))
+        out["jumps"] = int(np.sum(dq[pair] > GOV_V_MAX * 1.001))
+    return out
+
+
+T_DIV = 2    # drive ticks per host tick in every 4B configuration (1 kHz / 500 Hz)
+
+
+def fallback_detail(log, spec):
+    """For the fallback span with the largest excursion (after start-up): entry
+    speed, fallback current, share at the limit, and the payload torque's sign
+    relative to braking (> 0: the payload pushes along the motion, i.e. opposes
+    braking). Calculated from the logged state and the true plant."""
+    t = np.asarray(log.t, float)
+    bad = (np.asarray(log.mode) > 0) | (np.asarray(log.get("c_host_fallback", np.zeros(len(t)))) == 1)
+    n0 = int(np.argmax(~bad)) if (~bad).any() else len(t)
+    best = None
+    for a, b in SM._span_idx(bad):
+        if a < n0:
+            continue
+        exc = float(np.max(np.abs(log.q[a:b] - log.q[a]))) * DEG
+        if best is None or exc > best[0]:
+            best = (exc, a, b)
+    if best is None:
+        return None
+    exc, a, b = best
+    pc = spec.sc.cfg.plant
+    qd0 = float(log.qd[a])
+    pay = -pc.tau_lat * np.cos(log.q[a:b])        # payload torque on the axis (sim.plant sign)
+    return dict(t_entry=float(t[a]), duration_s=float(t[b - 1] - t[a] + (t[1] - t[0])), excursion_deg=exc,
+                qd_entry=qd0, i_fallback_max=float(np.max(np.abs(log.i_tgt[a:b]))),
+                at_limit_pct=100 * float(np.mean(np.abs(log.i_tgt[a:b]) >= 0.999 * log.i_lim[a:b])),
+                i_lim=float(np.min(log.i_lim[a:b])),
+                payload_along_motion_Nm=float(np.mean(pay) * np.sign(qd0)))
+
+
+def row_stats(log, stats, rid, ev, spec=None):
     """Per-run numbers used by the tables (full evaluation is in task4b_runs.json)."""
     comp = ev.get("completion") or {}
     st = ev["strata"]
@@ -177,6 +296,8 @@ def row_stats(log, stats, rid, ev):
         q_end=float(log.q[-1] * DEG), q_min=float(np.min(log.q) * DEG), q_max=float(np.max(log.q) * DEG),
         qd_peak=float(np.max(np.abs(log.qd))), fb_age_max_ms=1e3 * float(np.nanmax(log.fb_age)),
         lockout=bool(np.any(col("locked") == 1)), fb_excursion=fallback_excursion(log),
+        vlim_pct=stats["vlim_pct"], contracts=controller_contracts(log),
+        fallback=fallback_detail(log, spec) if spec is not None else None,
         reasons=sorted({part.strip() for key in ("suspended", "coord_stop", "rejected")
                         for r in (ev["faults"][key].get("reasons") or []) if r
                         for part in r.split(";") if part.strip()}))
@@ -187,9 +308,9 @@ def post_mc(log, ev, spec):
     """Torque terms over the 100 ms before the first trip (Calculated from the
     logged true state and the true plant config; diagnostic only)."""
     trips = [t for t, n in log.events if n not in SM.TRANSIENT_FAULTS and not n.startswith("rearm_after_")]
-    if not trips:
-        return dict(faulted=False)
     pc = spec.sc.cfg.plant
+    if not trips:
+        return dict(faulted=False, m_payload=pc.m_payload)
     t0 = trips[0]
     m = (log.t >= t0 - 0.1) & (log.t < t0)
     q = log.q[m]
@@ -201,10 +322,17 @@ def post_mc(log, ev, spec):
     cpl_pred = log.c_tau_cpl[m] if "c_tau_cpl" in log else np.zeros(q.size)
     inertia_err = (pc.J_total - P.J_R) * np.gradient(log.qd[m], log.t[m]) if q.size > 2 else np.zeros(q.size)
     kt_err = (kt - P.K_T) * log.i[m]                               # torque not credited by the host
+    qd = log.qd[m]
+    fric_err = (pc.tau_c - P.TAU_C) * np.tanh(qd / pc.v_fric)       # Coulomb friction error
+    visc_err = (pc.b - P.B_VISC) * qd                               # viscous damping error
+    dist = log.d[m]                                                 # bounded disturbance d(t)
     a = lambda x: float(np.mean(np.abs(x))) if x.size else float("nan")
     terms = dict(payload=a(payload), gravity_model=a(grav_err), coupling_total=a(cpl_true),
-                 coupling_error=a(cpl_true - cpl_pred), inertia_error=a(inertia_err), kt_error=a(kt_err))
+                 coupling_error=a(cpl_true - cpl_pred), inertia_error=a(inertia_err), kt_error=a(kt_err),
+                 friction_error=a(fric_err), viscous_error=a(visc_err), disturbance=a(dist))
     return dict(faulted=True, t_trip=float(t0), n_trips=len(trips), at_limit_pct=100 * float(np.mean(log.clipped[m])),
+                static_over_capacity=bool(pc.tau_lat > pc.k_t * float(np.min(log.i_lim))),
+                tau_lat=pc.tau_lat, capacity_true=pc.k_t * float(np.min(log.i_lim)),
                 capacity=a(cap), terms=terms, q_trip=float(np.degrees(np.mean(q))) if q.size else float("nan"),
                 m_payload=pc.m_payload, coupling_scale=pc.k_yv / P.K_YV, kt_ratio=kt / P.K_T,
                 J_ratio=pc.J / P.J_R, tau_g_ratio=pc.tau_g / P.TAU_G)
@@ -265,7 +393,26 @@ def post_quant(log, ev, spec):
                 hunt=float(np.ptp(log.q_enc[m]) * DEG))
 
 
-POST = dict(mc=post_mc, freq=post_freq, trace=post_trace, step=post_step, quant=post_quant)
+def post_infeasible(log, ev, spec):
+    """Timing and distances for the infeasible cases, from the log."""
+    t = np.asarray(log.t, float)
+    trips = [float(a) for a, b in log.events if b not in SM.TRANSIENT_FAULTS and not b.startswith("rearm_after_")]
+    susp = np.asarray(log.get("c_suspended", np.zeros(len(t))), float) == 1
+    last = t >= t[-1] - 1.0
+    out = dict(trips=trips, t_suspended=float(t[np.argmax(susp)]) if susp.any() else None,
+               q_end=float(log.q[-1] * DEG), q_req_end=float(log.q_ref[-1] * DEG),
+               dist_end=float(abs(log.q[-1] - log.q_ref[-1]) * DEG),
+               t_req_settled=None, clipped_pct=100 * float(np.mean(log.clipped)),
+               i_mean_last_s=float(np.mean(np.abs(log.i[last]))))
+    ref = np.asarray(log.q_ref, float)
+    moving = np.where(np.abs(np.diff(ref)) > 1e-12)[0]
+    out["t_req_settled"] = float(t[moving[-1] + 1]) if moving.size else 0.0
+    if spec.seed == 1:
+        out.update(post_trace(log, ev, spec))
+    return out
+
+
+POST = dict(mc=post_mc, freq=post_freq, trace=post_trace, step=post_step, quant=post_quant, infeasible=post_infeasible)
 
 
 def _growth(book, spec, g):
@@ -303,7 +450,7 @@ def _work(spec):
         row, rid = None, post["run_id"]
     else:
         log, stats, rid, ev = _one(_BOOK, spec)
-        row = row_stats(log, stats, rid, ev)
+        row = row_stats(log, stats, rid, ev, spec)
         post = POST[spec.post](log, ev, spec) if spec.post else None
     new = {k: _BOOK.runs[k] for k in _BOOK.runs if k not in before}
     if rid not in new:
@@ -366,6 +513,8 @@ def stress_cases(base):
         ("18 V bus, R +25 %: B", with_cfg(b, plant=dict(v_bus=18.0, R=2.25)), None),
         ("18 V bus, R +25 %: D", with_cfg(d, plant=dict(v_bus=18.0, R=2.25)), None),
         ("18 V bus, R +25 %: M1", with_cfg(m1, plant=dict(v_bus=18.0, R=2.25)), None),
+        ("10 V bus, R +25 %: E (voltage limit binds)", with_cfg(e, plant=dict(v_bus=10.0, R=2.25)), None),
+        ("8 V bus, R +25 %: E (voltage limit binds)", with_cfg(e, plant=dict(v_bus=8.0, R=2.25)), None),
     ]
     for s_lat in (0.035, -0.035):
         for kind in ("command_blackout", "blackout"):
@@ -433,6 +582,7 @@ def freq_scenario(base, f, bench=False):
 
 
 FREQS = (0.5, 1.0, 2.0, 4.0, 6.0)
+BENCH_EXTRA = (2.2, 8.0, 10.0)     # bench-only points (review 4B I2)
 PAYLOADS = (0.0, 0.3, 0.5, 0.7, 0.9, 1.2)
 COUPLING = (0.5, 1.0, 1.5, 2.0, 2.5)
 
@@ -458,16 +608,16 @@ def all_specs(base, quick=False):
         sp.append(Spec("mc", f"{name}{k:02d}", sc, "baseline", 100 + k, post="mc"))
     phys, pol = infeasible_cases(base)
     for s in sseeds:
-        sp.append(Spec("infeasible", "INF-P", phys, "baseline", s, post="trace" if s == 1 else None))
-        sp.append(variant_spec("infeasible", "INF-P", phys, "legacy", s))
-        sp.append(Spec("infeasible", "INF-R no coordination", pol, "baseline", s, gy=False,
-                       post="trace" if s == 1 else None))
-        sp.append(Spec("infeasible", "INF-R with coordination", pol, "baseline", s))
+        sp.append(Spec("infeasible", "INF-P", phys, "baseline", s, post="infeasible"))
+        sp.append(variant_spec("infeasible", "INF-P", phys, "legacy", s, post="infeasible"))
+        sp.append(Spec("infeasible", "INF-R no coordination", pol, "baseline", s, gy=False, post="infeasible"))
+        sp.append(Spec("infeasible", "INF-R with coordination", pol, "baseline", s, post="infeasible"))
     for f in FREQS:
         for v in ("baseline", "legacy"):
             sp.append(variant_spec("freq", f"{f:g}", freq_scenario(base, f), v, 1, post="freq"))
-        sp.append(Spec("freq", f"{f:g}", freq_scenario(base, f, bench=True), ("baseline", {}, 1.0, dict(tau_c=0.0)),
-                       1, post="freq")._replace(ctrl=("bench", {}, 1.0, dict(tau_c=0.0))))
+    for f in FREQS + BENCH_EXTRA:
+        sp.append(Spec("freq", f"{f:g}", freq_scenario(base, f, bench=True), ("bench", {}, 1.0, dict(tau_c=0.0)),
+                       1, post="freq"))
     for mpay in PAYLOADS:
         for mk, lab in ((lambda b: S.run_d(b, m=mpay), "D"), (lambda b: M.m2(b, m=mpay), "M2")):
             sp.append(Spec("gen_payload", f"{lab} {mpay:.1f} kg", mk(base), "baseline", 1))
@@ -644,7 +794,7 @@ def sec_regressions(res):
     """Per-(case, seed) differences against the frozen baseline."""
     by = {}
     for r in res:
-        if r["group"] in ("matched", "finite", "stress"):
+        if r["group"] in ("matched", "finite", "stress", "gen_coupling"):
             by[(r["group"], r["key"], r["seed"], r["variant"])] = r
     rows = []
     for (grp, key, seed, v), r in sorted(by.items(), key=lambda kv: (kv[0][0], str(kv[0][1]), kv[0][2], kv[0][3])):
@@ -680,6 +830,15 @@ def sec_regressions(res):
             if rows else "No differences.", ""], n_rows
 
 
+def _fb_cell(x):
+    f = [s["fallback"] for s in x if s.get("fallback")]
+    if not f:
+        return "–"
+    w = max(f, key=lambda d: d["excursion_deg"])
+    return (f"{w['qd_entry']:+.1f} / {w['i_fallback_max']:.1f} ({w['at_limit_pct']:.0f} %) / "
+            f"{w['payload_along_motion_Nm']:+.2f}")
+
+
 def sec_stress(res):
     g = group(res, "stress")
     keys = []
@@ -699,6 +858,7 @@ def sec_stress(res):
                          f"{sum(comp)}/{len(comp)}" if comp else "–", _pct_rng([s["net_progress"] for s in x]),
                          _rng([s["path_rms"] for s in x]), f"{max(s['peak_gov'] for s in x):.1f}",
                          f"{max(s['fallback_pct'] for s in x):.1f}", f"{max(s['fb_excursion'] for s in x):.1f}",
+                         _fb_cell(x), f"{max(s['vlim_pct'] for s in x):.1f}",
                          f"{sum(s['suspended_pct'] > 0 for s in x)}/{len(x)}",
                          f"{min(s['yaw_scale'] for s in x):.2f}", ", ".join(ev) or "none",
                          ids_cell([r["run_id"] for r in rr])])
@@ -709,10 +869,16 @@ def sec_stress(res):
             "direction (rng 4242); sim.config has no per-direction drop probability. Loaded recovery uses D's "
             "0.7 kg payload at CoM ±35 mm. Corners combine the fixed 4 ms CAN latency with J/Kt extremes.", "",
             table(["Case", "Variant", "Tracked", "Completed", "Net progress", "Path RMS °", "Worst governed peak °",
-                   "Worst fallback %", "Worst fallback excursion °", "Runs suspended", "Min yaw scale", "Events",
-                   "Run set"], rows), "",
+                   "Worst fallback %", "Worst fallback excursion °",
+                   "Worst-excursion fallback: entry q̇ rad/s / fallback current A (at limit %) / payload torque along motion N·m",
+                   "Voltage-limited %", "Runs suspended", "Min yaw scale", "Events", "Run set"], rows), "",
             "Fallback excursion = largest |q − q(entry)| while only the drive's local damping acts (after start-up): "
-            "fallback is motion reduction, not a position hold.", ""]
+            "fallback is motion reduction, not a position hold. For the fallback span with the largest excursion, the "
+            "entry speed, the largest fallback current target and its share at the active limit, and the mean payload "
+            "torque along the direction of motion (> 0: the payload opposes braking) are listed (Calculated from the "
+            "log and the true plant). Fallback current is −c·v/Kt with c = 0.05 N·m·s/rad, so entering faster than "
+            "Kt·I_limit/c ≈ 9 rad/s asks more than the limit and is clamped: the excursion is then a current-limited "
+            "stopping distance. Voltage-limited % = share of samples where the supply voltage limited the current loop.", ""]
 
 
 def classify(p):
@@ -723,8 +889,11 @@ def classify(p):
     cause = max(unmod, key=unmod.get)
     label = {"payload": "unmodelled payload torque", "gravity_model": "gravity-model error",
              "coupling_error": "coupling prediction error", "inertia_error": "inertia error",
-             "kt_error": "motor-constant error"}[cause]
-    if p["at_limit_pct"] >= 50:
+             "kt_error": "motor-constant error", "friction_error": "Coulomb-friction error",
+             "viscous_error": "viscous-damping error", "disturbance": "bounded disturbance d(t)"}[cause]
+    if p.get("static_over_capacity"):
+        label += ", physically infeasible (static payload torque > capacity)"
+    elif p["at_limit_pct"] >= 50:
         label += ", limit-bound"
     return label, cause
 
@@ -749,11 +918,22 @@ def sec_mc(res, published):
                      f"{p['J_ratio']:.2f}", f"{p['t_trip']:.2f}", str(p["n_trips"]), f"{p['q_trip']:.0f}",
                      f"{p['at_limit_pct']:.0f}", f"{p['capacity']:.3f}", f"{t['payload']:.3f}",
                      f"{t['gravity_model']:.3f}", f"{t['coupling_error']:.3f}", f"{t['inertia_error']:.3f}",
-                     f"{t['kt_error']:.3f}", label,
+                     f"{t['kt_error']:.3f}", f"{t['friction_error']:.3f}", f"{t['viscous_error']:.3f}",
+                     f"{t['disturbance']:.3f}", f"{p['tau_lat']:.3f} / {p['capacity_true']:.3f}", label,
                      f"suspended {s['suspended_pct']:.0f} %{', LOCKOUT' if s['lockout'] else ''}",
                      f"`{r['run_id']}`"])
     n_f = len(rows)
     same = f"{sum(xcheck)}/{len(xcheck)}" if xcheck else "not checked"
+    fpay = [r["post"]["m_payload"] for r in mc if r["post"]["faulted"]]
+    nf = [r for r in mc if not r["post"]["faulted"]]
+    lo = min(fpay) if fpay else float("nan")
+    similar = [r for r in nf if r["post"]["m_payload"] >= lo]
+    sim_list = ", ".join(f"{r['key']} {r['post']['m_payload']:.2f} kg" for r in similar)
+    nonf_line = (f"**The rule attributes; it does not discriminate.** Payload dominates by construction in payload "
+                 f"scenarios: every D/E trial carries 0.3–1.0 kg. Faulted payloads span {lo:.2f}–{max(fpay):.2f} kg; "
+                 f"{len(similar)} non-faulted trials also carry at least {lo:.2f} kg ({sim_list}), so payload mass "
+                 "alone does not predict the fault. The rule says which unmodelled torque was largest when the trip "
+                 "came, not why this trial tripped and a similar one did not.") if fpay else ""
     return ["## 5. D/E Monte Carlo faulted trials, classified (Simulated; torque terms Calculated from logged state)", "",
             f"The 40 D/E uncertainty trials of Task 2 were regenerated with the same draws (rng 2024, seeds 100+k). "
             f"Cross-check against `task2_results.json`: watchdog trips and governed RMS identical in {same} trials. "
@@ -761,22 +941,34 @@ def sec_mc(res, published):
             "|torque| of every term the host does not model is computed over the 100 ms before the first trip from "
             "the logged true state and the trial's true parameters: payload τ_lat cos q; gravity-model error "
             "(τ_g − τ_g,nom) sin q; coupling prediction error (true − host-predicted coupling); inertia error "
-            "(J − J_nom)·q̈; motor-constant error (Kt − Kt_nom)·i. Capacity is Kt·I_limit. "
-            "Rule (project assumption): cause = largest unmodelled term; *limit-bound* if the command sat at the "
-            "current limit ≥ 50 % of the window.", "",
+            "(J − J_nom)·q̈; motor-constant error (Kt − Kt_nom)·i; Coulomb-friction error (τ_c − τ_c,nom)·tanh(q̇/v_f); "
+            "viscous error (b − b_nom)·q̇; the bounded disturbance d(t). Capacity is Kt·I_limit (true Kt in the "
+            "static column). Rule (project assumption): cause = largest unmodelled term; *physically infeasible* if "
+            "the static payload torque τ_lat alone exceeds the true capacity; otherwise *limit-bound* if the command "
+            "sat at the current limit ≥ 50 % of the window.", "",
             "Counts: " + (", ".join(f"{k}: {v}" for k, v in sorted(counts.items())) or "none"), "",
             table(["Trial", "Payload kg", "Coupling ×", "Kt ×", "J ×", "First trip s", "Trips", "q at trip °",
                    "At limit % (100 ms)", "Capacity N·m", "Payload N·m", "Gravity err N·m", "Coupling err N·m",
-                   "Inertia err N·m", "Kt err N·m", "Cause (rule)", "Outcome", "run_id"], rows) if rows else "No faulted trials.",
-            ""], counts, n_f
+                   "Inertia err N·m", "Kt err N·m", "Friction err N·m", "Viscous err N·m", "d(t) N·m",
+                   "Static payload / capacity N·m", "Cause (rule)", "Outcome", "run_id"], rows) if rows else "No faulted trials.",
+            "", nonf_line, ""], counts, n_f
 
 
 def sec_infeasible(res):
-    rows = []
+    rows, rows2 = [], []
     for r in res:
         if r["group"] != "infeasible":
             continue
         s = r["row"]
+        p = r["post"] or {}
+        c = s["contracts"]
+        rows2.append([r["key"], r["variant"], str(r["seed"]),
+                      ", ".join(f"{x:.3f}" for x in p.get("trips", [])) or "none",
+                      "–" if p.get("t_suspended") is None else f"{p['t_suspended']:.3f}",
+                      " → ".join(f"{h:.1f}" for h in c["hold_positions_deg"]) or "–",
+                      f"{p.get('q_req_end', float('nan')):.1f} (from {p.get('t_req_settled', 0):.1f} s)",
+                      f"{p.get('q_end', float('nan')):.1f}", f"{p.get('dist_end', float('nan')):.1f}",
+                      f"{p.get('clipped_pct', float('nan')):.1f}", f"{p.get('i_mean_last_s', float('nan')):.2f}"])
         rows.append([r["key"], r["variant"], str(r["seed"]), "yes" if s["tracked"] else "no",
                      "–" if s["completed"] is None else ("yes" if s["completed"] else "no"),
                      f"{s['net_progress']:.0%}", f"{s['suspended_pct']:.0f} / {s['coord_stop_pct']:.0f} / "
@@ -793,7 +985,14 @@ def sec_infeasible(res):
             "Neither can be tracked; what matters is the disposition and the actual motion afterwards.", "",
             table(["Case", "Variant", "Seed", "Tracked", "Completed", "Net progress",
                    "Time % suspended / coord. stop / fallback / rejected", "Events", "Roll range °", "Final roll °",
-                   "Fallback excursion °", "Peak |q̇| rad/s", "Final yaw scale", "Disposition reasons (controller notices)", "run_id"], rows), ""]
+                   "Fallback excursion °",
+                   "Peak |q̇| rad/s", "Final yaw scale", "Disposition reasons (controller notices)", "run_id"], rows), "",
+            "Timing and distances (from the logs). Hold positions are the suspended-hold references per fault epoch: "
+            "a second value is a new catch after a new fault, not a drifting hold. Distance is to the *current* request "
+            "at the end of the run.", "",
+            table(["Case", "Variant", "Seed", "Tracking trips s", "Suspended from s", "Hold position(s) °",
+                   "Current request °", "Final roll °", "Final distance to request °", "At command limit %",
+                   "Mean |i| last 1 s A"], rows2), ""]
 
 
 def sec_freq(res):
@@ -804,8 +1003,14 @@ def sec_freq(res):
             tff.append(r["post"]["T_ff"]); tfb.append(r["post"]["T_fb_age"]); lags.append(r["post"]["gov_lag"])
     T_ff, T_fb, lag = float(np.mean(tff)), float(np.mean(tfb)), float(np.mean(lags))
     rows = []
-    for f in FREQS:
+    for f in sorted(FREQS + BENCH_EXTRA):
         b, l, n = (g.get((f"{f:g}", v), [None])[0] for v in ("baseline", "legacy", "bench"))
+        if b is None:
+            gc, pc = calc_tracking(f, T_ff, T_fb, lag)
+            rows.append([f"{f:g}", f"{freq_amp(f):.1f}", f"{gc[0]:.3f} / {pc[0]:+.1f}",
+                         f"{n['post']['gain']:.3f} / {n['post']['phase_deg']:+.1f}", "–", "–",
+                         f"{n['row']['reshaping_pct']:.0f}", f"`{n['run_id']}`"])
+            continue
         gc, pc = calc_tracking(f, T_ff, T_fb, lag)
         rows.append([f"{f:g}", f"{freq_amp(f):.1f}", f"{gc[0]:.3f} / {pc[0]:+.1f}",
                      f"{n['post']['gain']:.3f} / {n['post']['phase_deg']:+.1f}",
@@ -826,7 +1031,29 @@ def sec_freq(res):
             "host's friction compensation (diagnostic only), which isolates the linear part the calculation models.", "",
             table(["f Hz", "Amplitude °", "Calculated gain / phase °", "Bench sim gain / phase °",
                    "Baseline sim gain / phase °", "Legacy sim gain / phase °", "Reshaping % (max)",
-                   "run_ids (bench / baseline / legacy)"], rows), ""], (T_ff, T_fb, lag)
+                   "run_ids (bench / baseline / legacy)"], rows), "", band_text(T_ff, T_fb, lag), ""], (T_ff, T_fb, lag)
+
+
+def over_tracking_band(T_ff, T_fb, lag):
+    """Calculated gain on a dense 0.1-30 Hz grid: bands where gain > 1.05 and
+    > 1.10, the peak, and the gain at 1, 1.5 and 2.2 Hz."""
+    f = np.logspace(-1, np.log10(30), 6000)
+    g, _ = calc_tracking(f, T_ff, T_fb, lag)
+    band = lambda thr: (float(f[g > thr][0]), float(f[g > thr][-1])) if np.any(g > thr) else None
+    k = int(np.argmax(g))
+    at = lambda x: float(calc_tracking(x, T_ff, T_fb, lag)[0][0])
+    return dict(b105=band(1.05), b110=band(1.10), peak=float(g[k]), f_peak=float(f[k]),
+                g10=at(1.0), g15=at(1.5), g22=at(2.2))
+
+
+def band_text(T_ff, T_fb, lag):
+    b = over_tracking_band(T_ff, T_fb, lag)
+    fmt = lambda x: "none" if x is None else f"{x[0]:.2f}–{x[1]:.1f} Hz"
+    return (f"**Over-tracking band (Calculated, dense grid 0.1–30 Hz):** gain > 1.05 for {fmt(b['b105'])}; "
+            f"gain > 1.10 for {fmt(b['b110'])}; peak {b['peak']:.3f} at {b['f_peak']:.2f} Hz. The Task 2 requests "
+            f"lie at the lower edge: gain {b['g10']:.3f} at 1 Hz (D/E roll sweeps), {b['g15']:.3f} at 1.5 Hz, "
+            f"{b['g22']:.3f} at 2.2 Hz (C's yaw frequency; roll in B/C is a hold). The bench points at 2.2, 8 and "
+            "10 Hz check the calculation inside the band.")
 
 
 def sec_general(res):
@@ -869,8 +1096,10 @@ def sec_robust(res):
             p = r["post"]
             g_an = gain_range(ctl, p["T"])[1]
             pd = pub_delay.get(r["key"])
+            mine = (round(1e3 * p["T"], 2), round(g_an, 2), round(p["g_sim"], 2))
             rows.append([r["key"], f"{1e3 * p['T']:.2f}", f"{g_an:.2f}", f"{p['g_sim']:.2f}",
                          f"{pd[0]:.2f} / {pd[1]:.2f} / {pd[2]:.2f}" if pd else "–",
+                         "same" if pd and mine == tuple(pd) else "DIFFERENT",
                          f"`{p['run_id']}`, bisection {run_set_id([st['run_id'] for st in p['steps']])}"])
     pub_step = {"A": ("0.17", "1.1", "0.22", "0.0", "0.017", "0"), "B": ("0.60", "0.6", "0.60", "2.0", "0.037", "0"),
                 "C": ("0.18", "1.5", "1.61", "1.8", "0.100", "0"), "D": ("0.60", "0.6", "0.60", "2.0", "0.037", "0")}
@@ -899,7 +1128,7 @@ def sec_robust(res):
             "configurations, controllers, supervisors and seeds, so each now has a run_id. "
             "Published values are copied from `task2_robustness.md` for comparison.", "",
             table(["CAN latency", "Pipeline delay ms", "Analytic critical gain × (Calculated)",
-                   "Simulated critical gain ×", "Published delay / analytic / simulated", "run_ids"], rows), "",
+                   "Simulated critical gain ×", "Published delay / analytic / simulated", "Match", "run_ids"], rows), "",
             table(["Saturation step case", "This run: rise / overshoot / settle / % at limit / max|integ| / events",
                    "Published", "Match", "run_id"], rows2), "",
             table(["Encoder", "This run: B RMS / B jitter mA / B plan jitter / hold RMS / hold jitter / hunting",
@@ -908,28 +1137,64 @@ def sec_robust(res):
 
 def sec_contracts(res):
     mine = [r for r in res if r["row"] is not None and r["variant"] in ("baseline", "plan")]
+    n = len(mine)
     tgt = max(r["row"]["target_over_limit"] for r in mine)
     cur = max(mine, key=lambda r: r["row"]["current_over_limit"])
     locks = [r for r in mine if r["row"]["lockout"]]
     bad_track = [r for r in mine if r["row"]["tracked"] and (r["row"]["suspended_pct"] > 0 or r["row"]["rejected_pct"] > 0)]
     bad_comp = [r for r in mine if r["row"]["completed"] and r["row"]["voided_at"] is not None]
     fb_track = [r for r in mine if r["row"]["tracked"] and r["row"]["fallback_pct"] > 0.5]
-    rows = [
-        ["Applied current target never above the active limit", f"max excess {max(0.0, tgt):.3g} A over {len(mine)} runs",
-         "PASS" if tgt < 1e-9 else "FAIL"],
-        ["Measured current vs a newly reduced limit (current cannot step)",
-         f"max {cur['row']['current_over_limit']:.3f} A above the limit ({cur['key']}, `{cur['run_id']}`)", "declared"],
-        ["No drive lockout", f"{len(locks)} runs with lockout" + (": " + ", ".join(
-            f"{r['key']} ({r['variant']}, seed {r['seed']}, set {r['group']})" for r in locks[:6]) if locks else ""),
-         "PASS" if not locks else "declared (outside the modelled envelope)"],
-        ["Suspended or rejected time never scored as tracking", f"{len(bad_track)} violations", "PASS" if not bad_track else "FAIL"],
-        ["Fallback > 0.5 % of a run never scored as tracking",
-         f"{len(fb_track)} runs tracked with fallback > 0.5 %" + (": " + ", ".join(f"{r['key']} s{r['seed']} ({r['row']['fallback_pct']:.1f} %)" for r in fb_track[:5]) if fb_track else ""),
-         "PASS" if not fb_track else "review"],
-        ["Completion never survives a post-arrival latched fault", f"{len(bad_comp)} violations", "PASS" if not bad_comp else "FAIL"],
+    c = [r["row"]["contracts"] for r in mine]
+    lst = lambda rr: ", ".join(f"{r['key']} ({r['variant']}, s{r['seed']})" for r in rr[:5])
+    drift = max(x["hold_drift_deg"] for x in c)
+    rebased = [r for r in mine if r["row"]["contracts"]["rebases"]]
+    unacked = [r for r in mine if r["row"]["contracts"]["rearms_unacked"]]
+    noreplan = [r for r in mine if r["row"]["contracts"]["resumes_without_replan"]]
+    noreason = [r for r in mine if r["row"]["contracts"]["reason_missing"]]
+    unknown = [r for r in mine if r["row"]["contracts"]["reason_unknown"]]
+    jumps = [r for r in mine if r["row"]["contracts"]["jumps"]]
+    jmax = max(x["jump_max_rad_s"] for x in c)
+    ctrl_rows = [
+        ["(a) A suspended hold's reference is stationary between faults (suspended, drive normal, host active, governor HOLD)",
+         f"{sum(x['hold_samples'] for x in c)} hold samples in {sum(1 for x in c if x['hold_samples'])} runs; max drift "
+         f"within a fault epoch {drift:.3g}°. Re-based by a new catch after a new fault: {len(rebased)} runs"
+         + (f", e.g. {lst(rebased)}" if rebased else ""), "PASS" if drift < 1e-6 else "FAIL"],
+        ["(b) Every re-arm after a tracking fault is preceded by host commands acknowledging that fault_id",
+         f"{sum(x['rearms'] for x in c)} tracking-fault re-arms; {len(unacked)} runs with an unacknowledged re-arm",
+         "PASS" if not unacked else "FAIL"],
+        ["(b) A suspended request never resumes without replan()",
+         f"{sum(x['resumes'] for x in c)} resumptions; {len(noreplan)} runs resumed without a replan",
+         "PASS" if not noreplan else "FAIL"],
+        ["(c) Every suspended / restricted / rejected sample carries a non-empty controller reason",
+         f"{sum(x['reason_samples'] for x in c)} samples; {sum(x['reason_missing'] for x in c)} without a reason"
+         + (f"; notice log truncated in {len(unknown)} runs" if unknown else ""),
+         "PASS" if not noreason and not unknown else ("FAIL" if noreason else "UNKNOWN")],
+        ["(d) The governed reference never jumps in position (|Δq_c|/ts ≤ governor speed cap 20 rad/s, host active)",
+         f"max {jmax:.2f} rad/s; {len(jumps)} runs with a jump", "PASS" if not jumps else "FAIL"],
+        ["No drive lockout", f"{len(locks)} runs" + (f": {lst(locks)}" if locks else ""),
+         "PASS" if not locks else "lockout outside the modelled envelope (declared)"],
     ]
-    return ["## 0. Contract checks over every baseline and plan-mode run (Simulated)", "",
-            table(["Contract", "Result", "Verdict"], rows), ""], rows
+    sim_rows = [
+        ["Applied current target never above the active limit (the drive clamps it: a simulator property)",
+         f"max excess {max(0.0, tgt):.3g} A", "consistent" if tgt < 1e-9 else "INCONSISTENT"],
+        ["Measured current above a newly reduced limit (current cannot step)",
+         f"max {cur['row']['current_over_limit']:.3f} A ({cur['key']}, `{cur['run_id']}`)",
+         "never above" if cur["row"]["current_over_limit"] <= 1e-9 else "transient (declared)"],
+        ["Suspended or rejected time never scored as tracking (scorer definition)", f"{len(bad_track)} violations",
+         "consistent" if not bad_track else "INCONSISTENT"],
+        ["Fallback > 0.5 % of a run never scored as tracking", f"{len(fb_track)} runs" + (f": {lst(fb_track)}" if fb_track else ""),
+         "consistent" if not fb_track else "review"],
+        ["Completion never survives a post-arrival latched fault (scorer definition)", f"{len(bad_comp)} violations",
+         "consistent" if not bad_comp else "INCONSISTENT"],
+    ]
+    return ["## 0. Contract checks over every baseline and plan-mode run", "",
+            f"**0a. Controller contracts, computed from the logs of all {n} baseline and plan-mode runs (Simulated).** "
+            "These test the frozen controller's behaviour, not the simulator or the scorer.", "",
+            table(["Contract", "Result", "Verdict"], ctrl_rows), "",
+            "**0b. Simulator and scorer consistency checks.** These hold by construction (the drive model clamps the "
+            "target; the 4A scorer defines tracked/completed this way). They check that the evidence pipeline is "
+            "consistent, not that the controller is correct.", "",
+            table(["Check", "Result", "Verdict"], sim_rows), ""], dict(controller=ctrl_rows, consistency=sim_rows)
 
 
 # ---------------------------------------------------------------------------
@@ -977,7 +1242,7 @@ def figures(res, figdir, T):
 
     # frequency response
     T_ff, T_fb, lag = T
-    ff = np.logspace(np.log10(0.3), np.log10(10), 200)
+    ff = np.logspace(np.log10(0.3), np.log10(20), 300)
     gc, pc = calc_tracking(ff, T_ff, T_fb, lag)
     fig, ax = plt.subplots(2, 1, figsize=(7, 6), sharex=True)
     ax[0].semilogx(ff, 20 * np.log10(gc), "k-", lw=1, label="baseline, Calculated (linear)")
@@ -1120,8 +1385,14 @@ def main(argv=None):
             f"[task4b_runs.json](task4b_runs.json); uncommitted files in the set: "
             f"{', '.join(fp['run_set_git'].get('dirty_sources') or []) or 'none'}); metrics version "
             f"{fp['metrics_version']}. {len(book.runs)} runs; every row cites a run_id or a run-set id "
-            "(member run_ids per sample in [task4b_results.json](task4b_results.json)).", ""]
-    results = dict(fingerprint=fp, contracts=c_rows, n_regressions=n_reg, mc_counts=mc_counts, n_faulted=n_faulted,
+            "(member run_ids per sample in [task4b_results.json](task4b_results.json)).", "",
+            "**Run-id caveat (review 4B I5):** run_ids hash the declared source set, which includes every file under "
+            "ctrl/ and sim/ — also the Task 3 co-worker's uncommitted, still-changing `ctrl/payload_estimator.py`, "
+            "which these runs never import. Re-running later reproduces the *metrics* exactly (the baseline sources are "
+            "fingerprinted and unchanged), but re-derives the same *run_ids* only with the code hash recorded in "
+            "task4b_runs.json. `exp.manifest.rebuild_run` also ignores the manifest's `extra` field, so the yaw-mismatch "
+            "runs are rebuilt with `exp.task4b_eval.run_mismatch`.", ""]
+    results = dict(fingerprint=fp, contracts=c_rows, over_tracking=over_tracking_band(*T), n_regressions=n_reg, mc_counts=mc_counts, n_faulted=n_faulted,
                    T_ff=T[0], T_fb_age=T[1], gov_lag=T[2],
                    runs=[dict(group=r["group"], key=r["key"], variant=r["variant"], seed=r["seed"],
                               run_id=r["run_id"], row=r["row"],

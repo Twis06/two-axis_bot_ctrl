@@ -162,7 +162,10 @@ def _work(job):
     # evaluate() scoring on test waypoints: pass them via a FiniteMotion-like wrapper
     from exp.motions import FiniteMotion
     t_req = sequence()[0].segs[-1][0] + 1.0
-    fm = FiniteMotion(sc.name, sc.cfg, sc.roll, sc.yaw, sc.note, test_wp, t_req)
+    test_segments = sc.roll.segs[-len(test_wp):]
+    windows = tuple((seg[0], test_segments[k + 1][0] if k + 1 < len(test_segments) else None)
+                    for k, seg in enumerate(test_segments))
+    fm = FiniteMotion(sc.name, sc.cfg, sc.roll, sc.yaw, sc.note, test_wp, t_req, windows)
     log, stats, rid, ev = _BOOK.run(fm, lambda: make(variant, load, seed), seed=seed)
     _, dwells = sequence()
     prim, n = primary(log, dwells)
@@ -176,6 +179,7 @@ def _work(job):
     row = dict(variant=variant, load=list(load), limit=lim, seed=seed, split=split, run_id=rid,
                primary_deg=prim, primary_samples=n, completed=bool(comp.get("completed")),
                reached=comp.get("reached"), t_complete=comp.get("t_complete"),
+               waypoint_visits=comp.get("waypoint_visits"), missing_waypoints=comp.get("missing_waypoints"),
                wd_trips=stats["wd_trips"], suspended=bool(np.nanmax(log.c_suspended) > 0.5),
                rejected=bool(np.nanmax(log.c_request_rejected) > 0.5), fallback_frac=fb,
                progress=float(ev["progress"]["progress"]), rms_gov=stats["rms_gov"],
@@ -214,6 +218,8 @@ def table(h, rows):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2) - 1))
+    ap.add_argument("--out", default=None, help="publish directory (default report/); use a staging "
+                    "directory for corrections awaiting review (R1/R4)")
     args = ap.parse_args(argv)
     fp = baseline_fingerprint()[0][:16]
     if fp != FROZEN:
@@ -365,7 +371,7 @@ def main(argv=None):
         book.check_unchanged()
         if baseline_fingerprint()[0][:16] != FROZEN:
             raise RuntimeError("baseline changed during evaluation")
-    with MF.staged_publish(ROOT / "report", staging_root=Path(tempfile.gettempdir()) / "task3_ceiling_stage",
+    with MF.staged_publish(Path(args.out).resolve() if args.out else ROOT / "report", staging_root=Path(tempfile.gettempdir()) / "task3_ceiling_stage",
                            check=check) as stage:
         (stage / "task3_ceiling_numbers.md").write_text("\n".join(head) + "\n")
         MF.write_json(results, stage / "task3_ceiling_results.json")

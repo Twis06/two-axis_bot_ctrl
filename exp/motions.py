@@ -33,6 +33,7 @@ class FiniteMotion:
     note: str
     waypoints: tuple      # ordered targets (rad), last = final rest position
     t_request: float      # s, requested completion time (end of last move + dwell)
+    waypoint_windows: tuple = None  # optional [start,end) path-time windows; final end=None permits slack
 
 
 def finite(name, base, q0, segments, yaw=None, note="", **cfg_groups):

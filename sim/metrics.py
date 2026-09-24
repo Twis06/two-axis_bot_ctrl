@@ -60,7 +60,7 @@ def fmt_row(name, s, keys=("rms", "peak", "mean", "i_peak", "clip_pct", "sat_ent
 # ---------------------------------------------------------------------------
 from sim import params as _P
 
-METRICS_VERSION = "4A.3"
+METRICS_VERSION = "4A.4"
 
 # Declared thresholds. PROJECT DESIGN ASSUMPTIONS, not assessment requirements.
 TRACK_PROGRESS_MIN = 0.95     # net delivered path time / requested path time
@@ -89,6 +89,7 @@ _GOV_STATUS = ("accepted", "reshaped", "joining", "restricted", "over_budget", "
 
 METRIC_DEFS = {
     "version": METRICS_VERSION,
+    "phase_completion": "optional own-segment [start,end) governor path-time waypoint visits; final end=None permits slack; elapsed completion includes calibration; whole-run overshoot retained",
     "orig": "q(t) - q_req(t): original request on the wall clock (log.err)",
     "gov": "q(t) - c_q_c(t): governed reference actually commanded (host rate, forward-filled)",
     "sigma": "c_gov_sigma if logged (forward-filled over uninitialised NaN), else host tick time - c_gov_lag; "
@@ -485,7 +486,8 @@ def yaw_report(log, yaw_request=None, t_skip=1.0, t_end_window=1.0):
 
 
 def completion(log, waypoints, t_request, tol_deg=COMPLETE_TOL_DEG, settle_s=COMPLETE_SETTLE_S,
-               v_tol=COMPLETE_V_TOL, overshoot_deg=COMPLETE_OVERSHOOT_DEG):
+               v_tol=COMPLETE_V_TOL, overshoot_deg=COMPLETE_OVERSHOOT_DEG,
+               waypoint_windows=None, governed=None):
     """Finite-motion completion (METRIC_DEFS['completed']). A controller that
     rejects, falls back, is suspended, or stays put never completes."""
     t, q, qd = (np.asarray(log[k], float) for k in ("t", "q", "qd"))
@@ -495,6 +497,9 @@ def completion(log, waypoints, t_request, tol_deg=COMPLETE_TOL_DEG, settle_s=COM
                waypoints=len(waypoints), reached=0, visit_t=[], settled_s=0.0)
     lo, hi = min(waypoints + [q[0]]), max(waypoints + [q[0]])
     out["overshoot_deg"] = float(max(0.0, np.max(q) - hi, lo - np.min(q))) * DEG
+    if waypoint_windows is not None:
+        return _phase_completion(log, waypoints, t_request, waypoint_windows,
+                                 tol_deg, settle_s, v_tol, overshoot_deg, governed)
     j = 0
     for w in waypoints[:-1]:
         hit = np.where((np.abs(q[j:] - w) <= tol) & ok[j:])[0]
@@ -543,7 +548,73 @@ def completion(log, waypoints, t_request, tol_deg=COMPLETE_TOL_DEG, settle_s=COM
     return out
 
 
-def evaluate(log, ref=None, yaw_request=None, T_request=None, waypoints=None, t_skip=0.0, governed=None):
+def _phase_completion(log, waypoints, t_request, windows, tol_deg, settle_s, v_tol, overshoot_deg, governed):
+    """Own-segment [start, end) path-time visits; None end permits final slack.
+
+    Calibration cannot earn a visit. Intermediate visits remain crossings,
+    while the final target requires the legacy healthy settling/hold rule.
+    Absolute timestamps preserve calibration cost in completion time.
+    """
+    if len(windows) != len(waypoints) or not windows:
+        raise ValueError("one path-time window required per waypoint")
+    if windows[-1][1] is not None:
+        raise ValueError("final waypoint window must be unbounded for settling/hold")
+    for k, (a, b) in enumerate(windows):
+        if not math.isfinite(a) or a < 0 or (b is not None and (not math.isfinite(b) or b <= a)):
+            raise ValueError("invalid waypoint window")
+        if k and (windows[k - 1][1] is None or a < windows[k - 1][1]):
+            raise ValueError("waypoint windows must be ordered and nonoverlapping")
+    t, q = np.asarray(log.t), np.asarray(log.q)
+    sig, ok = path_clock(log, governed), healthy(log)
+    visits = [dict(index=k, target_rad=float(w), path_window=list(win),
+                   wall_t=None, path_t=None, missing=True) for k, (w, win) in enumerate(zip(waypoints, windows))]
+    out = dict(completed=False, t_complete=float("nan"), t_request=float(t_request), time_ratio=0.0,
+               waypoints=len(waypoints), reached=0, visit_t=[], settled_s=0.0,
+               scoring="own_segment_path_time_v1", waypoint_visits=visits,
+               missing_waypoints=list(range(len(waypoints))))
+    lo, hi = min(list(waypoints) + [q[0]]), max(list(waypoints) + [q[0]])
+    # Keep whole-run excursion checking and safety evidence, including calibration.
+    out['overshoot_deg'] = float(max(0.0, np.max(q) - hi, lo - np.min(q))) * DEG
+    last = -1
+    masks = []
+    for a, b in windows:
+        masks.append(np.isfinite(sig) & (sig >= a) & (True if b is None else sig < b))
+    for k, w in enumerate(waypoints[:-1]):
+        hit = np.flatnonzero(masks[k] & ok & (np.abs(q - w) <= math.radians(tol_deg)) & (np.arange(len(t)) > last))
+        if hit.size:
+            last = int(hit[0])
+            visits[k].update(wall_t=float(t[last]), path_t=float(sig[last]), missing=False)
+    final = np.flatnonzero(masks[-1] & (np.arange(len(t)) > last))
+    if final.size:
+        # Slice only the final phase, retaining absolute time and all event history.
+        # The existing scorer supplies settling and post-arrival fault semantics.
+        start = int(final[0])
+        if len(t) - start >= 2:
+            tail = type(log)({k: np.asarray(v)[start:].copy() for k, v in log.items()})
+            tail.events, tail.meta = log.events, log.meta
+            # Out-of-window samples cannot establish healthy arrival.
+            idle = np.asarray(tail.get('c_host_fallback', np.zeros(len(tail.t)))).copy()
+            idle[~masks[-1][start:]] = 1
+            tail['c_host_fallback'] = idle
+            c = completion(tail, [waypoints[-1]], t_request, tol_deg, settle_s, v_tol, float('inf'))
+            for key in ('settled_s', 'voided_at', 'post_arrival_transient'):
+                if key in c:
+                    out[key] = c[key]
+            if c['completed']:
+                tc = c['t_complete']
+                idx = int(np.searchsorted(t, tc))
+                visits[-1].update(wall_t=tc, path_t=float(sig[idx]), missing=False)
+                out.update(t_complete=tc, time_ratio=c['time_ratio'])
+    out['missing_waypoints'] = [v['index'] for v in visits if v['missing']]
+    out['reached'] = len(visits) - len(out['missing_waypoints'])
+    out['visit_t'] = [v['wall_t'] for v in visits if not v['missing']]
+    out['completed'] = not out['missing_waypoints'] and out['overshoot_deg'] <= overshoot_deg
+    if not out['completed']:
+        out.update(t_complete=float('nan'), time_ratio=0.0)
+    return out
+
+
+def evaluate(log, ref=None, yaw_request=None, T_request=None, waypoints=None, t_skip=0.0, governed=None, waypoint_windows=None):
     """All Packet 4A metrics for one run as a JSON-ready dict (NaN kept as float).
 
     ref: original roll request; T_request: requested path duration (finite
@@ -583,7 +654,7 @@ def evaluate(log, ref=None, yaw_request=None, T_request=None, waypoints=None, t_
         names = sorted({f["name"] for f in ft["tracking_faults"]})
         reasons.append(f"latched faults: {', '.join(names)} (first at {ft['tracking_faults'][0]['t']:.3f} s)")
     if waypoints is not None:
-        out["completion"] = completion(log, list(waypoints), T_request)
+        out["completion"] = completion(log, list(waypoints), T_request, waypoint_windows=waypoint_windows, governed=governed)
         if not out["completion"]["completed"]:
             reasons.append("finite motion not completed")
     out["tracked"] = not reasons

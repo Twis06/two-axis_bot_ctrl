@@ -68,7 +68,8 @@ class RunBook:
         log, stats = run(sc, lambda: ctrl, seed=seed, supervisor=sup, governed_yaw=governed_yaw)
         ev = SM.evaluate(log, ref=sc.roll, yaw_request=sc.yaw,
                          T_request=getattr(sc, "t_request", None),
-                         waypoints=getattr(sc, "waypoints", None))
+                         waypoints=getattr(sc, "waypoints", None),
+                         waypoint_windows=getattr(sc, "waypoint_windows", None))
         rid = man["run_id"]
         self.runs[rid] = dict(run=man["run"], metrics={k: ev.get(k) for k in KEEP})
         return log, stats, rid, ev

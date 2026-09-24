@@ -180,7 +180,7 @@ def rebuild_run(run):
     from types import SimpleNamespace
     sc = SimpleNamespace(name=run["scenario"], note=run.get("note", ""), cfg=config_from_dict(run["config"]),
                          roll=rebuild(run["roll_request"]), yaw=rebuild(run["yaw_request"]))
-    for k in ("waypoints", "t_request"):
+    for k in ("waypoints", "t_request", "waypoint_windows"):
         if k in run:
             setattr(sc, k, _untag(run[k]))
     rc = run["controller"]
@@ -331,8 +331,8 @@ def make_manifest(scenario, controller, seed, t_window=None, supervisor=None, go
                t_window=list(t_window) if t_window is not None else [0.0, float(cfg.duration)],
                controller=controller_options(controller),
                supervisor=describe(supervisor) if supervisor is not None else None)
-    for k in ("waypoints", "t_request"):
-        if hasattr(scenario, k):
+    for k in ("waypoints", "t_request", "waypoint_windows"):
+        if hasattr(scenario, k) and (k != "waypoint_windows" or scenario.waypoint_windows is not None):
             run[k] = jsonable(getattr(scenario, k))
     if extra:
         run["extra"] = jsonable(extra)

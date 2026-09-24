@@ -1,14 +1,17 @@
 """Task 3 decision input: the known-load ceiling under the pre-registered protocol.
 
-    python -m exp.task3_ceiling          # publishes report/task3_ceiling_*.{md,json}
+    python -m exp.task3_l4          # publishes report/task3_ceiling_*.{md,json}
 
 docs/plans/task3-learning.md §8 pre-registered an L4 experiment (comparators,
-loads, sequences, seeds, primary metric, >= 10 % adoption gate) that was not
-run. This module runs the parts that need no adaptive estimator:
+loads, sequences, seeds, primary metric, >= 10 % adoption gate). This module runs
+the frozen deterministic comparators, the adaptive
+candidate, and the diagnostic oracle:
 
   1. frozen deterministic baseline (fingerprint 7d857df507c389c9)
   2. integral-rate variants 0.5x / 1x / 2x, the best selected on the TUNING
      loads and seeds only (loop margins checked against the declared criteria)
+  3. adaptive feed-forward-only candidate using the exact frozen L1 estimator
+     configuration through the L3 adapter
   4. DIAGNOSTIC ORACLE: the true extra load theta_s sin q + theta_c cos q given
      to the controller. Unavailable to a deployable controller; a ceiling.
      Two forms: in feed-forward and governor feasibility (the existing
@@ -18,7 +21,8 @@ Logic of the decision: an adaptive estimator of the same two-parameter law can
 at best approach the oracle. If the oracle does not beat the stronger
 deterministic comparator by the registered 10 % on the registered primary
 metric, no estimator of that law can pass the gate, and rejection is
-evidence-based. If it does, rejection without L3/L4 is premature.
+evidence-based. If it does, rejection without the matched adaptive candidate is
+premature.
 
 Primary metric (registered): governed-reference RMS during the first 0.5 s of
 each TEST dwell, dwell located on the governor's path clock (sigma). Everything
@@ -35,6 +39,7 @@ from pathlib import Path
 import numpy as np
 
 from ctrl import loopshape as LS
+from ctrl.adaptive import AdaptiveController
 from ctrl.baseline import BaselineController
 from exp import manifest as MF
 from exp import scenarios as S
@@ -44,7 +49,7 @@ from sim.config import SimConfig
 from sim.trajectories import Hold, MinJerkSequence
 
 ROOT = Path(__file__).resolve().parents[1]
-ENTRY = "exp.task3_ceiling"
+ENTRY = "exp.task3_l4"
 PROVENANCE_SOURCES = ("exp/evidence.py",)
 FROZEN = "7d857df507c389c9"
 R, DEG = math.radians, 180 / math.pi
@@ -116,10 +121,14 @@ def scenario(load, i_limit, name):
     return sc, test_wp
 
 
-def make(variant, load):
+def make(variant, load, seed=None):
     if variant.startswith("int"):
         k = float(variant[3:])
         return BaselineController(wi_ratio=0.1 * k)
+    if variant == "adaptive":
+        # The L4 candidate uses the exact frozen L1 stationarity gate. The
+        # widened 10-count helper is reserved for its separate tuning test.
+        return AdaptiveController(est_seed=0 if seed is None else int(seed))
     if variant == "oracle":
         return BaselineController(load_model=OracleLoad(*load))
     if variant == "oracle_ff":
@@ -154,11 +163,16 @@ def _work(job):
     from exp.motions import FiniteMotion
     t_req = sequence()[0].segs[-1][0] + 1.0
     fm = FiniteMotion(sc.name, sc.cfg, sc.roll, sc.yaw, sc.note, test_wp, t_req)
-    log, stats, rid, ev = _BOOK.run(fm, lambda: make(variant, load), seed=seed)
+    log, stats, rid, ev = _BOOK.run(fm, lambda: make(variant, load, seed), seed=seed)
     _, dwells = sequence()
     prim, n = primary(log, dwells)
     comp = ev.get("completion") or {}
     fb = float(np.mean(log.mode > 0))
+    learn = np.asarray(getattr(log, "c_learn_usable", []), dtype=float)
+    learn_ok = np.isfinite(learn) & (learn > 0.5)
+    learn_max = float(np.max(learn)) if learn.size else 0.0
+    learn_frac = float(np.mean(learn_ok)) if learn.size else 0.0
+    learn_first = float(log.t[int(np.flatnonzero(learn_ok)[0])]) if np.any(learn_ok) else None
     row = dict(variant=variant, load=list(load), limit=lim, seed=seed, split=split, run_id=rid,
                primary_deg=prim, primary_samples=n, completed=bool(comp.get("completed")),
                reached=comp.get("reached"), t_complete=comp.get("t_complete"),
@@ -166,13 +180,15 @@ def _work(job):
                rejected=bool(np.nanmax(log.c_request_rejected) > 0.5), fallback_frac=fb,
                progress=float(ev["progress"]["progress"]), rms_gov=stats["rms_gov"],
                clip_pct=stats["clip_pct"], i2=float(np.sum(log.i ** 2) * 1e-3),
+               learn_usable_max=learn_max, learn_usable_fraction=learn_frac,
+               learn_first_usable_s=learn_first,
                events=[e[1] for e in log.events][:6])
     new = {k: _BOOK.runs[k] for k in _BOOK.runs if k not in before}
     return dict(row=row, records=new, code=_BOOK.code, env=_BOOK.env, defs=_BOOK.defs)
 
 
 def _work_entry(job):
-    from exp import task3_ceiling as T
+    from exp import task3_l4 as T
     return T._work(job)
 
 
@@ -202,12 +218,13 @@ def main(argv=None):
     fp = baseline_fingerprint()[0][:16]
     if fp != FROZEN:
         raise SystemExit(f"baseline fingerprint {fp} is not the frozen {FROZEN}")
-    variants = tuple(f"int{k:g}" for k in WI) + ("oracle", "oracle_ff")
-    jobs = [(v, ld, lim, sd, "tuning") for v in variants[:3] for ld in TUNING_LOADS for lim in LIMITS
+    variants = tuple(f"int{k:g}" for k in WI) + ("adaptive", "oracle", "oracle_ff")
+    jobs = [(v, ld, lim, sd, "tuning") for v in variants[:4] for ld in TUNING_LOADS for lim in LIMITS
             for sd in TUNING_SEEDS]
     jobs += [(v, ld, lim, sd, "heldout") for v in variants for ld in HELDOUT_LOADS for lim in LIMITS
              for sd in HELDOUT_SEEDS]
-    jobs += [(v, UNHOLDABLE, 2.4, sd, "unholdable") for v in ("int1", "oracle") for sd in HELDOUT_SEEDS[:3]]
+    jobs += [(v, UNHOLDABLE, 2.4, sd, "unholdable") for v in ("int1", "adaptive", "oracle")
+             for sd in HELDOUT_SEEDS[:3]]
     with ProcessPoolExecutor(max_workers=args.jobs) as ex:
         res = list(ex.map(_work_entry, jobs, chunksize=1))
     if len({r["code"]["code_hash"] for r in res}) != 1:
@@ -245,11 +262,13 @@ def main(argv=None):
         rs = list(by[v].values())
         red = paired(v) if v != ref else [0.0] * len(rs)
         lost = sum(1 for k, r in by[v].items() if by[ref][k]["completed"] and not r["completed"])
+        usable = sum(1 for r in rs if r.get("learn_usable_max", 0.0) > 0.5)
         out_rows.append([v + (" (DIAGNOSTIC ORACLE)" if v.startswith("oracle") else "") + (" ← comparator" if v == ref else ""),
                          f"{med([r['primary_deg'] for r in rs]):.3f}",
                          "—" if v == ref else f"{100 * med(red):+.1f} %",
                          "—" if v == ref else f"{100 * min(red):+.1f} / {100 * max(red):+.1f} %",
                          f"{sum(r['completed'] for r in rs)}/{len(rs)}", str(lost),
+                         f"{usable}/{len(rs)}" if v == "adaptive" else "—",
                          f"{sum(r['wd_trips'] for r in rs)}", f"{sum(r['suspended'] for r in rs)}",
                          f"{med([r['clip_pct'] for r in rs]):.1f} %",
                          f"`{run_set_id([r['run_id'] for r in rs])}`"])
@@ -268,22 +287,43 @@ def main(argv=None):
               ", ".join(r["events"]) or "none", f"`{r['run_id']}`"] for r in U]
 
     orc = med(paired("oracle")); orf = med(paired("oracle_ff"))
+    adaptive_rows = list(by["adaptive"].values())
+    adaptive_red = med(paired("adaptive"))
+    adaptive_usable = sum(1 for r in adaptive_rows if r.get("learn_usable_max", 0.0) > 0.5)
+    adaptive_lost = sum(1 for k, r in by["adaptive"].items()
+                        if by[ref][k]["completed"] and not r["completed"])
+    adaptive_wd = sum(r["wd_trips"] for r in adaptive_rows)
+    adaptive_suspended = sum(r["suspended"] for r in adaptive_rows)
+    adaptive_rejected = sum(r["rejected"] for r in adaptive_rows)
     gate = 0.10
-    verdict = ("**The ceiling does not reach the registered gate.** Even the oracle, which knows the true "
+    ceiling_verdict = ("**The ceiling does not reach the registered gate.** Even the oracle, which knows the true "
                "two-parameter load, improves the registered primary metric by less than 10 % (median, paired) "
                "over the stronger deterministic comparator; an estimator of the same law can at best approach it. "
                "Rejecting the adaptive feature is therefore supported by this evidence, not only by its absence."
                if max(orc, orf) < gate else
                "**The ceiling exceeds the registered gate.** The oracle improves the registered primary metric by "
-               f"at least 10 % (median, paired) over the stronger deterministic comparator. Rejection without "
-               "running the registered L3/L4 comparison is therefore not supported; the decision needs the "
-               "adaptive candidate's matched result (or an explicit reason it cannot approach the ceiling).")
+               f"at least 10 % (median, paired) over the stronger deterministic comparator. This establishes "
+               "potential headroom but is not deployable controller evidence.")
+    adaptive_gate = (adaptive_red >= gate and adaptive_usable >= 0.8 * len(adaptive_rows)
+                     and adaptive_lost == 0 and adaptive_wd == 0 and adaptive_suspended == 0
+                     and adaptive_rejected == 0)
+    adaptive_verdict = (f"**The adaptive candidate {'passes' if adaptive_gate else 'fails'} the registered gate.** "
+                        f"Its median paired reduction is {100 * adaptive_red:+.1f} % against `int1`; "
+                        f"{adaptive_usable}/{len(adaptive_rows)} held-out runs obtain a usable estimate "
+                        f"(required ≥80 %), it loses {adaptive_lost} comparator-completed sequences, and it "
+                        f"records {adaptive_wd} watchdog trips, {adaptive_suspended} suspensions, and "
+                        f"{adaptive_rejected} request rejections. "
+                        + ("The candidate is eligible for adoption review." if adaptive_gate else
+                           "The deterministic baseline remains the current controller; a redesigned candidate "
+                           "would require a new registered comparison."))
+    verdict = ceiling_verdict + "\n\n" + adaptive_verdict
     fp_full, _ = baseline_fingerprint()
     g = MF.git_state(MF.ROOT, [])
     head = ["# Task 3 decision input: known-load ceiling (generated)", "",
-            "Generated by `python -m exp.task3_ceiling`. **Simulated.** Protocol, loads, sequences, seeds, primary "
-            "metric and the 10 % gate are those pre-registered in `docs/plans/task3-learning.md` §8; only the "
-            "adaptive candidate (comparator 3) is absent. Oracle rows use the true load and are **not deployable**.", "",
+            "Generated by `python -m exp.task3_l4`. **Simulated.** Protocol, loads, sequences, seeds, primary "
+            "metric and the 10 % gate are those pre-registered in `docs/plans/task3-learning.md` §8; the adaptive "
+            "candidate uses the exact frozen L1 estimator configuration through the L3 adapter. Oracle "
+            "rows use the true load and are **not deployable**.", "",
             f"Frozen baseline fingerprint `{fp_full[:16]}`; git `{(g or {}).get('commit', '?')[:12]}`; "
             f"{len(book.runs)} runs, rows cite run-set ids in [task3_ceiling_runs.json](task3_ceiling_runs.json).", "",
             "## Integral-rate selection (tuning loads and seeds only)", "",
@@ -298,6 +338,7 @@ def main(argv=None):
             "## Held-out result (5 loads × 2 limits × seeds 101–105, paired)", "",
             table(["Controller", "Median primary °", "Median paired reduction vs comparator",
                    "Min / max paired reduction", "Test sequence completed", "Completions lost vs comparator",
+                   "Usable estimate",
                    "WD trips", "Runs suspended", "At limit (median)", "Run set"], out_rows), "",
             verdict, "",
             "## Per case: median primary ° (completed / 5)", "",
@@ -307,7 +348,17 @@ def main(argv=None):
                    "Events", "run_id"], urows), "",
             "The primary metric excludes samples in drive fallback; faults, suspensions and completions are "
             "reported beside it so a stopped controller cannot look good on it."]
-    results = dict(tuning=tune, comparator=ref, meets_criteria=meets, margins={str(k): v for k, v in marg.items()}, rows=rows,
+    results = dict(tuning=tune, comparator=ref, meets_criteria=meets,
+                   adaptive_configuration=dict(estimator="PayloadEstimator", stationarity_counts=2,
+                                               worker_delay_ms=[2.0, 8.0], feed_forward_only=True),
+                   margins={str(k): v for k, v in marg.items()}, rows=rows,
+                   adaptive_median_reduction=adaptive_red,
+                   adaptive_usable_heldout=adaptive_usable,
+                   adaptive_gate_passed=adaptive_gate,
+                   adaptive_lost_vs_comparator=adaptive_lost,
+                   adaptive_watchdog_trips=adaptive_wd,
+                   adaptive_suspended=adaptive_suspended,
+                   adaptive_rejected=adaptive_rejected,
                    oracle_median_reduction=orc, oracle_ff_median_reduction=orf, gate=gate)
 
     def check(stage):

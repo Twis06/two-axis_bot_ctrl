@@ -5,8 +5,10 @@
 Runs a few scenarios with the CURRENT working controller (not a frozen
 baseline) and two diagnostic comparators that do nothing useful, writes one
 JSON record (metrics + manifest) per run and a markdown table into a staging
-directory, and publishes them to <dir> only if every run succeeded, a repeat
-run reproduced its metrics exactly, and no source file changed meanwhile.
+directory, and publishes them to <dir> only if every run succeeded, every
+run was reproduced FROM ITS RECORD ALONE (config, requests, controller and
+supervisor options, seed rebuilt by exp.manifest.rebuild_run) with an identical
+run_id and byte-identical metrics, and no source file changed meanwhile.
 Deliberately not wired into task2_eval.py; it never writes under report/.
 """
 import argparse
@@ -23,6 +25,9 @@ from exp import scenarios as S
 from exp.common import run
 from sim import metrics as SM
 from sim.config import SimConfig
+
+# exp modules this entry point uses beyond exp.manifest.EXP_CORE (closed source set).
+PROVENANCE_SOURCES = ()
 
 
 class StationaryDiagnostic(Controller):
@@ -74,14 +79,16 @@ def cases(base):
     return [  # (scenario, controller factory, governed_yaw, seed)
         (a, B, True, 1), (e, B, True, 1), (no_coordination_derate(base), B, False, 7),
         (m1, B, True, 1), (m2, B, True, 1), (m3, B, True, 1),
+        (m1, lambda: B(use_governor=False), True, 1),
         (m1, StationaryDiagnostic, True, 1), (m1, RejectingDiagnostic, True, 1),
         (a, StationaryDiagnostic, True, 1),
     ]
 
 
-def run_one(sc, make, governed_yaw, seed):
-    ctrl, sup = make(), DriveSupervisor()     # described before reset() mutates them
-    man = MF.make_manifest(sc, ctrl, seed, supervisor=sup, governed_yaw=governed_yaw)
+def run_one(sc, make, governed_yaw, seed, sup=None):
+    ctrl = make() if callable(make) else make
+    sup = sup or DriveSupervisor()            # both described before reset() mutates them
+    man = MF.make_manifest(sc, ctrl, seed, supervisor=sup, governed_yaw=governed_yaw, entry=__spec__.name)
     log, _ = run(sc, lambda: ctrl, seed=seed, supervisor=sup, governed_yaw=governed_yaw)
     ev = SM.evaluate(log, ref=sc.roll, yaw_request=sc.yaw, T_request=getattr(sc, "t_request", None),
                      waypoints=getattr(sc, "waypoints", None))
@@ -89,6 +96,8 @@ def run_one(sc, make, governed_yaw, seed):
 
 
 def fmt(x, nd=2, pct=False):
+    if isinstance(x, dict):           # tagged non-finite float from the JSON record
+        x = MF._untag(x)
     if x is None or (isinstance(x, float) and not math.isfinite(x)):
         return "–"
     return f"{100 * x:.0f}%" if pct else f"{x:.{nd}f}"
@@ -106,17 +115,23 @@ def row(man, ev):
     comp = ev.get("completion")
     ctime = "–" if comp is None else (f"{comp['t_complete']:.2f} / {comp['t_request']:.2f}"
                                       if comp["completed"] else f"not completed ({comp['reached']}/{comp['waypoints']})")
-    strata = " / ".join(f"{st[k]['share_pct']:.0f}" for k in ("normal", "reshaping", "fallback", "recovery", "rejected"))
-    return [man["run"]["scenario"], man["run"]["controller"]["name"], str(man["run"]["seed"]),
+    strata = " / ".join(f"{st[k]['share_pct']:.0f}" for k in
+                        ("startup", "normal", "reshaping", "recovery", "suspended", "fallback", "rejected"))
+    opts = man["run"]["controller"]["options"]
+    name = man["run"]["controller"]["name"] + ("" if opts.get("use_governor", True) else " (use_governor=False)")
+    return [man["run"]["scenario"], name, str(man["run"]["seed"]),
             f"{fmt(e['orig_rms'])} / {fmt(e['gov_rms'])} / {fmt(e['path_rms'])} / {fmt(e['geo_rms'])}",
+            fmt(e["path_rms_request"]),
             fmt(p["progress"], pct=True), ctime, strata,
             f"{fmt(c['sat_pct'], 1)}% / {c['sat_entries']}", f"{f['counts'].get('watchdog_trip', 0)} / {f['rearms']}",
             yaw(ev["yaw"]),
-            "yes" if ev["tracked"] else "no", f"`{man['run_id']}`"]
+            "yes" if ev["tracked"] else "no: " + "; ".join(ev["not_tracked_because"]), f"`{man['run_id']}`"]
 
 
-HEADERS = ["Case", "Controller", "Seed", "RMS ° orig / gov / path / geo", "Progress", "Complete s (actual / requested)",
-           "Time % normal / reshape / fallback / recovery / rejected", "At limit / entries", "WD trips / re-arms",
+HEADERS = ["Case", "Controller", "Seed", "RMS ° orig / gov / path / geo (whole run)", "Path RMS ° request window",
+           "Net progress", "Complete s (actual / requested)",
+           "Time % startup / normal / reshape / recovery / suspended / fallback / rejected", "At limit / entries",
+           "WD trips / re-arms",
            "Yaw amp ° requested → delivered (scale requests)",
            "Tracked", "run_id"]
 
@@ -138,24 +153,26 @@ def main(argv=None):
             raise RuntimeError(f"source files changed during evaluation: {bad or sorted(hashes)}")
 
     with MF.staged_publish(out, check=unchanged) as stage:
-        rows, done = [], []
+        rows, ids = [], []
         for sc, make, gy, seed in cases(base):
             man, ev = run_one(sc, make, gy, seed)
             first = first or man
             hashes.add(man["code"]["code_hash"])
             MF.write_json(dict(manifest=man, metrics=ev), stage / "runs" / f"{man['run_id']}.json")
             rows.append(row(man, ev))
-            done.append((sc, make, gy, man["run_id"]))
+            ids.append(man["run_id"])
             print("done", sc.name, man["run"]["controller"]["name"], flush=True)
-        # Reproducibility: every case re-run from the config and seed stored in its
-        # record must give the same run_id and byte-identical metrics.
-        for sc, make, gy, rid in done:
+        # Reproducibility from the record alone: rebuild scenario, controller,
+        # supervisor, yaw coordination and seed from runs/<id>.json, re-run, and
+        # require the same run_id and byte-identical metrics.
+        reproduced = 0
+        for rid in ids:
             rec = MF.read_json(stage / "runs" / f"{rid}.json")
-            sc2 = replace(sc, cfg=MF.config_from_dict(rec["manifest"]["run"]["config"]))
-            man2, ev2 = run_one(sc2, make, gy, rec["manifest"]["run"]["seed"])
+            sc2, ctrl2, sup2, gy2, seed2 = MF.rebuild_run(rec["manifest"]["run"])
+            man2, ev2 = run_one(sc2, ctrl2, gy2, seed2, sup=sup2)
             if man2["run_id"] != rid or MF.canonical(ev2) != MF.canonical(rec["metrics"]):
-                raise RuntimeError(f"repeat of {rid} from its stored config did not reproduce its metrics")
-        same = True
+                raise RuntimeError(f"run {rid} was not reproduced from its record")
+            reproduced += 1
         g = first["code"]["git"]
         lines = ["# Packet 4A demo (Simulated, pre-freeze working controller; not final evidence)", "",
                  f"Command: `python -m exp.metrics4a --out {out}`. Metrics version {SM.METRICS_VERSION}; "
@@ -164,8 +181,9 @@ def main(argv=None):
                  *([args.note, ""] if args.note else []),
                  "| " + " | ".join(HEADERS) + " |", "|" + "---|" * len(HEADERS)]
         lines += ["| " + " | ".join(r) + " |" for r in rows]
-        lines += ["", f"Every row was re-run from the config and seed stored in its record: identical run_id "
-                  f"and metrics = {same} (publication aborts otherwise).",
+        lines += ["", f"Reproduced from the record alone (exp.manifest.rebuild_run: config, requests, controller "
+                  f"and supervisor options, seed) with identical run_id and byte-identical metrics: "
+                  f"{reproduced}/{len(ids)} runs. Publication aborts on any mismatch.",
                   "Each run_id names `runs/<run_id>.json` (manifest + full metrics). Definitions: "
                   "`sim.metrics.METRIC_DEFS`. Thresholds are project assumptions."]
         (stage / "4A_demo.md").write_text("\n".join(lines) + "\n")

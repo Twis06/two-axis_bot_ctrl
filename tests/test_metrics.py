@@ -289,5 +289,233 @@ class TestStagedPublish(unittest.TestCase):
             self.assertEqual(list(tgt.rglob(".*publishing")), [])
 
 
+# ---------------------------------------------------------------------------
+# Review round 1 regressions (written before the fixes; see report/packets/4A.md)
+# ---------------------------------------------------------------------------
+def _host_time(n):
+    t = np.arange(n) / 1000.0
+    return t, t - (np.arange(n) % 2) / 1000.0
+
+
+def late_fault_suspended_periodic():
+    """Perfect tracking of a periodic sine, then a watchdog trip, 55 ms drive
+    fallback, re-arm and a 2B-style SUSPENDED hold for the last 4.4 % of the run."""
+    ref = RampedSine(R(30), 1.0, t_ramp=0.5)
+    t, th = _host_time(10000)
+    tf = 9.56
+    sigma = np.minimum(th, tf)
+    q = np.array([ref.eval(s)[0] for s in sigma])
+    mode = ((t >= tf) & (t < tf + 0.055)).astype(float)
+    susp = (t >= tf).astype(float)
+    log = synth(q=q, T=10.0, mode=mode, events=[(tf, "watchdog_trip"), (tf + 0.056, "rearm_after_watchdog_trip")],
+                tele=dict(q_c=q, gov_lag=th - sigma, gov_sigma=sigma, gov_status=np.where(t >= tf, 3, 0),
+                          request_rejected=0.0, host_fallback=mode, gov_s=1 - susp, gov_rejected=0.0,
+                          suspended=susp))
+    qr = np.array([ref.eval(x)[0] for x in t])
+    log["q_ref"], log["err"] = qr, q - qr
+    log.meta["notices"] = [(tf + 0.056, "suspended", "tracking fault (watchdog_trip): request suspended")]
+    return log, ref
+
+
+def late_fault_suspended_finite(tf=2.025):
+    t, th = _host_time(4000)
+    sigma = np.minimum(th, tf)
+    q = np.array([PATH.eval(s)[0] for s in sigma])
+    mode = ((t >= tf) & (t < tf + 0.055)).astype(float)
+    susp = (t >= tf).astype(float)
+    return synth(q=q, mode=mode, events=[(tf, "watchdog_trip"), (tf + 0.056, "rearm_after_watchdog_trip")],
+                 tele=dict(q_c=q, gov_lag=th - sigma, gov_sigma=sigma, gov_status=np.where(t >= tf, 3, 0),
+                           request_rejected=0.0, host_fallback=mode, gov_s=1 - susp, gov_rejected=0.0,
+                           suspended=susp))
+
+
+class TestReviewRound1(unittest.TestCase):
+    # I1 -------------------------------------------------------------------
+    def test_I1_late_tracking_fault_and_suspension_is_not_tracked(self):
+        log, ref = late_fault_suspended_periodic()
+        e = SM.evaluate(log, ref=ref)
+        self.assertFalse(e["tracked"])
+        why = " ".join(e["not_tracked_because"])
+        self.assertIn("watchdog_trip", why)
+        self.assertIn("suspended", why)
+
+    def test_I1_suspended_hold_does_not_complete(self):
+        e = ev(late_fault_suspended_finite())
+        self.assertFalse(e["completion"]["completed"])
+        self.assertFalse(e["tracked"])
+
+    def test_I1_waypoint_visit_must_be_healthy(self):
+        t = np.arange(4000) / 1000.0
+        q = np.array([PATH.eval(x)[0] for x in t])
+        mode = ((t > 1.0) & (t < 1.8)).astype(float)      # -45 deg (1.3-1.6 s dwell) only in drive fallback
+        self.assertFalse(SM.completion(synth(q=q, mode=mode), WAYPOINTS, T_REQ)["completed"])
+
+    def test_I1_M6_rejected_status_and_coord_stop_block_completion(self):
+        t = np.arange(4000) / 1000.0
+        q = np.array([PATH.eval(x)[0] for x in t])
+        base = dict(q_c=q, gov_lag=0.0, request_rejected=0.0, host_fallback=0.0, gov_s=1.0, gov_rejected=0.0)
+        rej = synth(q=q, tele=dict(base, gov_status=np.where(t > 2.2, 5, 0)))
+        self.assertFalse(SM.completion(rej, WAYPOINTS, T_REQ)["completed"])
+        stop = synth(q=q, tele=dict(base, gov_status=0, coord_stop=(t > 2.2).astype(float)))
+        self.assertFalse(SM.completion(stop, WAYPOINTS, T_REQ)["completed"])
+        self.assertFalse(ev(stop)["tracked"])
+
+    def test_I1_settle_must_persist_to_end_of_run(self):
+        t = np.arange(4000) / 1000.0
+        q = np.array([PATH.eval(x)[0] for x in t])
+        q[t > 3.0] = R(20)                                  # leaves the final band after settling
+        self.assertFalse(SM.completion(synth(q=q), WAYPOINTS, T_REQ)["completed"])
+
+    def test_I1_brief_velocity_blip_after_arrival_does_not_move_t_complete(self):
+        t = np.arange(4000) / 1000.0
+        q = np.array([PATH.eval(x)[0] for x in t])
+        log = synth(q=q)
+        t0 = SM.completion(log, WAYPOINTS, T_REQ)["t_complete"]
+        log["qd"][3300:3303] = 0.2                           # 3 ms disturbance, position still in band
+        self.assertEqual(SM.completion(log, WAYPOINTS, T_REQ)["t_complete"], t0)
+
+    # I2 -------------------------------------------------------------------
+    def test_I2_suspended_stratum_timeline_and_replan_recovery(self):
+        log, ref = late_fault_suspended_periodic()
+        st = SM.stratified(log, ref=ref)
+        self.assertAlmostEqual(sum(v["share_pct"] for v in st.values()), 100.0, places=9)
+        self.assertAlmostEqual(st["suspended"]["time_s"], 10.0 - 9.56 - 0.055, delta=0.002)
+        self.assertAlmostEqual(st["fallback"]["time_s"], 0.055, delta=0.002)
+        f = SM.fault_timeline(log)
+        self.assertEqual(f["suspended"]["count"], 1)
+        self.assertIn("watchdog_trip", f["suspended"]["reasons"][0])
+        # replan at 5 s (counter increments) opens a recovery window
+        t = log.t
+        log2 = synth(T=10.0, tele=dict(q_c=0.0, gov_lag=0.0, gov_status=0, host_fallback=0.0, request_rejected=0.0,
+                                       replans=(t >= 5.0).astype(float)))
+        lab = SM.strata(log2)
+        self.assertTrue(np.all(lab[(t >= 5.0) & (t < 5.0 + SM.RECOVERY_S)] == SM.STRATA.index("recovery")))
+        self.assertTrue(np.all(lab[(t > 1.0) & (t < 5.0)] == SM.STRATA.index("normal")))
+
+    # I3 -------------------------------------------------------------------
+    def test_I3_progress_is_net_and_backsteps_fail_tracking(self):
+        ref = RampedSine(R(30), 1.0, t_ramp=1.0)
+        t, th = _host_time(10000)
+        hk = (np.arange(10000) // 2) % 25
+        sigma = np.minimum(hk, 24) * 0.002                  # saw-tooth 0..48 ms, stationary plant
+        log = synth(T=10.0, tele=dict(q_c=0.0, gov_lag=th - sigma, gov_status=0, request_rejected=0,
+                                      host_fallback=0, gov_s=1.0, gov_rejected=0))
+        qr = np.array([ref.eval(x)[0] for x in t])
+        log["q_ref"], log["err"] = qr, -qr
+        e = SM.evaluate(log, ref=ref)
+        self.assertLess(e["progress"]["progress"], 0.01)
+        self.assertFalse(e["tracked"])
+        alt = synth(T=10.0, tele=dict(q_c=0.0, gov_lag=th - (hk % 2) * 0.002, host_fallback=0))
+        p = SM.progress(alt, 2.0)["progress"]
+        self.assertLessEqual(p, 1.0)
+        self.assertLess(p, 0.01)
+
+    # I4 -------------------------------------------------------------------
+    def test_I4_explicit_gov_sigma_preferred_and_gov_active_zero_means_wall_clock(self):
+        t, th = _host_time(4000)
+        q = np.array([PATH.eval(x)[0] for x in t])
+        tl = dict(q_c=q, gov_status=0, host_fallback=0.0, request_rejected=0.0, gov_s=1.0, gov_rejected=0.0)
+        # telemetry lag is garbage, explicit sigma is the truth
+        log = synth(q=q, tele=dict(tl, gov_lag=123.0, gov_sigma=th))
+        np.testing.assert_allclose(SM.path_clock(log), th, atol=1e-12)
+        # ungoverned controller still emitting a frozen governor lag (probe_ungov)
+        ung = synth(q=q, tele=dict(tl, gov_lag=th, gov_active=0.0))
+        np.testing.assert_allclose(SM.path_clock(ung), t, atol=1e-12)
+        e = ev(ung)
+        self.assertTrue(e["tracked"], e["not_tracked_because"])
+        # without the declaration the frozen lag is (conservatively) believed ...
+        legacy = synth(q=q, tele=dict(tl, gov_lag=th))
+        self.assertLess(ev(legacy)["progress"]["progress"], 0.1)
+        # ... unless the caller declares the run ungoverned
+        self.assertTrue(SM.evaluate(legacy, ref=PATH, T_request=T_REQ, waypoints=WAYPOINTS, governed=False)["tracked"])
+
+    # I5 -------------------------------------------------------------------
+    def test_I5_run_id_independent_of_import_history(self):
+        import types
+        from unittest import mock
+        sc = M.m1(SimConfig())
+        a = MF.make_manifest(sc, BaselineController(), seed=1)
+        fake = types.ModuleType("fake_unrelated")
+        fake.__file__ = str(MF.ROOT / "exp" / "task2_robustness.py")
+        with mock.patch.dict(sys.modules, {"fake_unrelated": fake}):
+            b = MF.make_manifest(sc, BaselineController(), seed=1)
+        self.assertEqual(a["run_id"], b["run_id"])
+        self.assertEqual(a["code"]["sources"], b["code"]["sources"])
+        for rel in ("ctrl/governor.py", "sim/engine.py", "sim/metrics.py", "exp/common.py", "exp/manifest.py"):
+            self.assertIn(rel, a["code"]["sources"])
+
+    # Minor ----------------------------------------------------------------
+    def test_M1_sub_object_options_change_run_id(self):
+        sc = M.m1(SimConfig())
+        c = BaselineController()
+        c.gov.v_max *= 0.5
+        self.assertNotEqual(MF.make_manifest(sc, BaselineController(), 1)["run_id"], MF.make_manifest(sc, c, 1)["run_id"])
+
+    def test_M2_nonfinite_config_round_trips_and_note_not_in_run_id(self):
+        cfg = SimConfig().with_(drive=dict(cmd_timeout=float("inf")), sensor=dict(enc_offset=float("nan")))
+        back = MF.config_from_dict(json.loads(MF.canonical(MF.jsonable(cfg, tag_nonfinite=True))))
+        self.assertEqual(back.drive.cmd_timeout, float("inf"))
+        self.assertTrue(math.isnan(back.sensor.enc_offset))
+        sc = M.m1(SimConfig())
+        self.assertEqual(MF.make_manifest(sc, BaselineController(), 1)["run_id"],
+                         MF.make_manifest(replace(sc, note="reworded"), BaselineController(), 1)["run_id"])
+
+    def test_M3_failure_in_rename_phase_rolls_back(self):
+        import os as _os
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            tgt = Path(d) / "pub"
+            tgt.mkdir()
+            for n in ("a.md", "b.md"):
+                (tgt / n).write_text("old")
+            real, calls = _os.replace, []
+
+            def flaky(a, b):
+                calls.append(b)
+                if len(calls) == 2:
+                    raise OSError("disk full")
+                return real(a, b)
+            with self.assertRaises(OSError):
+                with mock.patch.object(MF.os, "replace", flaky):
+                    with MF.staged_publish(tgt) as st:
+                        (st / "a.md").write_text("new")
+                        (st / "b.md").write_text("new")
+            self.assertEqual({p.name: p.read_text() for p in tgt.iterdir()}, {"a.md": "old", "b.md": "old"})
+            self.assertTrue((next(Path(d).glob(".stage-*")) / "FAILED").exists())
+
+    def test_M4_run_rebuilds_from_record_alone(self):
+        from ctrl.supervisor import DriveSupervisor
+        for sc, ctrl in ((M.m1(SimConfig()), BaselineController(use_governor=False)),
+                         (M.m3(SimConfig()), StationaryDiagnostic())):
+            sup = DriveSupervisor(rearm_time=0.2)
+            a = MF.make_manifest(sc, ctrl, 5, supervisor=sup, governed_yaw=False)
+            rec = json.loads(MF.canonical(MF.jsonable(a)))
+            sc2, c2, s2, gy, seed = MF.rebuild_run(rec["run"])
+            b = MF.make_manifest(sc2, c2, seed, supervisor=s2, governed_yaw=gy)
+            self.assertEqual(a["run_id"], b["run_id"])
+            self.assertEqual(sc2.roll.eval(1.0), sc.roll.eval(1.0))
+            self.assertEqual(s2.rearm_time, 0.2)
+
+    def test_M5_rejection_at_startup_is_rejected_not_startup(self):
+        t, th = _host_time(4000)
+        sigma = np.maximum(th - 0.15, 0.0)
+        q = np.array([PATH.eval(s)[0] for s in sigma])
+        rej = (t < 0.15).astype(float)
+        log = synth(q=q, tele=dict(q_c=q, gov_lag=th - sigma, gov_status=np.where(t < 0.15, 5, 0),
+                                   request_rejected=rej, host_fallback=rej, gov_s=1 - rej, gov_rejected=rej))
+        e = ev(log)
+        self.assertAlmostEqual(e["strata"]["rejected"]["time_s"], 0.15, delta=0.003)
+        self.assertFalse(e["tracked"])
+
+    def test_M7_slack_does_not_dilute_finite_path_error(self):
+        t = np.arange(6400) / 1000.0
+        q = np.array([PATH.eval(max(x - 0.045, 0))[0] for x in t])       # 45 ms late throughout
+        log = synth(q=q, T=6.4, tele=dict(q_c=q, gov_lag=0.0, gov_status=0, request_rejected=0, host_fallback=0,
+                                          gov_s=1.0, gov_rejected=0))
+        e = ev(log)
+        self.assertGreater(e["errors"]["path_rms_request"], 5.0)
+        self.assertFalse(e["tracked"])
+
+
 if __name__ == "__main__":
     unittest.main()

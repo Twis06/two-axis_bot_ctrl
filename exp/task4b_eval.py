@@ -777,7 +777,7 @@ def sec_matched(res):
             "*baseline* = frozen `BaselineController()` (causal yaw estimate); *plan* = `yaw_info=\"plan\"` "
             "(optional mode, assumes yaw follows its plan: stronger information); *legacy* = reconstructed legacy "
             "PID with the legacy watchdog (no governor, so its governed error is its wall-clock error). "
-            "Path RMS is over the request window at the governor's path time (4A.3). A–E are periodic requests "
+            f"Path RMS is over the request window at the governor's path time ({SM.METRICS_VERSION}). A–E are periodic requests "
             "except A, which §2 also scores as a finite motion.", "",
             table(["Run", "Variant", "Path RMS ° (request window)", "Governed RMS °", "Governed peak °",
                    "Net progress", "Tracked (4A)", "At command limit %", "WD trips (total)", "Runs suspended",
@@ -802,7 +802,7 @@ def sec_finite(res):
     return ["## 2. Finite motions: completion time (Simulated)", "",
             "A is Task 2's run A scored as a finite motion (waypoints ±45°, t_request = end of its last move, "
             "4A review N5); M1–M3 are the Packet 4A sequences. Completion = every waypoint visited and the final "
-            "target reached at rest while healthy, then held to the end of the run (4A.3). Median [min–max] "
+            f"target reached at rest while healthy, then held to the end of the run ({SM.METRICS_VERSION}). Median [min–max] "
             "completion time over completed seeds.", "",
             table(["Motion", "Variant", "Completed", "Completion s", "Requested s", "Path RMS ° (request window)",
                    "Tracked (4A)", "WD trips (total)", "Runs suspended", "Run set"], rows), ""]

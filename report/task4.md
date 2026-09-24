@@ -1,6 +1,6 @@
 # Task 4 — Make evidence
 
-**Status:** Simulator, reconstructed legacy controller, deterministic baseline, and recorded evaluations exist. A baseline-versus-final comparison is pending the Task 3 decision. Results below are transcribed from existing reports, not newly rerun for this document.
+**Status:** Simulator, reconstructed legacy controller, deterministic baseline, and recorded evaluations exist. Packet 4B's independent review is PASS WITH ISSUES with findings addressed. Task 3's registered adaptive comparison is now recorded in the Task 3 packet; the tested candidate failed its adoption gate, so the deterministic baseline remains final. Results below are transcribed from existing reports, not newly rerun for this document.
 
 > For the revised Task 2 controller, use [the regenerated evidence](task2_numbers.md). The tables below preserve the earlier investigation and are not current-controller performance claims.
 
@@ -73,4 +73,4 @@ Source: [baseline results](phase2_numbers.md).
 
 ## Still required
 
-Finish the Task 3 choice and compare the resulting final design with this baseline, or explicitly retain the baseline as final if learning is not justified. Add the prospective Task 5 experiment. Verify clean reproduction before submission, and report original-request deviation alongside governed-reference error wherever motion changes.
+Task 3's registered comparison is complete: the exact adaptive candidate failed the benefit and availability gates, so the deterministic baseline remains final. The known-load oracle shows potential benefit but is not deployable evidence; a redesigned estimator would require a new registered comparison. The prospective Task 5 simulation is recorded separately. Verify clean reproduction before submission, and report original-request deviation alongside governed-reference error wherever motion changes.

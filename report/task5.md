@@ -1,34 +1,43 @@
-# Task 5 — Test the explanation
+# Task 5 — prospective motor-strength explanation test
 
-**Status:** Not yet completed. Existing fault and uncertainty experiments are prior evidence; they must not be relabeled as predictions written before a new test.
+**Status: completed in simulation; hardware confirmation remains pending.**
 
-## Proposed test
+Prediction registration precedes the new experiment. The exact nominal Run B, Kt×0.90 paired intervention was not present in the prior matched evidence; earlier Kt±15% random/corner cases remain prior context and are not relabeled.
 
-Test the claim that yaw feed-forward performance depends on coupling-model accuracy. Use the Run B yaw trajectory and perturb **motor strength**, one of the changes permitted by the assessment. Reduce the true torque constant by 15% while keeping the controller's assumed torque constant fixed. Keep the matching SI back-EMF constant consistent with the physical motor change and document this choice.
+Claim: With yaw feed-forward unchanged, a weaker true motor produces a predictable coupling-torque residual and requires proportionally more current.
 
-Use identical requests, disturbance realizations, transport seeds, limits, and initial states for the nominal and weakened motor. Compare the deterministic baseline with the same controller with yaw feed-forward disabled. This ablation distinguishes feed-forward benefit from unrelated controller changes.
+Frozen protocol: Run B nominal yaw trajectory, true Kt and Ke multiplied by 0.90, controller parameters unchanged; seeds [21, 22, 23]; window 2.0–8.0 s; controller uses nominal Kt and Ke.
 
-## Prediction to write before execution
+## Registered prediction
 
-The physical coupling torque is unchanged. Ideal compensating current scales as `1 / Kt`, so a 15% weaker motor requires `1 / 0.85 = 1.176` times the current for the same torque. Run B's coupling-only peak current therefore increases from approximately **0.97 A to 1.14 A**. An unchanged nominal feed-forward current produces only 85% of the intended cancellation torque, leaving a coupling residual of approximately **0.020 N·m peak** before feedback correction.
+The requested 1.5 Hz yaw trajectory has a calculated peak coupling torque of **0.135622 N·m**, equivalent to **0.968730 A** at nominal Kt. With true Kt×0.90 and unchanged nominal feed-forward, the predicted extra ideal current is **0.107637 A** and the uncancelled coupling residual is **0.013562 N·m**. Registered tolerances are ±0.15 A for the component-current check and ±0.01 N·m for the residual calculation.
 
-These are calculated component-level predictions, not predicted total measured peak current or tracking RMS. Feedback action, friction, other disturbances, and current dynamics affect those totals.
+These are component-level predictions. Measured total current and tracking error also include feedback, friction, transport, voltage, and governor effects.
 
-Before running, use the implemented baseline's sensitivity at 1.5 Hz to turn that residual into a numerical error prediction, define the measurement window and acceptable prediction tolerance, and record the exact configuration and seeds. This step is still pending. If code inspection shows that the proposed perturbation was already evaluated in precisely this form, choose a new held-out condition before registering the prediction.
+## Matched results
 
-## Required record
+| Kt ratio | Yaw FF | Seed | Measured peak A | RMS current A | Governed RMS ° | Original RMS ° | Yaw scale | Clips % | Events |
+|---:|:---:|---:|---:|---:|---:|---:|---:|---:|---|
+| 1.00 | on | 21 | 1.256 | 0.728 | 0.362 | 0.362 | 1.000 | 0.00 | none |
+| 1.00 | off | 21 | 1.054 | 0.580 | 3.363 | 3.363 | 1.000 | 0.00 | none |
+| 0.90 | on | 21 | 1.289 | 0.736 | 0.411 | 0.411 | 1.000 | 0.00 | none |
+| 0.90 | off | 21 | 1.173 | 0.650 | 3.768 | 3.768 | 1.000 | 0.00 | none |
+| 1.00 | on | 22 | 1.204 | 0.723 | 0.222 | 0.222 | 1.000 | 0.00 | none |
+| 1.00 | off | 22 | 1.122 | 0.584 | 3.284 | 3.284 | 1.000 | 0.00 | none |
+| 0.90 | on | 22 | 1.203 | 0.728 | 0.220 | 0.220 | 1.000 | 0.00 | none |
+| 0.90 | off | 22 | 1.261 | 0.654 | 3.677 | 3.677 | 1.000 | 0.00 | none |
+| 1.00 | on | 23 | 1.231 | 0.731 | 0.242 | 0.242 | 1.000 | 0.00 | none |
+| 1.00 | off | 23 | 1.121 | 0.626 | 3.526 | 3.526 | 1.000 | 0.00 | none |
+| 0.90 | on | 23 | 1.257 | 0.735 | 0.289 | 0.289 | 1.000 | 0.00 | none |
+| 0.90 | off | 23 | 1.252 | 0.701 | 3.950 | 3.950 | 1.000 | 0.00 | none |
 
-| Item | State |
-|---|---|
-| Numerical physical prediction and rationale | Component-level values above; closed-loop prediction pending |
-| Frozen configuration, measurement window, seeds, and tolerance | Pending |
-| New experiment | Not run |
-| Predicted versus observed comparison | Pending |
-| Revision of explanation, if needed | Pending |
-| Smallest justified design change | Decide from result; do not assume adaptation is necessary |
+## Prediction versus observation
 
-A possible small change is correcting the motor torque conversion if the perturbation behaves as predicted. If delay, saturation, or voltage instead dominates the result, the design change must address that evidence. Do not change gains and compensation simultaneously and then attribute the improvement to one cause.
+The logged true coupling peak was 0.135622 N·m across the weakened runs, matching the registered 0.135622 N·m trajectory calculation. The registered **0.107637 A** is an ideal coupling-component increase, not a prediction of the measured total-current maximum. The paired measured total-current peak changed by a median **+0.026 A** (range -0.001 to +0.033 A), because feedback, phase, and the maximum operator contribute to the total trace.
+With yaw feed-forward enabled, weakened-motor governed RMS was 0.289° versus 0.242° nominal (paired change +0.047°). With feed-forward disabled under the same weakened motor, governed RMS was 3.768°. No run clipped or generated a fault event. The result supports the qualitative explanation that yaw feed-forward is valuable and motor strength affects the residual, while the component-level current prediction cannot be equated with total measured peak current.
 
-## Hardware confirmation
+The paired rows preserve the same scenario, seed, request, disturbance realization, transport draw, and initial state. The weakened-motor totals are reported separately from the registered component prediction; no controller retuning or design change was made.
 
-A calibrated torque-versus-current measurement is needed to establish the motor's effective torque constant in the actual drive/current convention. A timestamped roll-held yaw experiment then checks whether the predicted compensation torque and residual tracking behavior transfer to hardware. Qualification limits and stop conditions must be specified before that test.
+## Hardware follow-up
+
+Hardware confirmation still requires calibrated torque-versus-current identification and a timestamped roll-held yaw experiment with the same stop limits. This simulated result does not certify the drive convention or hardware Kt.

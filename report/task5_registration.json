@@ -1,0 +1,22 @@
+{
+  "claim": "With yaw feed-forward unchanged, a weaker true motor produces a predictable coupling-torque residual and requires proportionally more current.",
+  "condition": "Run B nominal yaw trajectory, true Kt and Ke multiplied by 0.90, controller parameters unchanged",
+  "motor_strength_ratio": 0.9,
+  "back_emf_ratio": 0.9,
+  "seeds": [21, 22, 23],
+  "window_s": [2.0, 8.0],
+  "primary_component_metric": "peak ideal yaw-coupling current from the registered 1.5 Hz trajectory",
+  "prior_exposure_check": {
+    "exact_matched_condition_new": true,
+    "note": "Prior evidence contains Kt ±15% random/corner cases, including combined corners, but not this nominal Run B, Kt×0.90 paired intervention with seeds 21–23."
+  },
+  "prediction": {
+    "coupling_peak_torque_Nm": 0.135622193311501,
+    "coupling_peak_current_A": 0.968729952225007,
+    "extra_current_A": 0.10763666135833416,
+    "residual_torque_Nm": 0.0135622193311501,
+    "component_current_tolerance_A": 0.15,
+    "residual_torque_tolerance_Nm": 0.01,
+    "rationale": "The plant coupling torque is unchanged. Ideal current is inverse in true Kt; the unchanged nominal feed-forward therefore delivers 0.90 of the intended torque, leaving 0.10 of the peak coupling torque as residual."
+  }
+}

@@ -1,0 +1,54 @@
+{
+ "candidate": {
+  "controller": "ctrl.adaptive.AdaptiveController",
+  "est_seed": "= run seed",
+  "estimator": "ctrl.payload_estimator.PayloadEstimator (frozen L1 settings)",
+  "stationarity": "frozen default (2 encoder counts)",
+  "variant": "adaptive"
+ },
+ "challenges": {
+  "derate": "current limit 3.2 -> 2.4 A at t = 12.5 s",
+  "feedback_outage": "feedback-only loss for 60 ms at t = [12.5, 12.56) s (second test dwell)",
+  "payload_change": "NOT EXECUTABLE in the frozen simulator (no time-varying plant parameters); reported as missing, so the gate is incomplete",
+  "yaw_B": "yaw 75 deg at 1.5 Hz, ramped over 1 s from t = 9 s (test phase only)",
+  "yaw_C": "yaw 75 deg at 2.2 Hz, ramped over 1 s from t = 9 s (test phase only)"
+ },
+ "comparator": "int1 (frozen baseline, wi_ratio 0.1)",
+ "label": "supplementary validation, not held-out discovery data",
+ "limit_A": 3.2,
+ "loads": [
+  [
+   0.0,
+   0.18
+  ],
+  [
+   0.06,
+   0.14
+  ]
+ ],
+ "packet": "R3 supplementary adaptive challenges",
+ "scoring": {
+  "completion": "R1 phase-correct test waypoints",
+  "observations": [
+   "learned correction usable at onset and during the challenge",
+   "correction disable / re-enable times",
+   "applied correction bound",
+   "current-target compliance",
+   "fault timeline",
+   "delivered progress"
+  ],
+  "onset_s": {
+   "derate": 12.5,
+   "feedback_outage": 12.5,
+   "yaw_B": 9.0,
+   "yaw_C": 9.0
+  },
+  "primary": "governed RMS over the first 0.5 s of each test dwell (as L4)"
+ },
+ "seeds": [
+  201,
+  202,
+  203
+ ],
+ "sequence": "docs/plans/task3-learning.md \u00a78 calibration + test sequence (exp.task3_l4.sequence)"
+}

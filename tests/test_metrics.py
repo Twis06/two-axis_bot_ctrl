@@ -596,11 +596,14 @@ class TestReviewRound2(unittest.TestCase):
         import types
         from unittest import mock
         sc = M.m1(SimConfig())
-        fake = types.ModuleType("fake_unrelated")
-        fake.__file__ = str(MF.ROOT / "exp" / "task2_robustness.py")
-        clean = MF.make_manifest(sc, BaselineController(), 1, entry="exp.metrics4a")
+        # The imports made by other tests in this process are not this test's
+        # subject: pin the loaded set to the declared set, then add one module.
+        declared = MF.declared_sources("exp.metrics4a")
+        undeclared = (MF.ROOT / "exp" / "task2_robustness.py").resolve()
+        with mock.patch.object(MF, "loaded_sources", lambda root=MF.ROOT: list(declared)):
+            clean = MF.make_manifest(sc, BaselineController(), 1, entry="exp.metrics4a")
         MF.require_declared(clean)                                # no exception
-        with mock.patch.dict(sys.modules, {"fake_unrelated": fake}):
+        with mock.patch.object(MF, "loaded_sources", lambda root=MF.ROOT: list(declared) + [undeclared]):
             dirty = MF.make_manifest(sc, BaselineController(), 1, entry="exp.metrics4a")
             with self.assertRaises(MF.UndeclaredSources):
                 MF.make_manifest(sc, BaselineController(), 1, entry="exp.metrics4a", require_declared=True)

@@ -1,5 +1,7 @@
 # Assessment answers
 
+Read the [interactive HTML report](assessment_report.html) for a consolidated answer to Tasks 1–5, all 18 figures, expandable evidence, and learning / prediction charts. It records current publication and reproduction gaps explicitly. Open directly in a browser; no server or network is required. Build instructions: [HTML report README](html_assets/README.md).
+
 Current execution priorities and agent handoffs: [EXECUTION_PLAN.md](../EXECUTION_PLAN.md).
 
 Read the answers in the order of the five tasks in the [assessment](../Robotics%20Controls%20Technical%20Assessment.pdf).
@@ -8,9 +10,9 @@ Read the answers in the order of the five tasks in the [assessment](../Robotics%
 |---|---|---|
 | 1. Understand the failure | [task1.md](task1.md) | Complete working answer; distinguishes observations, calculations, and hypotheses |
 | 2. Build a baseline | [task2.md](task2.md) | Frozen deterministic baseline ([Packet 2C](packets/2C.md): independent review PASS WITH ISSUES, findings resolved); governor contract ([2A](packets/2A.md)) and fault-class recovery / causal yaw information ([2B](packets/2B.md)) reviewed |
-| 3. Decide whether learning belongs | [task3.md](task3.md) | Provisional decision; adaptive comparison not yet performed |
-| 4. Make evidence | [task4.md](task4.md) | Metrics and run provenance in place ([Packet 4A](packets/4A.md)); matched baseline validation (4B) and final-design comparison pending |
-| 5. Test your explanation | [task5.md](task5.md) | Prospective test protocol; prediction and new test pending |
+| 3. Decide whether learning belongs | [task3.md](task3.md) | L1/L2 audited, L3 tested, and 357-run L4 comparison complete; tested adaptive candidate fails the adoption gate and baseline is retained |
+| 4. Make evidence | [task4.md](task4.md) | Metrics/provenance, matched 4B evidence, and Task 3 adaptive comparison reviewed; deterministic baseline remains final |
+| 5. Test your explanation | [task5.md](task5.md) | Prospective prediction registered and paired simulated test completed; hardware confirmation remains |
 
 The task documents are the primary narrative. The phase documents preserve the development history and detailed calculations. Where a historical diagnosis is stronger than the evidence permits, Task 1 supplies the qualified interpretation.
 
@@ -32,10 +34,12 @@ Task 2 evidence is regenerated on the frozen baseline; see [current numbers](tas
 | Initial analytic investigation | [phase0_analysis.md](phase0_analysis.md), [generated calculations](phase0_numbers.md) |
 | Simulator assumptions and reconstruction | [phase1_sim.md](phase1_sim.md), [generated results](phase1_numbers.md) |
 | Frozen baseline evidence | [Task 2 numbers](task2_numbers.md), [robustness](task2_robustness.md), [trial data](task2_results.json), [run manifests](task2_runs.json) |
-| Execution packets (changes, reviews, gates) | [2A](packets/2A.md), [2B](packets/2B.md), [2C](packets/2C.md), [4A](packets/4A.md) |
+| Execution packets (changes, reviews, gates) | [2A](packets/2A.md), [2B](packets/2B.md), [2C](packets/2C.md), [4A](packets/4A.md), [4B](packets/4B.md) |
 | Historical baseline design and evaluation | [phase2_baseline.md](phase2_baseline.md), [generated results](phase2_numbers.md) |
 | Generated plots | [figs/](figs/) |
+| Task 3 estimator audit | [audit report](task3_estimator_audit.md), [audit rows](task3_estimator_audit.json) |
+| Task 5 prediction record | [registration](task5_registration.json), [results](task5_results.json) |
 
 ## Remaining submission work
 
-These working answers are not yet the final four-page memo. Complete the learning decision and prospective prediction test, then condense the answers into the memo. Also prepare the one-page hardware qualification plan and the references/reused-code/automated-tools note. The final comparison must report delivered motion as well as tracking error when a request is reshaped.
+These working answers are not yet the final four-page memo. Condense the answers into the memo. Also prepare the one-page hardware qualification plan and the references/reused-code/automated-tools note. The final comparison must report delivered motion as well as tracking error when a request is reshaped.

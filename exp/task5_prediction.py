@@ -13,6 +13,8 @@ import hashlib
 import json
 import math
 from pathlib import Path
+
+import numpy as np
 from statistics import median
 from typing import Optional, Sequence
 
@@ -83,24 +85,128 @@ def _source_hashes():
     return {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in paths}
 
 
+DEG = 180.0 / math.pi
+# R2 metric definitions (retrospective correction; see report/packets/R2.md).
+METRIC_DEFS = {
+    "window": "every windowed quantity uses t in [2, 8) s (the registered window)",
+    "governed_rms_deg": "RMS of q - c_q_c over the window (governed reference actually commanded)",
+    "original_rms_deg": "RMS of q - q_req(t) over the window (original request, wall clock)",
+    "controller_coupling_ff_peak_torque_Nm": "max |c_tau_cpl| over the window: the controller's estimated "
+                                             "coupling feed-forward torque, N m",
+    "controller_coupling_ff_peak_current_A": "that torque / nominal Kt: the commanded coupling FF current, A",
+    "ideal_true_coupling_peak_current_A": "max |tau_couple| / true Kt: current an ideal controller would need "
+                                          "for the true coupling in this plant, A",
+    "coupling_residual_peak_Nm": "max over the window of |tau_couple(t + T_act) - (Kt_true/Kt_nom) c_tau_cpl(t)|: "
+                                 "coupling torque the unchanged feed-forward leaves for feedback, N m (FF on only)",
+    "whole_run": "whole-run (0-8 s) safety evidence kept separately: events, trips, clipping, peak current",
+}
+
+
+def prediction_matrix(result: dict) -> list:
+    """Each registered prediction against the quantity actually measured (R2)."""
+    p = result["registration"]["prediction"]
+    rows = result["rows"]
+    pick = lambda ratio, ff: {r["seed"]: r for r in rows if r["motor_strength_ratio"] == ratio and r["use_yaw_ff"] == ff}
+    nom_on, weak_on, weak_off = pick(1.0, True), pick(MOTOR_STRENGTH_RATIO, True), pick(MOTOR_STRENGTH_RATIO, False)
+    med = lambda xs: float(median(xs))
+    true_tau = med([r["true_coupling_peak_torque_Nm"] for r in weak_on.values()])
+    ff_cur = med([r["controller_coupling_ff_peak_current_A"] for r in nom_on.values()])
+    ideal_extra = med([weak_on[s]["ideal_true_coupling_peak_current_A"] - nom_on[s]["ideal_true_coupling_peak_current_A"]
+                       for s in weak_on])
+    ff_extra = med([weak_on[s]["controller_coupling_ff_peak_current_A"] - nom_on[s]["controller_coupling_ff_peak_current_A"]
+                    for s in weak_on])
+    res_inc = [weak_on[s]["coupling_residual_peak_Nm"] - nom_on[s]["coupling_residual_peak_Nm"] for s in weak_on]
+    res_weak = med([r["coupling_residual_peak_Nm"] for r in weak_on.values()])
+    d_gov = [weak_on[s]["governed_rms_deg"] - nom_on[s]["governed_rms_deg"] for s in weak_on]
+    off_minus_on = [weak_off[s]["governed_rms_deg"] - weak_on[s]["governed_rms_deg"] for s in weak_on]
+    within = lambda x, c, tol: abs(x - c) <= tol
+    return [
+        dict(prediction="peak coupling torque of the registered yaw trajectory", predicted=p["coupling_peak_torque_Nm"],
+             unit="N m", measured="logged true coupling peak, weakened runs (median)", value=true_tau, window="[2, 8) s",
+             tolerance="none registered", verdict="consistency check only",
+             note="the simulator's coupling uses the same equation; this checks arithmetic, not the hardware explanation"),
+        dict(prediction="peak coupling current at nominal Kt", predicted=p["coupling_peak_current_A"], unit="A",
+             measured="controller's commanded coupling FF current peak, nominal motor, FF on (median)", value=ff_cur,
+             window="[2, 8) s", tolerance=f"+/-{p['component_current_tolerance_A']} A (registered component tolerance)",
+             verdict="supported" if within(ff_cur, p["coupling_peak_current_A"], p["component_current_tolerance_A"]) else "failed",
+             note="compares the ideal value with the causal yaw estimate the frozen baseline actually uses"),
+        dict(prediction="extra ideal coupling current at Kt x 0.90", predicted=p["extra_current_A"], unit="A",
+             measured="ideal true-plant coupling current, weak minus nominal (median, paired)", value=ideal_extra,
+             window="[2, 8) s", tolerance=f"+/-{p['component_current_tolerance_A']} A registered; it includes 0 A, so it "
+             "cannot discriminate the predicted change from no change", verdict="not tested",
+             note=f"the ideal value is arithmetic on the prescribed model; the controller's commanded coupling FF current "
+                  f"does not rise (paired change {ff_extra:+.4f} A, nominal FF unchanged), and the extra current feedback "
+                  "supplies for the coupling component is not separable in the total current"),
+        dict(prediction="coupling residual left by unchanged nominal FF", predicted=p["residual_torque_Nm"], unit="N m",
+             measured="increase of the measured coupling residual peak, weak minus nominal, FF on (median, paired)",
+             value=med(res_inc), window="[2, 8) s", tolerance=f"+/-{p['residual_torque_tolerance_Nm']} N m (registered)",
+             verdict="supported" if within(med(res_inc), p["residual_torque_Nm"], p["residual_torque_tolerance_Nm"]) else "failed",
+             note=f"paired range {min(res_inc):+.4f} to {max(res_inc):+.4f} N m; the total residual peak with the weak motor is "
+                  f"{res_weak:.4f} N m because the causal yaw estimate has its own error; the registered prediction "
+                  "assumed exact nominal FF"),
+        dict(prediction="qualitative: yaw feed-forward remains valuable with the weaker motor", predicted=None,
+             unit="deg", measured="governed RMS, FF off minus FF on, weak motor (median, paired)",
+             value=med(off_minus_on), window="[2, 8) s", tolerance="sign in every pair (not registered numerically)",
+             verdict="supported" if min(off_minus_on) > 0 else "failed",
+             note=f"FF off is worse by {min(off_minus_on):+.3f} to {max(off_minus_on):+.3f} deg in the "
+                  f"{len(off_minus_on)} pairs"),
+        dict(prediction="qualitative: a weaker motor leaves more tracking error for feedback", predicted=None,
+             unit="deg", measured="governed RMS, weak minus nominal motor, FF on (median, paired)",
+             value=med(d_gov), window="[2, 8) s", tolerance="sign in every pair (not registered numerically)",
+             verdict="supported" if min(d_gov) > 0 else "failed",
+             note=f"{sum(d > 0 for d in d_gov)} of {len(d_gov)} pairs increase; paired range {min(d_gov):+.3f} to "
+                  f"{max(d_gov):+.3f} deg"),
+    ]
+
+
+def _rms(x):
+    return float(math.sqrt(float((x ** 2).mean()))) if len(x) else float("nan")
+
+
 def _row(log, summary, seed: int, motor_ratio: float, use_yaw_ff: bool) -> dict:
     mask = (log.t >= WINDOW[0]) & (log.t < WINDOW[1])
     c_tau = log.get("c_tau_cpl")
+    gov_err = (log.q - log.c_q_c)[mask] * DEG if "c_q_c" in log else log.err[mask] * DEG
+    ff_tau = float(max(abs(c_tau[mask]))) if c_tau is not None and mask.any() else 0.0
+    true_tau = float(max(abs(log.tau_couple[mask]))) if mask.any() else None
+    k_true = P.K_T * motor_ratio
+    # Coupling residual actually left for feedback: true coupling minus the torque the
+    # true motor delivers for the commanded coupling FF current (c_tau_cpl is the
+    # prediction for t + T_act, so compare it with the true coupling T_act later).
+    res_peak = res_rms = float("nan")
+    if c_tau is not None and use_yaw_ff:
+        k = int(round(BaselineController().T_act * 1000))
+        est, true = np.asarray(c_tau)[:-k], np.asarray(log.tau_couple)[k:]
+        m = mask[:-k]
+        res = true[m] - motor_ratio * est[m]
+        if res.size:
+            res_peak, res_rms = float(np.max(np.abs(res))), _rms(res)
     return {
         "seed": seed,
         "motor_strength_ratio": motor_ratio,
         "use_yaw_ff": use_yaw_ff,
         "window_s": list(WINDOW),
         "measured_peak_current_A": float(max(abs(log.i[mask]))) if mask.any() else None,
-        "measured_rms_current_A": float(math.sqrt(float((log.i[mask] ** 2).mean()))) if mask.any() else None,
-        "predicted_coupling_peak_current_A": float(max(abs(c_tau[mask]))) if c_tau is not None and mask.any() else 0.0,
-        "true_coupling_peak_torque_Nm": float(max(abs(log.tau_couple[mask]))) if mask.any() else None,
-        "governed_rms_deg": float(summary["rms_gov"]),
-        "governed_peak_deg": float(summary["peak_gov"]),
-        "original_rms_deg": float(summary["rms"]),
-        "path_speed": float(summary["speed"]),
+        "measured_rms_current_A": _rms(log.i[mask]) if mask.any() else None,
+        "controller_coupling_ff_peak_torque_Nm": ff_tau,
+        "controller_coupling_ff_peak_current_A": ff_tau / P.K_T,
+        "true_coupling_peak_torque_Nm": true_tau,
+        "ideal_true_coupling_peak_current_A": None if true_tau is None else true_tau / k_true,
+        "coupling_residual_peak_Nm": res_peak,
+        "coupling_residual_rms_Nm": res_rms,
+        "governed_rms_deg": _rms(gov_err),
+        "governed_peak_deg": float(max(abs(gov_err))) if len(gov_err) else float("nan"),
+        "original_rms_deg": _rms(log.err[mask] * DEG),
+        "path_speed": float(log.c_gov_s[mask].mean()) if "c_gov_s" in log else float("nan"),
         "yaw_scale": float(summary["yaw_scale"]),
-        "clip_pct": float(summary["clip_pct"]),
+        "clip_pct": 100.0 * float(log.clipped[mask].mean()) if mask.any() else float("nan"),
+        "whole_run": {
+            "measured_peak_current_A": float(max(abs(log.i))),
+            "clip_pct": float(summary["clip_pct"]),
+            "watchdog_trips": int(summary["wd_trips"]),
+            "events": list(log.events),
+            "governed_rms_deg": float(summary["rms_gov"]),
+        },
         "watchdog_trips": int(summary["wd_trips"]),
         "events": list(log.events),
     }
@@ -126,13 +232,18 @@ def run_experiment(quick: bool = False) -> dict:
                     governed_yaw=True,
                 )
                 rows.append(_row(log, summary, seed, motor_ratio, use_yaw_ff))
-    return {
+    result = {
         "registration": registration,
+        "metric_defs": METRIC_DEFS,
+        "analysis": "R2 retrospective correction: windows, units and prediction-to-measurement mapping",
         "source_hashes": _source_hashes(),
         "scenario": {"name": scenario.name, "note": scenario.note, "duration_s": scenario.cfg.duration},
         "rows": rows,
         "quick": quick,
     }
+    if not quick:
+        result["prediction_matrix"] = prediction_matrix(result)
+    return result
 
 
 def _markdown(result: dict) -> str:
@@ -155,7 +266,7 @@ def _markdown(result: dict) -> str:
         "",
         "## Matched results",
         "",
-        "| Kt ratio | Yaw FF | Seed | Measured peak A | RMS current A | Governed RMS ° | Original RMS ° | Yaw scale | Clips % | Events |",
+        "| Kt ratio | Yaw FF | Seed | Peak current A [2,8) s | RMS current A [2,8) s | Governed RMS ° [2,8) s | Original RMS ° [2,8) s | Yaw scale | Clipped % [2,8) s | Events (whole run) |",
         "|---:|:---:|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for row in result["rows"]:
@@ -163,25 +274,33 @@ def _markdown(result: dict) -> str:
             f"| {row['motor_strength_ratio']:.2f} | {'on' if row['use_yaw_ff'] else 'off'} | {row['seed']} | {row['measured_peak_current_A']:.3f} | {row['measured_rms_current_A']:.3f} | {row['governed_rms_deg']:.3f} | {row['original_rms_deg']:.3f} | {row['yaw_scale']:.3f} | {row['clip_pct']:.2f} | {', '.join(e[1] for e in row['events']) or 'none'} |"
         )
     if not result["quick"]:
-        nominal_on = {r["seed"]: r for r in result["rows"]
-                      if r["motor_strength_ratio"] == 1.0 and r["use_yaw_ff"]}
-        weak_on = [r for r in result["rows"]
-                   if r["motor_strength_ratio"] == MOTOR_STRENGTH_RATIO and r["use_yaw_ff"]]
-        weak_off = [r for r in result["rows"]
-                    if r["motor_strength_ratio"] == MOTOR_STRENGTH_RATIO and not r["use_yaw_ff"]]
-        delta_peak = [r["measured_peak_current_A"] - nominal_on[r["seed"]]["measured_peak_current_A"]
-                      for r in weak_on]
-        delta_gov = [r["governed_rms_deg"] - nominal_on[r["seed"]]["governed_rms_deg"]
-                     for r in weak_on]
-        on_error = [r["governed_rms_deg"] for r in weak_on]
-        off_error = [r["governed_rms_deg"] for r in weak_off]
-        true_tau = [r["true_coupling_peak_torque_Nm"] for r in weak_on]
+        fmt = lambda x: "—" if x is None else (f"{x:.6f}" if isinstance(x, float) else str(x))
         lines.extend([
             "",
-            "## Prediction versus observation",
+            "## Prediction versus measurement (R2 retrospective correction)",
             "",
-            f"The logged true coupling peak was {median(true_tau):.6f} N·m across the weakened runs, matching the registered {p['coupling_peak_torque_Nm']:.6f} N·m trajectory calculation. The registered **0.107637 A** is an ideal coupling-component increase, not a prediction of the measured total-current maximum. The paired measured total-current peak changed by a median **{median(delta_peak):+.3f} A** (range {min(delta_peak):+.3f} to {max(delta_peak):+.3f} A), because feedback, phase, and the maximum operator contribute to the total trace.",
-            f"With yaw feed-forward enabled, weakened-motor governed RMS was {median(on_error):.3f}° versus {median(nominal_on[s]['governed_rms_deg'] for s in nominal_on):.3f}° nominal (paired change {median(delta_gov):+.3f}°). With feed-forward disabled under the same weakened motor, governed RMS was {median(off_error):.3f}°. No run clipped or generated a fault event. The result supports the qualitative explanation that yaw feed-forward is valuable and motor strength affects the residual, while the component-level current prediction cannot be equated with total measured peak current.",
+            "Rows above and below use one window, [2, 8) s, for every windowed quantity; whole-run safety events are in "
+            "the JSON `whole_run` field. This is a **retrospective correction** of the original analysis (same frozen "
+            "controller, conditions and seeds, replayed), not a new prospective experiment. The registration is unchanged.",
+            "",
+            "| Registered prediction | Predicted | Unit | Quantity actually measured | Measured | Tolerance basis | Verdict |",
+            "|---|---:|---|---|---:|---|---|",
+        ])
+        for m in result["prediction_matrix"]:
+            lines.append(f"| {m['prediction']} | {fmt(m['predicted'])} | {m['unit']} | {m['measured']} | "
+                         f"{fmt(m['value'])} | {m['tolerance']} | **{m['verdict']}** |")
+        lines.append("")
+        for m in result["prediction_matrix"]:
+            lines.append(f"- *{m['prediction']}:* {m['note']}.")
+        lines.extend([
+            "",
+            "What this does and does not show: yaw feed-forward matters (every pair). The weaker motor does not raise "
+            "tracking error in every pair, and the registered residual prediction fails because the frozen baseline's "
+            "causal yaw estimate over-predicts peak coupling (commanded coupling current above the ideal value), so "
+            "weakening the motor partly cancels that excess instead of adding a residual. The coupling-torque match is a "
+            "consistency check of the prescribed model. The registered extra-current prediction was not tested as a "
+            "measurable quantity, and its tolerance could not have discriminated it from zero. No closed-loop tracking-error "
+            "prediction was registered, so none is claimed; a new prospective one would need its own registration first.",
         ])
     lines.extend([
         "",

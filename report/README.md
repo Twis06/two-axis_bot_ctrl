@@ -7,9 +7,9 @@ Read the answers in the order of the five tasks in the [assessment](../Robotics%
 | Assessment task | Answer | Current state |
 |---|---|---|
 | 1. Understand the failure | [task1.md](task1.md) | Complete working answer; distinguishes observations, calculations, and hypotheses |
-| 2. Build a baseline | [task2.md](task2.md) | Hardening in progress; governor contract closed ([Packet 2A](packets/2A.md)); fault-class recovery, loaded re-arm cycling, and yaw-authority behaviour remain (Packet 2B) |
+| 2. Build a baseline | [task2.md](task2.md) | Frozen deterministic baseline ([Packet 2C](packets/2C.md), independent review pending); governor contract ([2A](packets/2A.md)) and fault-class recovery / causal yaw information ([2B](packets/2B.md)) reviewed |
 | 3. Decide whether learning belongs | [task3.md](task3.md) | Provisional decision; adaptive comparison not yet performed |
-| 4. Make evidence | [task4.md](task4.md) | Simulator and baseline evidence available; final-design comparison pending |
+| 4. Make evidence | [task4.md](task4.md) | Metrics and run provenance in place ([Packet 4A](packets/4A.md)); matched baseline validation (4B) and final-design comparison pending |
 | 5. Test your explanation | [task5.md](task5.md) | Prospective test protocol; prediction and new test pending |
 
 The task documents are the primary narrative. The phase documents preserve the development history and detailed calculations. Where a historical diagnosis is stronger than the evidence permits, Task 1 supplies the qualified interpretation.
@@ -21,7 +21,7 @@ The task documents are the primary narrative. The phase documents preserve the d
 - **Simulated:** outputs recorded in the existing generated reports; these are not additional hardware observations.
 - **Proposed:** work not yet performed.
 
-Task 2 has been re-evaluated after controller hardening; see [current numbers](task2_numbers.md). Historical phase reports and Task 4 tables retain their original recorded results.
+Task 2 evidence is regenerated on the frozen baseline; see [current numbers](task2_numbers.md) and [robustness](task2_robustness.md). Each row cites a run_id resolved in [task2_runs.json](task2_runs.json). Historical phase reports and Task 4 tables retain their original recorded results.
 
 ## Supporting material
 
@@ -31,7 +31,8 @@ Task 2 has been re-evaluated after controller hardening; see [current numbers](t
 | Development plan | [PLAN.md](../PLAN.md) |
 | Initial analytic investigation | [phase0_analysis.md](phase0_analysis.md), [generated calculations](phase0_numbers.md) |
 | Simulator assumptions and reconstruction | [phase1_sim.md](phase1_sim.md), [generated results](phase1_numbers.md) |
-| Current hardened baseline evidence | [Task 2 numbers](task2_numbers.md), [trial data](task2_results.json) |
+| Frozen baseline evidence | [Task 2 numbers](task2_numbers.md), [robustness](task2_robustness.md), [trial data](task2_results.json), [run manifests](task2_runs.json) |
+| Execution packets (changes, reviews, gates) | [2A](packets/2A.md), [2B](packets/2B.md), [2C](packets/2C.md), [4A](packets/4A.md) |
 | Historical baseline design and evaluation | [phase2_baseline.md](phase2_baseline.md), [generated results](phase2_numbers.md) |
 | Generated plots | [figs/](figs/) |
 

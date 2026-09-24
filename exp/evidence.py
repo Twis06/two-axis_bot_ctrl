@@ -31,10 +31,11 @@ def _supervisor(kind):
 
 
 # The frozen deterministic baseline: every module BaselineController and the
-# simulator import (not the Task 3 estimator or the legacy comparator).
+# simulator import (not the Task 3 estimator, the legacy comparator, or the
+# scoring code in sim/metrics.py, which run manifests hash separately).
 BASELINE_SOURCES = ("ctrl/__init__.py", "ctrl/baseline.py", "ctrl/governor.py", "ctrl/interfaces.py",
                     "ctrl/loopshape.py", "ctrl/supervisor.py", "ctrl/yaw_estimator.py",
-                    "sim/__init__.py", "sim/config.py", "sim/drive.py", "sim/engine.py", "sim/metrics.py",
+                    "sim/__init__.py", "sim/config.py", "sim/drive.py", "sim/engine.py",
                     "sim/params.py", "sim/plant.py", "sim/sensing.py", "sim/timing.py",
                     "sim/trajectories.py")
 
@@ -59,7 +60,7 @@ class RunBook:
         ctrl = make_ctrl()
         sup = _supervisor(supervisor)
         man = MF.make_manifest(sc, ctrl, seed, supervisor=sup, governed_yaw=governed_yaw,
-                               entry=self.entry)
+                               entry=self.entry, require_declared=True)
         if self.code is None:
             self.code, self.env, self.defs = man["code"], man["env"], man["metric_defs"]
         elif man["code"]["code_hash"] != self.code["code_hash"]:
@@ -83,5 +84,7 @@ class RunBook:
                     runs=self.runs)
 
     def fingerprint(self):
-        return dict(baseline=baseline_fingerprint()[0], code_hash=self.code["code_hash"],
-                    git=self.code["git"], metrics_version=SM.METRICS_VERSION)
+        base_hash, base_files = baseline_fingerprint()
+        git = MF.git_state(MF.ROOT, list(base_files))
+        return dict(baseline=base_hash, code_hash=self.code["code_hash"], git=git,
+                    run_set_git=self.code["git"], metrics_version=SM.METRICS_VERSION)

@@ -31,6 +31,7 @@ from sim.metrics import summarize
 from sim.trajectories import Hold, MinJerkSequence
 
 ROOT = Path(__file__).resolve().parents[1]
+PROVENANCE_SOURCES = ("exp/evidence.py",)
 FIGS = ROOT / "report" / "figs"
 DEG = 180 / math.pi
 C1, C2, C3, INK2, GRID = "#2a78d6", "#eb6834", "#1baf7a", "#52514e", "#e4e3df"
@@ -327,25 +328,53 @@ def section_saturation(out, ctl):
             table(["configuration", "first within 1° of 30° (s)", "overshoot °", "last time outside ±1° (s)",
                    "% time at limit", "max |integrator| N·m", "supervisor events"], rows), "",
             "Reading (checked against the traces in the figure):",
-            "- **A (normal baseline):** the governor reshapes the request; the loop reaches the "
-            "target with a brief braking clip and no supervisor event.",
+            _reading_a(rows),
             "- **B vs C (anti-windup ablation, governor off):** with anti-windup the integrator "
             "stays near zero through the inertial feed-forward clip (max |integrator| column), so "
             "the approach is not slowed by unwinding. Pre-2B, back-calculation on the total clamp "
             "drove it to its −Kt·I_limit bound and settling took 1.11 s (Packet 2B §3). The "
             "remaining approach time is the ~2° Coulomb-friction band removed by the integrator.",
-            "- **D (real supervisor, governor off):** a watchdog trip suspends the request; the "
-            "host acknowledges the fault only for a predicted-feasible brake-and-hold, and the "
-            "request does not resume without a replan (Packet 2B). Repeated tracking faults "
-            "lock the drive out (3 within 30 s).",
+            _reading_d(rows),
             "- These ungoverned cases are deliberately off-nominal: they force saturation to "
             "exercise the anti-windup and the fault path, which the governed baseline (row A) "
             "avoids.", ""]
     return logs
 
 
+def _reading_a(rows):
+    clip, events = float(rows[0][4]), int(rows[0][-1])
+    return ("- **A (normal baseline):** the governor reshapes the request; the loop reaches the "
+            f"target with {'no time' if clip == 0 else f'{clip:.1f} % of the time'} at the current limit "
+            f"and {'no' if events == 0 else events} supervisor event{'s' if events != 1 else ''}.")
+
+
+def _reading_d(rows):
+    """Row D's reading, from its own numbers (not fixed prose)."""
+    events = int(rows[3][-1])
+    if events == 0:
+        return ("- **D (real supervisor, governor off):** no supervisor event: the tracking "
+                "error stays inside the 12°/40 ms watchdog. Pre-2B the same case tripped and "
+                "re-armed repeatedly; the feed-forward-priority clamp keeps feedback authority "
+                "through the clip. Had it tripped, the request would be suspended until a "
+                "replan (Packet 2B).")
+    return (f"- **D (real supervisor, governor off):** {events} supervisor event(s). A watchdog "
+            "trip suspends the request; the host acknowledges it only for a predicted-feasible "
+            "brake-and-hold and the request does not resume without a replan (Packet 2B).")
+
+
+def _jitter_reading(jit):
+    """Where run B's current jitter comes from, from the numbers themselves."""
+    (b24, e24, p24), (b14, e14, p14), (b12, e12, p12) = jit
+    return (f"Run B current jitter with the baseline's yaw estimate: {e24 * 1e3:.1f} / {e14 * 1e3:.1f} / "
+            f"{e12 * 1e3:.1f} mA at 24/14/12 bits; with the plan look-ahead instead: {p24 * 1e3:.1f} / "
+            f"{p14 * 1e3:.1f} / {p12 * 1e3:.1f} mA. The growth with coarser encoders is therefore "
+            f"{'mostly the yaw estimate differentiating a quantized yaw signal' if e12 - p12 > 0.5 * (e12 - e24) else 'not specific to the yaw estimate'}. "
+            f"At 14 bits it is {100 * e14 / P.I_MAX:.1f} % of the 3.2 A limit per 1 ms step (standard deviation).")
+
+
 def section_quant(out):
     rows = []
+    jit = []
     for bits in (24, 14, 12):
         cfg = SimConfig().with_(sensor=dict(enc_bits=bits))
         res = {}
@@ -365,8 +394,13 @@ def section_quant(out):
             res[label] = (s, float(np.std(di)), float(np.sqrt(np.mean((log.err[m] * DEG) ** 2))),
                           hunt)
         (sb, dib, eb, _), (sh, dih, eh, hunt) = res["B"], res["hold45"]
+        # Attribution: the same run B with the plan look-ahead instead of the yaw
+        # estimate (diagnostic comparator only; the baseline uses the estimate).
+        logp, _ = run(S.run_b(cfg), lambda: BaselineController(yaw_info="plan"), seed=1)
+        dip = float(np.std(np.diff(logp.i[logp.t > 2.0])))
+        jit.append((bits, dib, dip))
         rows.append([f"{bits}-bit ({2 * math.pi / 2 ** bits * DEG:.4f}°/count)",
-                     f"{eb:.3f}", f"{dib * 1e3:.1f}", f"{eh:.4f}", f"{dih * 1e3:.1f}",
+                     f"{eb:.3f}", f"{dib * 1e3:.1f}", f"{dip * 1e3:.1f}", f"{eh:.4f}", f"{dih * 1e3:.1f}",
                      f"{hunt:.3f}"])
     ctl = BaselineController()
     per_count = ctl.K * ctl.alpha * P.ENC_LSB / P.K_T
@@ -378,7 +412,10 @@ def section_quant(out):
             f"of the 3.2 A limit.",
             f"- Differentiating one count at 500 Hz gives {P.ENC_LSB * 500:.3f} rad/s, ten "
             "times the 0.02 rad/s friction scale. That is why no raw velocity estimate is fed "
-            "to friction compensation or to the controller.", "",
+            "to friction compensation or to the feedback law. (A filtered roll-velocity "
+            "estimate exists since Packet 2B, used only to plan a post-fault catch.)",
+            "- The yaw coupling feed-forward differentiates the yaw encoder twice through the "
+            "Kalman estimate, so yaw quantization reaches the command as current jitter (4b).", "",
             "### 4b. Simulated: same runs at three encoder resolutions", "",
             "24-bit is effectively unquantized. Run B includes d(t); the 45° hold has d(t) "
             "switched off so that only quantization, friction and CAN timing act. Current "
@@ -386,7 +423,9 @@ def section_quant(out):
             "measure). Hunting is the peak-to-peak encoder reading over the last 3 s of the "
             "hold, in degrees; it is similar at every resolution, so it comes from friction and "
             "integral action (stick-slip), not from the encoder.", "",
+            _jitter_reading(jit), "",
             table(["encoder", "Run B RMS error °", "Run B current jitter mA",
+                   "Run B jitter, plan look-ahead (diagnostic) mA",
                    "hold 45° RMS error °", "hold 45° current jitter mA", "hold 45° hunting p-p °"],
                   rows), ""]
 
@@ -458,9 +497,11 @@ def _code_hash():
 def fingerprint():
     """Baseline fingerprint (same as task2_numbers.md) and git state."""
     from exp.evidence import baseline_fingerprint
-    g = MF.git_state(MF.ROOT, [])
-    return (f"baseline fingerprint `{baseline_fingerprint()[0][:16]}` (exp/evidence.py BASELINE_SOURCES); "
-            f"git `{(g or {}).get('commit', '?')[:12]}`{' (dirty)' if (g or {}).get('dirty') else ''}")
+    h, files = baseline_fingerprint()
+    g = MF.git_state(MF.ROOT, list(files))
+    return (f"baseline fingerprint `{h[:16]}` (exp/evidence.py BASELINE_SOURCES); "
+            f"git `{(g or {}).get('commit', '?')[:12]}`, baseline sources "
+            f"{'clean' if not (g or {}).get('dirty_sources') else 'MODIFIED: ' + ', '.join(g['dirty_sources'])}")
 
 
 def _unchanged(hashes):

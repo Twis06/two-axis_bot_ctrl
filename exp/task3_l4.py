@@ -71,7 +71,7 @@ class OracleLoad:
     """DIAGNOSTIC ORACLE: the true extra load law. Not deployable."""
     diagnostic_oracle = True
 
-    def __init__(self, theta_s, theta_c):
+    def __init__(self, theta_s=0.0, theta_c=0.0):     # defaults so a manifest can rebuild it
         self.theta_s, self.theta_c = theta_s, theta_c
 
     def reset(self):

@@ -123,6 +123,22 @@ class TestL3Contract(unittest.TestCase):
         self.assertGreater(usable[(log.t > 13.5) & (log.t < 14.0)].max(), 0.5)
         self.assertEqual(usable[(log.t > 14.03) & (log.t < 14.1)].max(), 0.0)
 
+    def test_adaptive_and_oracle_runs_rebuild_from_their_manifests(self):
+        # R1 review I4: est_seed was not recorded and OracleLoad could not be rebuilt.
+        from exp import manifest as MF
+        from exp import task3_l4 as T
+        sc = loaded_moves(2.0)
+        for make in (lambda: T.make("adaptive", (0.0, 0.1), 101), lambda: T.make("oracle", (0.0, 0.1))):
+            c = make()
+            m = MF.make_manifest(sc, c, 7)
+            a, _ = run(sc, lambda: c, seed=7)
+            sc2, c2, sup, gy, sd = MF.rebuild_run(m["run"])
+            self.assertEqual(MF.make_manifest(sc2, c2, sd, supervisor=sup, governed_yaw=gy)["run_id"], m["run_id"])
+            b, _ = run(sc2, lambda: c2, seed=sd, supervisor=sup, governed_yaw=gy)
+            self.assertTrue(np.array_equal(a.q, b.q) and np.array_equal(a.i, b.i))
+        self.assertNotEqual(MF.make_manifest(sc, T.make("adaptive", (0, .1), 0), 7)["run_id"],
+                            MF.make_manifest(sc, T.make("adaptive", (0, .1), 101), 7)["run_id"])
+
 
 if __name__ == "__main__":
     unittest.main()

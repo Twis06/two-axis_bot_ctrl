@@ -137,5 +137,97 @@ class TestPhaseCompletion(unittest.TestCase):
         self.assertNotEqual(m['run_id'], changed['run_id'])
 
 
+class TestPhaseCompletionPins(unittest.TestCase):
+    """R1 review I1: pin each part of the phase scorer (mutation-tested)."""
+
+    def test_final_target_reached_before_its_window_is_not_credited_early(self):
+        log = trace()
+        log.q[(log.t >= 16.5) & (log.t < 17.0)] = WP[-1]        # at 0 deg before the final window
+        c = score(log)
+        self.assertTrue(c['completed'])
+        self.assertGreaterEqual(c['waypoint_visits'][-1]['path_t'], 17.0)
+        self.assertGreaterEqual(c['t_complete'], 17.0)
+
+    def test_final_target_only_before_its_window_is_missing(self):
+        log = trace()
+        log.q[(log.t >= 16.5) & (log.t < 17.0)] = WP[-1]
+        log.q[log.t >= 17.0] = WP[-2]                             # never at 0 inside the final window
+        c = score(log)
+        self.assertFalse(c['completed'])
+        self.assertIn(4, c['missing_waypoints'])
+
+    def test_intermediate_visit_during_host_fallback_is_not_credited(self):
+        log = trace()
+        k = (log.t >= 9) & (log.t < 11)
+        log['c_host_fallback'] = k.astype(float)                  # the only +30 visit is unhealthy
+        c = score(log)
+        self.assertFalse(c['completed'])
+        self.assertEqual(c['missing_waypoints'], [0])
+
+    def test_whole_run_overshoot_includes_calibration(self):
+        log = trace()
+        log.q[(log.t >= 3.0) & (log.t < 3.2)] = R(65 + 7)         # calibration excursion past the range
+        c = score(log)
+        self.assertGreater(c['overshoot_deg'], 5.0)
+        self.assertFalse(c['completed'])
+
+    def test_voided_at_is_reported(self):
+        log = trace()
+        log['c_suspended'] = (log.t >= 22).astype(float)
+        c = score(log)
+        self.assertFalse(c['completed'])
+        self.assertIn('voided_at', c)
+
+    def test_post_arrival_transient_is_reported(self):
+        log = trace()
+        log.mode[(log.t >= 22) & (log.t < 22.06)] = 1
+        log.events = [(22., 'cmd_timeout')]
+        c = score(log)
+        self.assertTrue(c['completed'])
+        self.assertIn('post_arrival_transient', c)
+
+    def test_visits_must_be_in_order(self):
+        # +30 only after -30 inside the same late part of window 1: order violated for target 0.
+        log = trace(omit=(0, 1))
+        log.q[(log.t >= 11.2) & (log.t < 11.4)] = WP[1]
+        log.q[(log.t >= 11.5) & (log.t < 11.7)] = WP[0]
+        c = score(log)
+        self.assertFalse(c['completed'])
+
+    def test_order_holds_across_a_path_clock_back_jump(self):
+        # -30 visited in window 1 at wall 11.5; the clock then jumps back into window 0
+        # and +30 is visited later (wall 12.5). Ordered scoring must not accept this.
+        log = trace(omit=(0, 1))
+        sig = log.c_gov_sigma
+        back = (log.t >= 12.2) & (log.t < 12.8)
+        sig[back] = 10.0 + (log.t[back] - 12.2)
+        log.q[(log.t >= 11.4) & (log.t < 11.6)] = WP[1]
+        log.q[(log.t >= 12.4) & (log.t < 12.6)] = WP[0]
+        self.assertFalse(score(log)['completed'])
+
+    def test_final_settle_cannot_use_samples_outside_the_final_window(self):
+        # At the final target from wall 17.5; the clock jumps back to 16.5 for 18.0-18.4.
+        log = trace()
+        sig = log.c_gov_sigma
+        back = (log.t >= 18.0) & (log.t < 18.4)
+        sig[back] = 16.5
+        log.q[(log.t >= 17.0) & (log.t < 17.9)] = R(4)             # outside the 2 deg band until 17.9
+        c = score(log)
+        self.assertTrue(c['completed'])
+        self.assertGreaterEqual(c['t_complete'], 18.4)              # settling restarts after the jump
+
+    def test_final_approach_overshoot_within_the_path_range_is_allowed(self):
+        # Overshoot past the final target (0 deg) by 6 deg while the path range is +/-65 deg.
+        log = trace()
+        log.q[(log.t >= 17.2) & (log.t < 17.4)] = R(6)
+        self.assertTrue(score(log)['completed'])
+
+    def test_final_hold_uses_the_overshoot_free_inner_call(self):
+        # Whole-run overshoot is judged once, outside; the final-phase call must not re-judge it.
+        log = trace()
+        log.q[(log.t >= 3.0) & (log.t < 3.2)] = R(65 + 4)         # within the 5 deg allowance
+        self.assertTrue(score(log)['completed'])
+
+
 if __name__ == '__main__':
     unittest.main()

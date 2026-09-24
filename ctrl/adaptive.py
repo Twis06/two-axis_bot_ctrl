@@ -35,7 +35,7 @@ class PayloadFFAdapter:
     AdaptiveController keeps it out of every feasibility decision (see below)."""
 
     def __init__(self, seed=0, stationary_counts=None):
-        self.stationary_counts = stationary_counts
+        self.est_seed, self.stationary_counts = seed, stationary_counts
         self.est = estimator_class(stationary_counts)(seed=seed)
         self.reset()
 
@@ -43,6 +43,7 @@ class PayloadFFAdapter:
         self.est.reset()
         self.coef = (0.0, 0.0)          # coefficients behind the last applied correction
         self.snap, self.t = None, 0.0
+        self.last_applied = 0.0
 
     def update(self, *a, **k):
         pass                            # the estimator is fed from observe()
@@ -73,7 +74,9 @@ class PayloadFFAdapter:
 
     def torque(self, q):
         c = self.est.correction(q, self.t)
-        return c if math.isfinite(c) else 0.0
+        c = c if math.isfinite(c) else 0.0
+        self.last_applied = c           # telemetry only (R3: no application while unusable)
+        return c
 
 
 class AdaptiveController(BaselineController):
@@ -90,10 +93,16 @@ class AdaptiveController(BaselineController):
     name = "baseline+payload_ff"
 
     def __init__(self, enabled=True, est_seed=0, stationary_counts=None, **kw):
+        # Recorded as attributes so run manifests capture them (R1 review I4).
+        self.enabled, self.est_seed, self.stationary_counts = enabled, est_seed, stationary_counts
         self.adapter = PayloadFFAdapter(est_seed, stationary_counts) if enabled else None
         super().__init__(load_model=self.adapter, **kw)
 
     def reset(self, cfg):
+        # (Re)build the adapter from the recorded attributes, so a controller rebuilt
+        # from a manifest (attributes applied after construction) matches the original.
+        self.adapter = PayloadFFAdapter(self.est_seed, self.stationary_counts) if self.enabled else None
+        self.load_model = self.adapter
         super().reset(cfg)
         if self.adapter is None:
             return
@@ -122,5 +131,6 @@ class AdaptiveController(BaselineController):
         cmd = super().update(ctx, fb)
         sn = self.adapter.snap
         self.telemetry.update(learn_usable=float(sn.usable), learn_theta_s=sn.theta_s,
-                              learn_theta_c=sn.theta_c)
+                              learn_theta_c=sn.theta_c, learn_ff=self.adapter.last_applied)
+        self.adapter.last_applied = 0.0     # a tick that returns early applies nothing
         return cmd

@@ -517,5 +517,97 @@ class TestReviewRound1(unittest.TestCase):
         self.assertFalse(e["tracked"])
 
 
+# ---------------------------------------------------------------------------
+# Review round 2 (delta) regressions
+# ---------------------------------------------------------------------------
+def settled_with_fault(t0, t1, events, suspended=False):
+    """Perfect M1 tracker; drive + host fallback over [t0, t1) after arrival."""
+    t = np.arange(4000) / 1000.0
+    q = np.array([PATH.eval(x)[0] for x in t])
+    fb = ((t >= t0) & (t < t1)).astype(float)
+    tele = dict(q_c=q, gov_lag=0.0, gov_status=0, request_rejected=0.0, host_fallback=fb, gov_s=1.0,
+                gov_rejected=0.0)
+    if suspended:
+        tele["suspended"] = (t >= t1).astype(float)
+    return synth(q=q, mode=fb, events=events, tele=tele)
+
+
+class TestReviewRound2(unittest.TestCase):
+    def test_N1_transient_comm_fault_after_arrival_keeps_t_complete(self):
+        t_ref = SM.completion(settled_with_fault(9, 9, []), WAYPOINTS, T_REQ)["t_complete"]
+        for t0 in (3.0, 3.9):                  # mid-hold, and one ending with the run
+            ev_ = [(t0 + .009, "cmd_timeout"), (t0 + .1, "rearm_after_cmd_timeout")]
+            c = SM.completion(settled_with_fault(t0, min(t0 + .1, 4.0), ev_), WAYPOINTS, T_REQ)
+            self.assertTrue(c["completed"], t0)
+            self.assertEqual(c["t_complete"], t_ref)
+            self.assertEqual([e["name"] for e in c["post_arrival_transient"]["events"]], ["cmd_timeout"])
+            self.assertGreater(c["post_arrival_transient"]["fallback_s"], 0.05)
+
+    def test_N1_latched_fault_suspension_or_leaving_band_after_arrival_still_void(self):
+        wd = [(3.0, "watchdog_trip"), (3.06, "rearm_after_watchdog_trip")]
+        self.assertFalse(SM.completion(settled_with_fault(3.0, 3.06, wd), WAYPOINTS, T_REQ)["completed"])
+        tr = [(3.009, "cmd_timeout"), (3.1, "rearm_after_cmd_timeout")]
+        self.assertFalse(SM.completion(settled_with_fault(3.0, 3.1, tr, suspended=True), WAYPOINTS,
+                                       T_REQ)["completed"])
+        log = settled_with_fault(3.0, 3.1, tr)
+        log["q"][(log.t >= 3.02) & (log.t < 3.05)] = R(10)     # leaves the band during the outage
+        c = SM.completion(log, WAYPOINTS, T_REQ)
+        self.assertGreaterEqual(c["t_complete"], 3.1)            # the earlier arrival no longer counts
+        wd_c = SM.completion(settled_with_fault(3.0, 3.06, wd), WAYPOINTS, T_REQ)
+        self.assertAlmostEqual(wd_c["voided_at"], 3.0)
+
+    def test_N1_real_run_command_blackout_after_arrival(self):
+        sc = M.m1(SimConfig())
+        base, _ = run(sc, BaselineController, seed=1)
+        bl, _ = run(replace(sc, cfg=sc.cfg.with_(timing=dict(command_blackout=((4.0, 4.06),)))),
+                    BaselineController, seed=1)
+        a = SM.completion(base, list(sc.waypoints), sc.t_request)
+        b = SM.completion(bl, list(sc.waypoints), sc.t_request)
+        self.assertTrue(b["completed"])
+        self.assertAlmostEqual(b["t_complete"], a["t_complete"], delta=0.01)
+
+    def test_N2_load_model_controller_rebuilds_or_says_why(self):
+        from ctrl.yaw_estimator import KinematicEstimator
+        sc = M.m1(SimConfig())
+        a = MF.make_manifest(sc, BaselineController(load_model=KinematicEstimator()), 1)
+        rec = json.loads(MF.canonical(MF.jsonable(a)))["run"]
+        try:
+            sc2, c2, s2, gy, seed = MF.rebuild_run(rec)
+        except MF.NotRebuildable as e:
+            self.assertIn("load_model", str(e))
+        else:
+            self.assertEqual(MF.make_manifest(sc2, c2, seed, supervisor=s2, governed_yaw=gy)["run_id"], a["run_id"])
+
+    def test_N3_orphan_prev_with_missing_destination_is_restored(self):
+        with tempfile.TemporaryDirectory() as d:
+            tgt = Path(d) / "pub"
+            tgt.mkdir()
+            (tgt / ".old.md.prev").write_text("only copy")
+            (tgt / "x.md").write_text("old x")
+            (tgt / ".x.md.prev").write_text("older x")           # destination exists and is replaced
+            with MF.staged_publish(tgt) as st:
+                (st / "new.md").write_text("new")
+                (st / "x.md").write_text("new x")
+            names = sorted(p.name for p in tgt.iterdir())
+            self.assertEqual((tgt / "old.md").read_text(), "only copy")
+            self.assertEqual(names, ["new.md", "old.md", "x.md"])
+
+    def test_N4_undeclared_imports_can_be_required_empty(self):
+        import types
+        from unittest import mock
+        sc = M.m1(SimConfig())
+        fake = types.ModuleType("fake_unrelated")
+        fake.__file__ = str(MF.ROOT / "exp" / "task2_robustness.py")
+        clean = MF.make_manifest(sc, BaselineController(), 1, entry="exp.metrics4a")
+        MF.require_declared(clean)                                # no exception
+        with mock.patch.dict(sys.modules, {"fake_unrelated": fake}):
+            dirty = MF.make_manifest(sc, BaselineController(), 1, entry="exp.metrics4a")
+            with self.assertRaises(MF.UndeclaredSources):
+                MF.make_manifest(sc, BaselineController(), 1, entry="exp.metrics4a", require_declared=True)
+        self.assertEqual(clean["run_id"], dirty["run_id"])
+        with self.assertRaises(MF.UndeclaredSources):
+            MF.require_declared(dirty)
+
+
 if __name__ == "__main__":
     unittest.main()

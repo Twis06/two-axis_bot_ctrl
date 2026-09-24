@@ -60,7 +60,7 @@ def fmt_row(name, s, keys=("rms", "peak", "mean", "i_peak", "clip_pct", "sat_ent
 # ---------------------------------------------------------------------------
 from sim import params as _P
 
-METRICS_VERSION = "4A.2"
+METRICS_VERSION = "4A.3"
 
 # Declared thresholds. PROJECT DESIGN ASSUMPTIONS, not assessment requirements.
 TRACK_PROGRESS_MIN = 0.95     # net delivered path time / requested path time
@@ -107,11 +107,14 @@ METRIC_DEFS = {
     "tracked": f"progress >= {TRACK_PROGRESS_MIN}; request-window path RMS <= {TRACK_PATH_RMS_DEG} deg; no "
                "rejected, suspended or coordinated-stop sample; no latched fault event other than "
                f"{', '.join(TRANSIENT_FAULTS)} (and their re-arms); no path-clock backstep; finite motions completed",
-    "completed": f"plant visits every waypoint in order within {COMPLETE_TOL_DEG} deg on a healthy sample; then, "
-                 f"from t_complete to the END of the run, stays healthy and within {COMPLETE_TOL_DEG} deg of the "
-                 f"final target; t_complete is the first time in that interval that starts {COMPLETE_SETTLE_S} s "
-                 f"with |qd| <= {COMPLETE_V_TOL} rad/s (arrived at rest, not passing through), and at least "
-                 f"{COMPLETE_SETTLE_S} s must remain; excursion beyond the path range <= {COMPLETE_OVERSHOOT_DEG} deg",
+    "completed": f"plant visits every waypoint in order within {COMPLETE_TOL_DEG} deg on a healthy sample; "
+                 f"arrives: {COMPLETE_SETTLE_S} s of consecutive healthy samples within {COMPLETE_TOL_DEG} deg of "
+                 f"the final target with |qd| <= {COMPLETE_V_TOL} rad/s (t_complete = its start); then stays "
+                 f"within {COMPLETE_TOL_DEG} deg to the END of the run, healthy except for fallback caused by "
+                 f"{', '.join(TRANSIENT_FAULTS)} (reported as post_arrival_transient); leaving the band restarts the "
+                 "search for arrival; a latched fault, suspension, coordinated stop or rejection after the first "
+                 "arrival voids completion (voided_at); excursion beyond "
+                 f"the path range <= {COMPLETE_OVERSHOOT_DEG} deg",
     "strata": "priority rejected > fallback > suspended > recovery > reshaping > normal; startup = pure "
               "fallback samples before the first active one (rejected/suspended samples are never startup); "
               "reshaping = governor status reshaped/joining/restricted/over_budget; fallback = drive mode 1 or "
@@ -371,6 +374,20 @@ def current_report(log, mask=None):
     )
 
 
+def latched_fault_mask(log):
+    """Per-sample: a non-transient fault (tracking_faults) is latched, i.e.
+    from its event to the matching rearm_after_* event (or the end of the run)."""
+    t = np.asarray(log.t, float)
+    ev = sorted((float(a), b) for a, b in getattr(log, "events", []))
+    m = np.zeros(len(t), bool)
+    for k, (te, name) in enumerate(ev):
+        if name in TRANSIENT_FAULTS or name.startswith("rearm_after_"):
+            continue
+        re = next((a for a, b in ev[k + 1:] if b == f"rearm_after_{name}"), float("inf"))
+        m |= (t >= te) & (t < re)
+    return m
+
+
 def tracking_faults(log):
     """Latched fault events that are not automatic communication recoveries."""
     return [(float(a), b) for a, b in getattr(log, "events", [])
@@ -487,19 +504,40 @@ def completion(log, waypoints, t_request, tol_deg=COMPLETE_TOL_DEG, settle_s=COM
         out["visit_t"].append(float(t[j]))
         out["reached"] += 1
     n = int(round(settle_s / dt))
-    band = (np.abs(q - waypoints[-1]) <= tol) & ok
-    miss = np.where(~band[j:])[0]
+    in_band = np.abs(q - waypoints[-1]) <= tol
+    # After arrival the plant must stay in the band to the end of the run. A
+    # transient communication fallback (TRANSIENT_FAULTS) is excused there; a
+    # latched fault, suspension, coordinated stop or rejection is not.
+    hard = _rejected(log) | _suspended(log) | latched_fault_mask(log)
+    excused = _fallback(log) & ~hard
+    stay = in_band & (ok | excused)
+    # Arrival: n consecutive healthy, slow, in-band samples (at rest, not passing through).
+    arrive = (ok & in_band & (np.abs(qd) <= v_tol)).astype(int)
+
+    def first_arrival(k0):
+        run = np.convolve(arrive[k0:], np.ones(n, int), "valid") if len(t) - k0 >= n else np.array([], int)
+        hit = np.where(run == n)[0]
+        return k0 + int(hit[0]) if hit.size else None
+    ja = first_arrival(j)
+    if ja is not None and hard[ja:].any():
+        # A latched fault, suspension, coordinated stop or rejection after the
+        # motion arrived: the axis did not hold the completed motion. Void.
+        k = ja + int(np.argmax(hard[ja:]))
+        out["voided_at"] = float(t[k])
+        return out
+    miss = np.where(~stay[j:])[0]
     j0 = j + (int(miss[-1]) + 1 if miss.size else 0)       # in band from j0 to the end of the run
-    slow = (np.abs(qd[j0:]) <= v_tol).astype(int)          # arrived at rest: n slow samples in a row
-    run = np.convolve(slow, np.ones(n, int), "valid") if slow.size >= n else np.array([], int)
-    hit = np.where(run == n)[0]
-    if not hit.size:
+    jc = first_arrival(j0)
+    if jc is None:
         out["settled_s"] = (len(t) - j0) * dt
         return out
-    jc = j0 + int(hit[0])
     out["settled_s"] = (len(t) - jc) * dt
     out["reached"] += 1
     tc = float(t[jc])
+    after = t >= tc
+    out["post_arrival_transient"] = dict(
+        events=[dict(t=float(a), name=b) for a, b in getattr(log, "events", []) if a >= tc and b in TRANSIENT_FAULTS],
+        fallback_s=float(np.sum(after & ~ok)) * dt, spans=spans(after & ~ok, t, dt))
     out.update(t_complete=tc, time_ratio=t_request / tc if tc > 0 else float("nan"),
                completed=out["overshoot_deg"] <= overshoot_deg)
     return out

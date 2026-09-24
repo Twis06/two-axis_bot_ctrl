@@ -143,6 +143,27 @@ def construct(desc):
     return cls()
 
 
+class NotRebuildable(RuntimeError):
+    """A record names an object rebuild_run cannot re-create from its record."""
+
+
+class UndeclaredSources(RuntimeError):
+    """Project modules outside the declared closed source set were imported."""
+
+
+def assert_declared(manifest):
+    """Raise UndeclaredSources if the run imported project modules outside its
+    declared source set (code.undeclared_imports). For evidence scripts that
+    must not depend on undeclared code; run_id semantics are unchanged."""
+    extra = manifest["code"].get("undeclared_imports") or []
+    if extra:
+        raise UndeclaredSources(f"imported project modules outside the declared source set: {extra}; "
+                                "declare them in the entry module's PROVENANCE_SOURCES")
+
+
+require_declared = assert_declared   # alias used by evidence scripts
+
+
 def _apply(obj, opts):
     for k, v in opts.items():
         v = _untag(v)
@@ -165,7 +186,16 @@ def rebuild_run(run):
     rc = run["controller"]
     ctrl = _apply(construct(rc), rc["options"])
     for name, comp in rc["components"].items():
-        _apply(getattr(ctrl, name), comp["options"])
+        obj = getattr(ctrl, name, None)
+        if obj is None or class_path(type(obj)) != comp["class"]:
+            # e.g. a load_model passed to the constructor: build the recorded class
+            try:
+                obj = construct(comp)
+            except Exception as e:
+                raise NotRebuildable(f"component {name} ({comp['class']}) cannot be default-constructed: "
+                                     f"{type(e).__name__}: {e}") from e
+            setattr(ctrl, name, obj)
+        _apply(obj, comp["options"])
     sup = None
     if run.get("supervisor"):
         sup = _apply(construct(run["supervisor"]), run["supervisor"]["attrs"])
@@ -286,12 +316,13 @@ def environment():
 
 # -- manifest ------------------------------------------------------------------
 def make_manifest(scenario, controller, seed, t_window=None, supervisor=None, governed_yaw=True,
-                  sources=None, extra=None, root=ROOT, entry=None):
+                  sources=None, extra=None, root=ROOT, entry=None, require_declared=False):
     """Manifest for one run. `controller` is the constructed controller instance
     (describe it before the run: reset() mutates it); `scenario` is a Scenario or
     FiniteMotion; t_window = (t_skip, t_end) used for the metrics; entry = the
     evaluation module (dotted name) whose source and PROVENANCE_SOURCES join
-    the closed source set."""
+    the closed source set; require_declared=True raises UndeclaredSources if the
+    process imported project modules outside that set."""
     cfg = scenario.cfg
     run = dict(scenario=scenario.name, note=getattr(scenario, "note", ""),
                config=jsonable(cfg, tag_nonfinite=True), roll_request=describe(scenario.roll),
@@ -315,6 +346,8 @@ def make_manifest(scenario, controller, seed, t_window=None, supervisor=None, go
                 undeclared_imports=undeclared)
     ident = dict(run={k: v for k, v in run.items() if k != "note"}, code_hash=code["code_hash"],
                  metrics_version=SM.METRICS_VERSION)
+    if require_declared:
+        assert_declared(dict(code=code))
     return dict(manifest_version=MANIFEST_VERSION, run_id=digest(ident)[:16],
                 metrics_version=SM.METRICS_VERSION, metric_defs=SM.METRIC_DEFS,
                 run=run, code=code, env=environment())
@@ -354,8 +387,11 @@ def staged_publish(target, staging_root=None, check=None):
     temporaries are deleted, and FAILED records the error: the target returns to
     its previous state. Only a crash of the process itself (power loss, kill)
     during phase 2 can leave a mix; orphaned .publishing/.prev files from such a
-    crash are removed by the next successful publish.
-    Files in the target that the stage does not contain are left alone.
+    crash are handled at the start of the next phase 2: a .X.prev whose X is
+    missing is the only surviving copy and is renamed back to X; other orphans
+    are left alone unless this publish replaces X (then they are overwritten
+    and removed). Files in the target that the stage does not contain are left
+    alone.
     """
     target = Path(target)
     root = Path(staging_root or target.parent)
@@ -370,7 +406,11 @@ def staged_publish(target, staging_root=None, check=None):
                                       + traceback.format_exc())
         raise
     files = [p for p in sorted(stage.rglob("*")) if p.is_file()]
-    orphans = sorted(target.rglob(".*.publishing")) + sorted(target.rglob(".*.prev")) if target.exists() else []
+    if target.exists():
+        for prev in sorted(target.rglob(".*.prev")):          # crash leftovers: restore lost originals
+            orig = prev.with_name(prev.name[1:-len(".prev")])
+            if not orig.exists():
+                os.replace(prev, orig)
     tmp, moved, created = [], [], []
     try:
         for p in files:
@@ -407,6 +447,4 @@ def staged_publish(target, staging_root=None, check=None):
         raise
     for prev, _ in moved:
         prev.unlink(missing_ok=True)
-    for o in orphans:
-        o.unlink(missing_ok=True)
     shutil.rmtree(stage)

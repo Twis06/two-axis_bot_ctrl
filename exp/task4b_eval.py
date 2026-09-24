@@ -93,8 +93,8 @@ def make_ctrl(desc):
 
 
 def make_sup(desc):
-    if isinstance(desc, tuple):        # ("safety", kwargs): a plain DriveSafety
-        return DriveSafety(**desc[1])
+    if isinstance(desc, tuple):        # ("safety", kw): plain DriveSafety; ("design", kw): DriveSupervisor(**kw)
+        return DriveSupervisor(**desc[1]) if desc[0] == "design" else DriveSafety(**desc[1])
     return _supervisor(desc)
 
 
@@ -179,7 +179,8 @@ def controller_contracts(log):
     t = np.asarray(log.t, float)
     out = dict(hold_samples=0, hold_drift_deg=0.0, hold_positions_deg=[], rebases=0,
                rearms=0, rearms_unacked=0, resumes=0, resumes_without_replan=0,
-               reason_samples=0, reason_missing=0, reason_unknown=False, jump_max_rad_s=0.0, jumps=0)
+               reason_samples=0, reason_missing=0, reason_unknown=False, jump_max_rad_s=0.0, jumps=0,
+               idle_realign_max_deg=0.0, idle_spans=0)
     if "c_q_c" not in log or "c_gov_mode" not in log:
         return out
     qc = np.asarray(log.c_q_c, float)
@@ -229,8 +230,20 @@ def controller_contracts(log):
     out["reason_samples"] = int(need.sum())
     if len(notices) >= 2000 and nt.size and nt[0] > 0:
         out["reason_unknown"] = True       # notice log truncated at its cap
-    good = np.array([i >= 0 and bool(notices[i][2]) for i in idx]) if len(notices) else np.zeros(len(t), bool)
+    # the latest notice must be a disposition notice (not e.g. a stale 'joining')
+    # with a non-empty reason
+    disp = ("suspended", "restricted", "rejected", "incompatible", "over_budget")
+    good = np.array([i >= 0 and notices[i][1] in disp and bool(notices[i][2]) for i in idx]) \
+        if len(notices) else np.zeros(len(t), bool)
     out["reason_missing"] = int(np.sum(need & ~good))
+    # re-alignment across host-idle spans (by design the host realigns to the
+    # measured position there): reported, not failed
+    realign = []
+    for a, b in SM._span_idx(idle):
+        if a > 0 and b < len(t) and np.isfinite(qc[a - 1]) and np.isfinite(qc[b]):
+            realign.append(abs(qc[b] - qc[a - 1]) * DEG)
+    out["idle_realign_max_deg"] = max(realign, default=0.0)
+    out["idle_spans"] = len(realign)
     k = np.arange(0, len(t), div)
     act = ~idle[k] & np.isfinite(qc[k])
     dq = np.abs(np.diff(qc[k])) / (div * (t[1] - t[0]))
@@ -266,6 +279,7 @@ def fallback_detail(log, spec):
     qd0 = float(log.qd[a])
     pay = -pc.tau_lat * np.cos(log.q[a:b])        # payload torque on the axis (sim.plant sign)
     return dict(t_entry=float(t[a]), duration_s=float(t[b - 1] - t[a] + (t[1] - t[0])), excursion_deg=exc,
+                end_displacement_deg=float(abs(log.q[b - 1] - log.q[a])) * DEG,
                 qd_entry=qd0, i_fallback_max=float(np.max(np.abs(log.i_tgt[a:b]))),
                 at_limit_pct=100 * float(np.mean(np.abs(log.i_tgt[a:b]) >= 0.999 * log.i_lim[a:b])),
                 i_lim=float(np.min(log.i_lim[a:b])),
@@ -626,6 +640,10 @@ def all_specs(base, quick=False):
         for v in ("baseline", "plan"):
             sp.append(Spec("gen_coupling", f"C x{cs:g}", sc, v, 1))
     e = S.run_e(base)
+    d = S.run_d(base)
+    dsc = with_cfg(d, plant=dict(s_lat=0.035), timing=dict(command_blackout=((4.0, 4.1),)))
+    for c in (0.05, 0.15, 0.5, 1.0):    # diagnostic: only 0.05 N m s/rad is the frozen DriveSupervisor default
+        sp.append(Spec("diag_damping", f"{c:g}", dsc, "baseline", 1, ("design", dict(damping=c)), True))
     for seed in (1, 7):     # seed 1 trips after the outage, seed 7 does not (Task 2's row)
         sp.append(Spec("timeline", "E, CoM +35 mm, feedback-only loss 100 ms at 3 s",
                        with_cfg(e, timing=dict(feedback_blackout=((3, 3.1),))), "baseline", seed, post="trace"))
@@ -1056,6 +1074,23 @@ def band_text(T_ff, T_fb, lag):
             "10 Hz check the calculation inside the band.")
 
 
+def sec_damping(res):
+    rows = []
+    for r in sorted((r for r in res if r["group"] == "diag_damping"), key=lambda r: float(r["key"])):
+        f = r["row"]["fallback"] or {}
+        rows.append([r["key"] + (" (frozen default)" if r["key"] == "0.05" else ""), f"{f.get('qd_entry', float('nan')):+.1f}",
+                     f"{f.get('excursion_deg', float('nan')):.1f}", f"{f.get('end_displacement_deg', float('nan')):.1f}",
+                     f"{f.get('i_fallback_max', float('nan')):.1f}", f"{f.get('at_limit_pct', float('nan')):.0f}",
+                     f"{f.get('duration_s', float('nan')) * 1e3:.0f}", f"`{r['run_id']}`"])
+    return ["## 4b. Diagnostic: drive fallback damping gain (Simulated; NOT the frozen baseline)", "",
+            "Loaded recovery, D, CoM +35 mm, command-only loss 100 ms at 4 s, seed 1, with the DriveSupervisor's "
+            "fallback damping c varied (0.05 N·m·s/rad is the frozen default; other values are diagnostics only). "
+            "Excursion = largest |q − q(entry)| during the fallback span; end displacement = |q(end) − q(entry)| of the "
+            "same span. At limit = share of the span with the fallback current target at the active limit.", "",
+            table(["Damping c N·m·s/rad", "Entry q̇ rad/s", "Excursion °", "End-of-span displacement °",
+                   "Max fallback current A", "At limit %", "Fallback span ms", "run_id"], rows), ""]
+
+
 def sec_general(res):
     rows = []
     for r in res:
@@ -1136,7 +1171,8 @@ def sec_robust(res):
 
 
 def sec_contracts(res):
-    mine = [r for r in res if r["row"] is not None and r["variant"] in ("baseline", "plan")]
+    mine = [r for r in res if r["row"] is not None and r["variant"] in ("baseline", "plan")
+            and r["group"] != "diag_damping"]
     n = len(mine)
     tgt = max(r["row"]["target_over_limit"] for r in mine)
     cur = max(mine, key=lambda r: r["row"]["current_over_limit"])
@@ -1159,22 +1195,27 @@ def sec_contracts(res):
          f"{sum(x['hold_samples'] for x in c)} hold samples in {sum(1 for x in c if x['hold_samples'])} runs; max drift "
          f"within a fault epoch {drift:.3g}°. Re-based by a new catch after a new fault: {len(rebased)} runs"
          + (f", e.g. {lst(rebased)}" if rebased else ""), "PASS" if drift < 1e-6 else "FAIL"],
-        ["(b) Every re-arm after a tracking fault is preceded by host commands acknowledging that fault_id",
-         f"{sum(x['rearms'] for x in c)} tracking-fault re-arms; {len(unacked)} runs with an unacknowledged re-arm",
-         "PASS" if not unacked else "FAIL"],
         ["(b) A suspended request never resumes without replan()",
          f"{sum(x['resumes'] for x in c)} resumptions; {len(noreplan)} runs resumed without a replan",
-         "PASS" if not noreplan else "FAIL"],
-        ["(c) Every suspended / restricted / rejected sample carries a non-empty controller reason",
+         ("not exercised (no run calls replan(); no suspension ever ended)" if not sum(x["resumes"] for x in c)
+          else ("PASS" if not noreplan else "FAIL"))],
+        ["(c) Every suspended / restricted / rejected sample is covered by the latest controller notice, which is a "
+         "disposition notice (suspended / restricted / rejected / incompatible / over_budget) with a non-empty reason",
          f"{sum(x['reason_samples'] for x in c)} samples; {sum(x['reason_missing'] for x in c)} without a reason"
          + (f"; notice log truncated in {len(unknown)} runs" if unknown else ""),
          "PASS" if not noreason and not unknown else ("FAIL" if noreason else "UNKNOWN")],
         ["(d) The governed reference never jumps in position (|Δq_c|/ts ≤ governor speed cap 20 rad/s, host active)",
-         f"max {jmax:.2f} rad/s; {len(jumps)} runs with a jump", "PASS" if not jumps else "FAIL"],
+         f"max {jmax:.2f} rad/s; {len(jumps)} runs with a jump. Re-alignment across host-idle spans (the host realigns "
+         f"to the measured position there, by design): {sum(x['idle_spans'] for x in c)} spans, max "
+         f"{max(x['idle_realign_max_deg'] for x in c):.1f}° (reported, not checked)", "PASS" if not jumps else "FAIL"],
         ["No drive lockout", f"{len(locks)} runs" + (f": {lst(locks)}" if locks else ""),
          "PASS" if not locks else "lockout outside the modelled envelope (declared)"],
     ]
     sim_rows = [
+        ["Every re-arm after a tracking fault is preceded by host commands acknowledging that fault_id (the drive "
+         "model re-arms a tracking fault only with ack == fault_id, so this cannot fail here; whether the host "
+         "acknowledged only while its catch plan was feasible is not recoverable from the logs and is not checked)",
+         f"{sum(x['rearms'] for x in c)} re-arms; {len(unacked)} runs unacknowledged", "consistent" if not unacked else "INCONSISTENT"],
         ["Applied current target never above the active limit (the drive clamps it: a simulator property)",
          f"max excess {max(0.0, tgt):.3g} A", "consistent" if tgt < 1e-9 else "INCONSISTENT"],
         ["Measured current above a newly reduced limit (current cannot step)",
@@ -1191,6 +1232,11 @@ def sec_contracts(res):
             f"**0a. Controller contracts, computed from the logs of all {n} baseline and plan-mode runs (Simulated).** "
             "These test the frozen controller's behaviour, not the simulator or the scorer.", "",
             table(["Contract", "Result", "Verdict"], ctrl_rows), "",
+            "Limits of these detectors: (a) checks HOLD samples only — the post-catch STOP (braking) segment and "
+            "host-idle spans are excluded, so a reference moving during STOP or while the host idles is not tested, "
+            "and a new hold position after a new non-transient fault event is counted as a re-base, whatever the event; "
+            "(c) checks the latest notice at each sample, so a disposition notice left over from an earlier, different "
+            "disposition would still pass; (d) skips host-idle spans (reported separately above).", "",
             "**0b. Simulator and scorer consistency checks.** These hold by construction (the drive model clamps the "
             "target; the 4A scorer defines tracked/completed this way). They check that the evidence pipeline is "
             "consistent, not that the controller is correct.", "",
@@ -1358,6 +1404,7 @@ def main(argv=None):
     lines += sec_finite(res)
     reg_lines, n_reg = sec_regressions(res); lines += reg_lines
     lines += sec_stress(res)
+    lines += sec_damping(res)
     mc_lines, mc_counts, n_faulted = sec_mc(res, published); lines += mc_lines
     lines += sec_infeasible(res)
     f_lines, T = sec_freq(res); lines += f_lines

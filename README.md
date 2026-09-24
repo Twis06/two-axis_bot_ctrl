@@ -26,5 +26,5 @@ Start with [Task 1 — Understand the failure](report/task1.md). The [task index
 ## Status
 - ✅ Phase 0: paper analysis
 - ✅ Phase 1: simulator + consistency with the logs
-- 🛠 Task 2: hardening under review; governor blocker and loaded-recovery work tracked in [the execution plan](EXECUTION_PLAN.md)
-- ⏳ Phase 3: learning / adaptation decision
+- ✅ Task 2: deterministic baseline frozen after governor, recovery and information-mode review
+- ✅ Phase 3: learning/adaptation decision completed; tested candidate rejected, baseline retained

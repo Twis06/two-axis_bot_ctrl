@@ -223,6 +223,24 @@ class TestReviewR6Round2(unittest.TestCase):
         self.assertEqual(status(gate(rows), "no new fault"), "fail")
 
 
+class TestReviewR6Round3(unittest.TestCase):
+    """R6 round-3 m3: non-finite or inconsistent evidence is never a pass."""
+
+    def test_nan_fault_or_limit_evidence_is_incomplete(self):
+        rows = good_heldout()
+        rows[-1] = row("adaptive", 9, 1.0, wd_trips=float("nan"))
+        self.assertEqual(status(gate(rows), "no new fault"), "incomplete")
+        rows = good_heldout()
+        rows[-1] = row("adaptive", 9, 1.0, command_over_limit=float("nan"))
+        self.assertEqual(status(gate(rows), "host current command"), "incomplete")
+
+    def test_listed_event_missing_from_counts_is_incomplete(self):
+        rows = good_heldout()
+        rows[-1] = row("adaptive", 9, 1.0, events=["overtemp"], event_counts={})
+        self.assertEqual(status(gate(rows), "no new fault"), "incomplete")
+        self.assertNotEqual(gate(rows)["overall"], "pass")
+
+
 class TestGateEvidence(unittest.TestCase):
     def _log(self):
         import numpy as np

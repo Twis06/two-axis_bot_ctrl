@@ -96,12 +96,12 @@
 | E D at 2.4 A | 12.02° | 4.25° | 78.5° | 51% | 5.5% | 0/5 |
 
 - **Legacy** is a reconstruction; both controllers are simulated.
-- **B/C:** roll is commanded to hold 0° while yaw oscillates; their 100%/97% “progress” is a path-clock metric for that stationary roll request, not delivered roll distance. C separately reduces yaw amplitude to 0.88× in one run.
+- **B/C:** roll is commanded to hold 0° while yaw oscillates; their 100%/97% “progress” is a path-clock metric for that stationary roll request, not delivered roll distance. C also reduces the yaw request to 0.87–0.89× (median 0.88×) during ramp-up in all five runs, so its delivered yaw is smaller than requested.
 - **D/E:** the governed error is small only because the requests are slowed. The original-request error shows the sacrificed timing, and D/E count as not tracked (tracked = ≥ 95% progress, ≤ 2° RMS, no fault; a project threshold).
 
 **Right answer is not to track:**
 
-- **INF-P:** 1.2 kg at +35 mm, derated, needs 0.41 N·m of static torque against 0.336 N·m available. The nominal-model baseline cannot know this: it attempts the move, sags to about −58°, trips, and is held near −49° after the catch, suspended. This is a reported limitation. A truth-informed governor rejects such a load outright.
+- **INF-P:** 1.2 kg at +35 mm, derated, needs 0.41 N·m of static torque against 0.336 N·m available. The nominal-model baseline cannot know this: it attempts the move, sags to about −58°, trips, and is held near −49° after the catch, suspended. This is a reported limitation. In Task 3's similar unholdable (0, +0.40) N·m case, the truth-informed oracle rejected the request outright; INF-P itself was not run with a truth-informed governor.
 - **INF-R:** roll hold under 2.8 Hz yaw. The governor reduces yaw to 0.36× and holds roll within ±1.1°.
 - **Loaded M2:** trips and stays suspended rather than cycling.
 - **Fallback:** local damping does not hold against gravity; a loaded 100 ms outage moves the axis up to 42°.

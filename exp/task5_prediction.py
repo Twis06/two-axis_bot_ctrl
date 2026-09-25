@@ -172,7 +172,8 @@ def prediction_matrix(result: dict) -> list:
              measured="increase of the measured coupling-residual PEAK, weak minus nominal, FF on (median, paired); "
                       "metric chosen after the results", value=med(res_inc), window="[2, 8) s",
              tolerance=f"+/-{tol_r} N m (registered)",
-             verdict="failed" if not within(med(res_inc), p["residual_torque_Nm"], tol_r) else "supported",
+             verdict=("not resolved by this post hoc peak metric" if not within(med(res_inc), p["residual_torque_Nm"], tol_r)
+                      else "supported"),
              note=f"paired range {min(res_inc):+.4f} to {max(res_inc):+.4f} N m; by alignment 0/2/4/6 ms: "
                   + ", ".join(f"{shift[m]:+.4f}" for m in ("0", "2", "4", "6"))
                   + f" (fails at every alignment); RMS residual change {med(rms_inc):+.4f} N m. The residual PEAK is "
@@ -399,10 +400,10 @@ def _markdown(result: dict) -> str:
         "",
         "## Revised explanation and smallest justified design change",
         "",
-        "**Revised explanation.** At this operating point, the residual tracking error is dominated by the causal "
-        "yaw estimate's transient error (about 0.03 N m at the coupling extrema), not by motor-strength mismatch. "
-        "The 10 % weaker motor is a second-order effect: it raised error in only 2 of 3 pairs, while removing yaw "
-        "feed-forward cost 3.5-3.9 deg in every pair.",
+        "**Revised explanation.** For this Run B residual-peak metric and operating point, the causal yaw "
+        "estimate's transient error (about 0.03 N m at the coupling extrema) exceeds the measured motor-strength "
+        "effect: the 10 % weaker motor raised error in only 2 of 3 pairs, while removing yaw feed-forward cost "
+        "3.5-3.9 deg in every pair. This does not rank the two effects across other motions.",
         "",
         "**Smallest justified design change: none to the frozen controller.** This experiment does not justify "
         "retuning. *Proposed, not tested:* if hardware calibration finds effective Kt different from nominal, "

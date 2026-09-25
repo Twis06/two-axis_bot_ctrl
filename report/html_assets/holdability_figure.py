@@ -3,6 +3,7 @@
 This uses the supplied nominal gravity model and the explicitly assumed INF-P
 load; it runs no control simulation and makes no inference about D/E payloads.
 """
+import inspect
 import math
 from pathlib import Path
 import sys
@@ -15,19 +16,30 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
+from ctrl.governor import RollGovernor
+from exp.task4b_eval import infeasible_cases
 from sim import params as P
+from sim.config import SimConfig
+
+
+def _inf_p_and_budget():
+    """INF-P payload and the governor budget taken from the sources that define them,
+    so the figure cannot drift from the published experiment or the frozen governor."""
+    plant = infeasible_cases(SimConfig())[0].cfg.plant
+    reserve = inspect.signature(RollGovernor.__init__).parameters["reserve"].default
+    return plant.m_payload * P.G * plant.s_lat, 1.0 - reserve
 
 
 def render(path=None):
     path = Path(path) if path is not None else ROOT / "report/figs/static_holdability.png"
     angle_deg = np.linspace(-90.0, 90.0, 1801)
     q = np.deg2rad(angle_deg)
-    lateral_moment = 1.2 * P.G * 0.035
+    lateral_moment, budget_frac = _inf_p_and_budget()
     nominal = np.abs(P.TAU_G * np.sin(q)) + P.TAU_C
     inf_p = np.abs(P.TAU_G * np.sin(q) + lateral_moment * np.cos(q)) + P.TAU_C
     derated_capacity = P.K_T * P.I_DERATED
     nominal_capacity = P.K_T * P.I_MAX
-    admission_budget = 0.8 * derated_capacity - P.D_MAX
+    admission_budget = budget_frac * derated_capacity - P.D_MAX
 
     assert math.isclose(derated_capacity, 0.336, abs_tol=1e-12)
     assert lateral_moment > derated_capacity

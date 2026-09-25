@@ -128,7 +128,7 @@ def current_limit(rows):
     (the host learns a new limit through delayed feedback)."""
     name = "host current command within the active limit (pre-clamp)"
     vals = [r.get("command_over_limit") for r in rows]
-    if not rows or any(v is None for v in vals):
+    if not rows or not all(_finite(v) for v in vals):             # None or NaN is missing evidence
         return _crit(name, "incomplete")
     bad = [dict(run=r.get("run_id"), excess=r["command_over_limit"]) for r in rows if r["command_over_limit"] > LIMIT_TOL]
     return _crit(name, "fail" if bad else "pass", max(vals), LIMIT_TOL, bad)
@@ -140,16 +140,22 @@ def safety(pairs):
     rejection and lockout. Every pair is scanned: any new fault is a fail even if other
     pairs lack evidence; otherwise missing evidence is incomplete, never pass."""
     new, missing = [], []
+
+    def counts_ok(r):     # a count table that is present, numeric and covers every listed event
+        ec = r.get("event_counts")
+        return (isinstance(ec, dict) and all(_finite(v) for v in ec.values())
+                and set(r.get("events") or []) <= set(ec))
+
     for k, b, c in pairs:
-        if not isinstance(c.get("event_counts"), dict) or not isinstance(b.get("event_counts"), dict):
-            missing.append(dict(pair=list(k), missing="event_counts"))
+        if not counts_ok(c) or not counts_ok(b):
+            missing.append(dict(pair=list(k), missing="event_counts (absent, non-numeric or inconsistent with events)"))
         else:
             for ev in sorted(set(c["event_counts"]) | set(b["event_counts"])):
                 nc, nb = c["event_counts"].get(ev, 0), b["event_counts"].get(ev, 0)
                 if nc > nb:
                     new.append(dict(pair=list(k), field=ev, comparator=nb, candidate=nc))
         for f in ("wd_trips", "suspended", "rejected"):
-            if c.get(f) is None or b.get(f) is None:
+            if not (_finite(c.get(f)) or isinstance(c.get(f), bool)) or not (_finite(b.get(f)) or isinstance(b.get(f), bool)):
                 missing.append(dict(pair=list(k), missing=f))
             elif float(c[f]) > float(b[f]):
                 new.append(dict(pair=list(k), field=f, comparator=b[f], candidate=c[f]))

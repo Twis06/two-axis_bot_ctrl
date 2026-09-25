@@ -197,7 +197,7 @@ All numbers below are from [task2_numbers.md](task2_numbers.md) (five seeds unle
 
 - **A–C:** delivered at full or near-full path rate, with sub-degree error and no events.
 - **B/C progress is only a clock metric:** both request a 0° roll hold, so 100%/97% does not measure roll travel or speed. Yaw is the moving stimulus; its amplitude reduction in C is reported separately below.
-- **C and the estimate mode:** in estimate mode C costs 0.15° of RMS against the plan look-ahead, and yaw is reduced once to 0.88× during the yaw ramp-up. C sits about 0.02 N·m inside its hold budget (2B §5.2).
+- **C and the estimate mode:** in estimate mode C costs 0.15° of RMS against the plan look-ahead, and in each of the five runs the yaw request is reduced once, to 0.87–0.89× (median 0.88×), during the yaw ramp-up, so C's delivered yaw is smaller than requested. C sits about 0.02 N·m inside its hold budget (2B §5.2).
 - **D/E are not delivered as requested.** The governor slows the path to 83% and 51% of the clock, so error against the original wall clock is very large. D/E meet the tracking rule in 0/5 runs. The unmodelled payload (Task 3) is the cause, not a fault.
 
 ### 6.2 Finite motions (Packet 4A)
@@ -314,7 +314,7 @@ Full evidence: [task2_robustness.md](task2_robustness.md). **Calculated** means 
    - In the Packet 2B pre-freeze outage matrix (tracking fault; 3 directions × 5 seeds), C with 0.7 kg at +35 mm parks at a median of −43.6° from its 0° hold request.
    - Before 2B it recovered automatically at the second attempt, a policy that also cycled 14–16 times in E.
    - The frozen seed-7 row (incompatibility, §6.3) parks at −39.6°.
-3. **The causal yaw estimate costs accuracy near the budget edge:** C +0.15° RMS, one yaw reduction to 0.88× during ramp-up, and more quantization jitter. Estimator uncertainty is not propagated into the governor budget; its residual shares the 0.05 N·m disturbance margin.
+3. **The causal yaw estimate costs accuracy near the budget edge:** C +0.15° RMS, a yaw reduction to 0.87–0.89× during ramp-up in every run, and more quantization jitter. Estimator uncertainty is not propagated into the governor budget; its residual shares the 0.05 N·m disturbance margin.
 4. **The catch after a tracking fault is a nominal-model prediction,** using a nominal-model coupling estimate. Repeated failures are bounded by the lockout (3 within 30 s), whose thresholds are assumptions.
    - The lockout is reachable. With 1.5× the modelled coupling, a 0.7 kg payload and yaw that never stops (no planner, coordinated stop not honoured), three catches failed within 0.9 s and the drive locked out: 67.5% passive fallback, ending at −48.7° (2C review probe, Simulated).
    - In the frozen Monte Carlo, 1/5 faulted D trials and 3/6 faulted E trials trip twice; none lock out.

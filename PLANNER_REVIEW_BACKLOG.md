@@ -1,18 +1,23 @@
-# Planner review backlog — 2026-09-24
+# Planner review backlog — 2026-09-24 (historical record, all items closed)
 
-This file preserves the findings, rationale and acceptance checks from the planner review. Its original findings below describe the state when they were recorded; the live disposition is here. R6 round 2 passed with minor issues on commit `961b6f2`. The later editorial/qualification changes have been self-verified but were outside that independent review. Declared control experiments and their results remain frozen.
+**Status: closed.** This is a record of a planner agent's change requests during the final editing pass, kept for transparency. **Every numbered item below is resolved in the final commit**; no item is an open defect.
 
-| Item | Current disposition |
+- **Findings below:** each describes the state when it was written.
+- **Final status of the submission:** see [`report/packets/R6.md`](report/packets/R6.md) (independent review rounds 1–4) and [`report/packets/R4.md`](report/packets/R4.md) (reproduction).
+- **Frozen evidence:** the declared control experiments, and their results, are unchanged by these edits.
+
+| Item | Final disposition |
 |---|---|
-| 1–2 · hardware stop state and electrical identification | Addressed in the one-page qualification plan: passive containment is required; blocked-axis `Kt` and guarded moving `Ke` are separate stages. |
-| 3 · Task 5 inference | Memo and HTML now narrow the selected post hoc residual metric and its Run B inference. A genuinely prospective closed-loop prediction remains unperformed and is not claimed. |
-| 4–6 · `int2`, Run A, B/C figure | Addressed in the memo/HTML and Task 2 answer; original experiment figures and numbers are unchanged. |
-| 7 · clean-checkout HTML | Builder no longer requires the ignored brief. From a clean archive of `0073726`, the 19-image HTML, calculated diagram and ordered build manifest rebuild byte-identically; local links resolve. |
-| 8–9 · progress and release status | B/C path-clock meaning is qualified; current 262-test count and R6 round-two verdict are scoped to the reviewed commit. |
-| 10–11 · appendix and historical plot | Memo body remains four pages, with one full plot per appendix page; the early torque budget is labelled as an assumed historical fit. |
-| 12–16 · annotated memo | Opening, portable PDF paths, failure hypothesis, static holdability diagram and measured learning-redesign plan are addressed. The diagram is calculated for the explicit INF-P assumption, not a D/E payload estimate. |
+| 1–2 · hardware stop state and electrical identification | Resolved in the one-page qualification plan: passive containment is required, no position hold is promised, and blocked-axis K<sub>t</sub> and guarded moving K<sub>e</sub> are separate stages. |
+| 3 · Task 5 inference | Resolved in the memo, HTML and `task5.md`: the selected post hoc residual-peak metric did not resolve the predicted effect, and the Run B inference is scoped. A prospective closed-loop prediction remains unperformed; this is a declared limitation, not claimed. |
+| 4–6 · `int2`, Run A, B/C figure | Resolved in the memo, HTML and Task 2 answer; original experiment figures and numbers are unchanged. |
+| 7 · clean-checkout HTML | Resolved: the builder no longer requires the gitignored brief, and the HTML rebuilds from a clean archive (R6). |
+| 8–9 · progress and release status | Resolved: B/C path-clock progress is qualified; test counts and review status are current (264 tests at the final commit). |
+| 10–11 · appendix and historical plot | Resolved: the memo body is four pages with one plot per appendix page; the early torque budget is labelled as an assumed historical fit. |
+| 12–16 · annotated memo | Resolved: opening, portable PDF paths, failure hypothesis, static-holdability diagram and learning-redesign plan. The diagram is calculated for the explicit INF-P assumption, not a D/E payload estimate. |
+| R6 round-2 minors r2-1, r2-2, r2-6 (referred to in an earlier version of this file) | Resolved: gate fixes with regression tests and a full republication (`ced6c5b`, `20a0a5d`); comparison method committed as `tools/compare_evidence.py`. |
 
-**Open before treating the edited tree as independently reviewed:** obtain an independent review of the post-R6 editorial/qualification changes. R6 minor code findings r2-1 and r2-2 remain; fixing them would change the registered gate source and require a full L4 republication. R6 minor r2-6 still needs a documented float-leaf counting method. These do not alter the published R6 gate verdict. Future research work (prospective Task 5 test, payload-change challenge and physical qualification) is outside this submission's simulated evidence.
+Future research work (a prospective Task 5 test, the payload-change challenge and physical qualification) is outside this submission's simulated evidence and is declared as such in the memo.
 
 ## 1. Correct the hardware stop-state promise — high priority
 
@@ -110,7 +115,7 @@ The items below came from an independent read-only arithmetic, figure, PDF and H
 
 ## Annotated-memo feedback — 2026-09-24
 
-Source: [`report/memo_annotated.pdf`](report/memo_annotated.pdf), pages 1–3 and 5. This section evaluates the *written comments*, not every unlabelled highlight or stray one-letter caret. These are planning decisions; the memo, figures and generated PDFs have not been changed by this pass. Coordinate document rebuilds with the agent finishing R6, and retain the frozen experiment data.
+Source: an annotated review copy of the memo (not part of the submission), pages 1–3 and 5. This section evaluates the *written comments*, not every unlabelled highlight or stray one-letter caret. These are planning decisions; the memo, figures and generated PDFs have not been changed by this pass. Coordinate document rebuilds with the agent finishing R6, and retain the frozen experiment data.
 
 ### 12. State the actual contribution and decision logic up front — high priority
 
@@ -126,7 +131,7 @@ Source: [`report/memo_annotated.pdf`](report/memo_annotated.pdf), pages 1–3 an
 
 **Annotation (page 1).** The task-document links “wouldn't work since they are the address on my local.”
 
-**Assessment.** Confirmed. PDFKit reads the links to `task1.md`, `task5.md`, R2/R4 and the qualification plan in `memo_annotated.pdf` as absolute `file://<home>/...` URLs. The Markdown links are relative, but `render_pdf.py` supplies a local `<base href=...>` before Chrome prints the PDF. There is no repository remote configured that can substitute as a stable public URL.
+**Assessment.** Confirmed. PDFKit reads the links to `task1.md`, `task5.md`, R2/R4 and the qualification plan in that annotated copy as absolute author-machine `file://` URLs. The Markdown links are relative, but `render_pdf.py` supplies a local `<base href=...>` before Chrome prints the PDF. There is no repository remote configured that can substitute as a stable public URL.
 
 **Plan.** Keep relative Markdown links for repository/HTML reading. In the PDF-render path, render external-document references as readable repository-relative paths (for example, `report/task1.md`) without machine-local clickable links. Use actual hyperlinks only when a stable published destination exists; internal PDF anchors are fine. Check all exported PDFs, not only the two annotated task links. Document where the full sources are found, without implying the PDF can open a sibling Markdown file on every reader's machine.
 

@@ -6,10 +6,10 @@ Usage:
 What is compared (the method used for the R4 reproduction numbers):
   * Result files: task2_results, task4b_results, task3_ceiling_results,
     task3_challenges_results, task3_estimator_audit, task5_results (.json).
-    Every leaf is flattened; keys naming provenance (run_id, code, git, env, hashes,
-    timestamps) and the L2 wall-clock field actual_calculation_wall_ms are skipped.
+    Every leaf is flattened; only the exact provenance and wall-clock keys in SKIP are
+    skipped (run ids, code/git/env records, source hashes, wall-clock times).
     Strings and booleans must be equal. Floats are counted as bit-identical or not,
-    and must agree within |a - b| <= 1e-12 + 1e-9 * max(|a|, |b|).
+    and must agree within |a - b| <= 1e-12 + 1e-9 * max(|a|, |b|); NaN must match NaN.
   * run_ids: per *_runs.json, the sets are compared; in task2/task4b, differing ids are
     classified as Monte Carlo (seed >= 100, the sampled plants) or not.
   * Figures: report/figs/*.png byte equality, and if bytes differ the share of
@@ -27,8 +27,10 @@ RESULTS = ("task2_results", "task4b_results", "task3_ceiling_results", "task3_ch
            "task3_estimator_audit", "task5_results")
 RUNS = ("task2_runs", "task4b_runs", "task3_ceiling_runs", "task3_challenges_runs")
 MONTE_CARLO = ("task2_runs", "task4b_runs")
-SKIP = ("run_id", "run_ids", "code", "git", "env", "hash", "sha", "manifest", "time", "date",
-        "source_hashes", "figure_checks", "stage", "wall_ms")
+# Exact provenance / wall-clock keys; everything else (including e.g. reshaping_pct,
+# first_usable_time_s, figure_checks) is compared.
+SKIP = {"run_id", "run_ids", "code", "code_hash", "git", "run_set_git", "env", "source_hash",
+        "source_hashes", "actual_calculation_wall_ms", "wall_time_s"}
 RTOL, ATOL = 1e-9, 1e-12
 
 
@@ -38,7 +40,7 @@ def flat(x, p=""):
         if set(x) == {"$float"}:                       # manifest encoding of nan/inf
             return {p: float(x["$float"])}
         for k, v in x.items():
-            if not any(s in k.lower() for s in SKIP):
+            if k not in SKIP:
                 out.update(flat(v, f"{p}.{k}"))
     elif isinstance(x, list):
         for i, v in enumerate(x):
@@ -59,6 +61,10 @@ def compare_results(pub, rep):
             if isinstance(x, float) and isinstance(y, float):
                 total_f += 1
                 if math.isnan(x) and math.isnan(y) or x == y:
+                    continue
+                if math.isnan(x) or math.isnan(y):                  # NaN vs a number is a difference
+                    not_bit += 1
+                    bad.append((k, x, y))
                     continue
                 not_bit += 1
                 rel = abs(x - y) / max(abs(x), abs(y))

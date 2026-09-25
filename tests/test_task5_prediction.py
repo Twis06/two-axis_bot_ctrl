@@ -116,8 +116,8 @@ class Task5DiscriminatingTests(unittest.TestCase):
         verdict = lambda inc: next(m["verdict"] for m in prediction_matrix(self._result(inc))
                                    if m["prediction"].startswith("coupling residual"))
         self.assertEqual(verdict(0.0136), "supported")
-        self.assertEqual(verdict(0.0), "failed")
-        self.assertEqual(verdict(0.03), "failed")
+        self.assertEqual(verdict(0.0), "not resolved by this post hoc peak metric")
+        self.assertEqual(verdict(0.03), "not resolved by this post hoc peak metric")
 
     def test_post_hoc_rows_are_labelled(self):
         from exp.task5_prediction import prediction_matrix

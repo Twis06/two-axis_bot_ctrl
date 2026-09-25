@@ -7,12 +7,12 @@ This file preserves the findings, rationale and acceptance checks from the plann
 | 1–2 · hardware stop state and electrical identification | Addressed in the one-page qualification plan: passive containment is required; blocked-axis `Kt` and guarded moving `Ke` are separate stages. |
 | 3 · Task 5 inference | Memo and HTML now narrow the selected post hoc residual metric and its Run B inference. A genuinely prospective closed-loop prediction remains unperformed and is not claimed. |
 | 4–6 · `int2`, Run A, B/C figure | Addressed in the memo/HTML and Task 2 answer; original experiment figures and numbers are unchanged. |
-| 7 · clean-checkout HTML | Builder no longer requires the ignored brief; the current 19-image HTML has matching source hashes and valid local links. Clean-archive rebuild remains to be checked after this editorial work is committed. |
+| 7 · clean-checkout HTML | Builder no longer requires the ignored brief. From a clean archive of `0073726`, the 19-image HTML, calculated diagram and ordered build manifest rebuild byte-identically; local links resolve. |
 | 8–9 · progress and release status | B/C path-clock meaning is qualified; current 262-test count and R6 round-two verdict are scoped to the reviewed commit. |
 | 10–11 · appendix and historical plot | Memo body remains four pages, with one full plot per appendix page; the early torque budget is labelled as an assumed historical fit. |
 | 12–16 · annotated memo | Opening, portable PDF paths, failure hypothesis, static holdability diagram and measured learning-redesign plan are addressed. The diagram is calculated for the explicit INF-P assumption, not a D/E payload estimate. |
 
-**Open before treating the edited tree as a reviewed release:** rebuild the HTML from a clean committed archive and obtain an independent review of the post-R6 editorial/qualification changes. R6 minor code findings r2-1 and r2-2 remain; fixing them would change the registered gate source and require a full L4 republication. R6 minor r2-6 still needs a documented float-leaf counting method. These do not alter the published R6 gate verdict. Future research work (prospective Task 5 test, payload-change challenge and physical qualification) is outside this submission's simulated evidence.
+**Open before treating the edited tree as independently reviewed:** obtain an independent review of the post-R6 editorial/qualification changes. R6 minor code findings r2-1 and r2-2 remain; fixing them would change the registered gate source and require a full L4 republication. R6 minor r2-6 still needs a documented float-leaf counting method. These do not alter the published R6 gate verdict. Future research work (prospective Task 5 test, payload-change challenge and physical qualification) is outside this submission's simulated evidence.
 
 ## 1. Correct the hardware stop-state promise — high priority
 

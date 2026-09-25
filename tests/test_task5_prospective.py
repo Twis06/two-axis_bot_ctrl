@@ -81,6 +81,31 @@ class TestOutcome(unittest.TestCase):
             self.assertEqual(T.outcome(rows, REG)["label"], "inconclusive", kw)
 
 
+class _Log:
+    events = []
+
+    def __init__(self, mode):
+        self.t = t
+        self.q = np.sin(W * t); self.c_q_c = np.sin(W * t); self.q_ref = np.sin(W * t)
+        self.c_gov_limited = np.zeros_like(t); self.clipped = np.zeros(t.size, bool); self.i = 0.5 * np.ones_like(t)
+        self.c_suspended = np.zeros_like(t); self.c_request_rejected = np.zeros_like(t); self.mode = mode
+
+
+class TestStartupFallback(unittest.TestCase):
+    """Pre-run review B1: the drive's start-up fallback ticks are not a fault."""
+
+    def test_startup_fallback_is_not_counted(self):
+        mode = np.zeros(t.size, int); mode[:3] = 1                 # first ticks before the first command
+        self.assertEqual(T.score_run(_Log(mode), 301, 1e-3, "x")["fallback_pct"], 0.0)
+
+    def test_fallback_inside_the_window_is_counted(self):
+        mode = np.zeros(t.size, int); mode[6000:6060] = 1          # 60 ms outage inside [4, 12) s
+        r = T.score_run(_Log(mode), 301, 1e-3, "x")
+        self.assertGreater(r["fallback_pct"], 0.0)
+        rows = grid(); rows[0].update(fallback_pct=r["fallback_pct"])
+        self.assertEqual(T.outcome(rows, REG)["label"], "inconclusive")
+
+
 class TestRegistration(unittest.TestCase):
     def test_registration_is_self_consistent_and_discriminating(self):
         p = T.prediction()
@@ -94,7 +119,8 @@ class TestRegistration(unittest.TestCase):
                        lambda r: r["protocol"].__setitem__("freq_hz", 2.9),
                        lambda r: r["prediction"]["dH"].__setitem__("re", r["prediction"]["dH"]["re"] + 1e-6),
                        lambda r: r["prediction"]["acceptance"].__setitem__("radius", 0.5),
-                       lambda r: r.__setitem__("baseline_fingerprint", "0" * 64)):
+                       lambda r: r.__setitem__("baseline_fingerprint", "0" * 64),
+                       lambda r: r.__setitem__("scorer_sha256", "0" * 64)):
             bad = copy.deepcopy(reg)
             mutate(bad)
             with tempfile.TemporaryDirectory() as d:

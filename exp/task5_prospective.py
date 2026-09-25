@@ -104,7 +104,7 @@ def _controller():
     return _CTL
 
 
-def predict_H(cmd_delay_s, fric_scale=1.0, discrete=True, base_shift=0.0, fb_shift=0.0, burst=True):
+def predict_H(cmd_delay_s, plant_fric_scale=1.0, discrete=True, base_shift=0.0, fb_shift=0.0, burst=True):
     """Closed-loop H = q / q_c at the registered frequency (Calculated).
     q = P * G * e^{-s T_ff} * [F q_c + C (q_c - e^{-s T_fb} q)], so
     H = P G e^{-sT_ff} (F + C) / (1 + P G C e^{-s (T_ff + T_fb)})."""
@@ -118,10 +118,10 @@ def predict_H(cmd_delay_s, fric_scale=1.0, discrete=True, base_shift=0.0, fb_shi
     # Describing functions (fundamental, in phase with velocity) of sign(v) at amplitude V:
     df = lambda V: 4.0 / (math.pi * V)
     v_ref = amp * w
-    F = ctl.J * s ** 2 + ctl.b * s + ctl.tau_g + fric_scale * 0.8 * ctl.tau_c * df(v_ref) * s
+    F = ctl.J * s ** 2 + ctl.b * s + ctl.tau_g + 0.8 * ctl.tau_c * df(v_ref) * s    # controller's own FF: exact
     H = 1.0 + 0j
     for _ in range(50):        # plant friction depends on the actual velocity amplitude
-        Pl = 1.0 / (P.J_R * s ** 2 + (P.B_VISC + fric_scale * P.TAU_C * df(abs(H) * v_ref)) * s + P.TAU_G)
+        Pl = 1.0 / (P.J_R * s ** 2 + (P.B_VISC + plant_fric_scale * P.TAU_C * df(abs(H) * v_ref)) * s + P.TAU_G)
         H_new = Pl * G * (F + C) / (1 + Pl * G * C * cmath.exp(-s * t_fb))
         if abs(H_new - H) < 1e-14:
             break
@@ -136,7 +136,7 @@ def prediction():
     H1, tm1 = predict_H(d1)
     dH = H1 - H0
     # Approximation bound: vary every modelling assumption over a declared range.
-    grid = dict(fric_scale=(0.5, 1.0, 1.5), discrete=(True, False),
+    grid = dict(plant_fric_scale=(0.5, 1.0, 1.5), discrete=(True, False),
                 base_shift=(-0.5e-3, 0.0, 0.5e-3), fb_shift=(-0.5e-3, 0.0, 0.5e-3), burst=(True, False))
     devs = []
     for vals in itertools.product(*grid.values()):
@@ -159,18 +159,30 @@ def prediction():
                    "peaking near 3 Hz. The model therefore predicts mainly a gain increase (about +0.5 dB) with "
                    "only about -1 deg of extra phase, i.e. dH points mostly along +Re. The region covers +-0.5 ms "
                    "in the command-path and feedback-age accounting, CAN bursts on/off, a continuous versus "
-                   "discrete controller, and friction describing-function gain x0.5-1.5, plus a fixed "
+                   "discrete controller, and the plant's friction describing-function gain x0.5-1.5 (the controller's "
+                   "friction feed-forward is its own and exact), plus a fixed "
                    f"{MEASUREMENT_FLOOR} floor for effects the linear model omits (friction harmonics, "
                    "quantization, integrator transients)."),
     )
 
 
 def registration():
-    return dict(schema=1, protocol=PROTOCOL, prediction=prediction(),
-                baseline_fingerprint=baseline_fingerprint()[0],
+    return dict(schema=2, protocol=PROTOCOL, prediction=prediction(),
+                baseline_fingerprint=baseline_fingerprint()[0], scorer_sha256=scorer_sha256(),
                 statement="Written and committed before any simulation of this condition. Outcome labels: "
                           "supported (measured mean dH inside the disc), contradicted (outside), "
                           "inconclusive (any pair invalid, faulted, suspended or rejected).")
+
+
+SCORING_FUNCTIONS = ("phasor", "transfer", "paired_grid", "score_run", "outcome")
+
+
+def scorer_sha256():
+    """sha256 of the source of the scoring and outcome functions: the registration binds them,
+    so the rules cannot change after registration without the run being refused."""
+    import inspect
+    src = "\n".join(inspect.getsource(globals()[n]) for n in SCORING_FUNCTIONS)
+    return hashlib.sha256(src.encode()).hexdigest()
 
 
 def _canon(d):
@@ -185,6 +197,8 @@ def check_registration():
     now = registration()
     if frozen["protocol"] != now["protocol"] or frozen["baseline_fingerprint"] != now["baseline_fingerprint"]:
         raise SystemExit("registration protocol or baseline differs from the code: refusing to run")
+    if frozen.get("scorer_sha256") != now["scorer_sha256"]:
+        raise SystemExit("scoring/outcome functions differ from the registered ones: refusing to run")
     a, b = frozen["prediction"], now["prediction"]
     for k in ("dH", "H_nominal", "H_delayed"):
         for part in ("re", "im"):
@@ -258,7 +272,9 @@ def score_run(log, seed, cmd_delay_s, rid):
         i_peak_A=float(np.max(np.abs(log.i))),
         suspended=bool(np.nanmax(log.c_suspended) > 0.5),
         rejected=bool(np.nanmax(log.c_request_rejected) > 0.5),
-        fallback_pct=100 * float(np.mean(log.mode > 0)),
+        # Scoring window only: the drive is always in fallback for the first ticks before the
+        # first valid command arrives (start-up, not a fault). A fault elsewhere latches an event.
+        fallback_pct=100 * float(np.mean(log.mode[m] > 0)),
         events=events,
     )
 

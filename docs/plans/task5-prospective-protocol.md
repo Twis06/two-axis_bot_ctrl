@@ -1,6 +1,6 @@
 # Task 5 — prospective closed-loop prediction: protocol (frozen before execution)
 
-**Status:** registered, not yet run. The numbers below are copied from `report/task5_prospective_registration.json`, which `python -m exp.task5_prospective --register` wrote and which is committed together with the predictor, scorer and tests, **before any simulation of this condition**. The first run happens in a later commit.
+**Status:** registered (version 2), not yet run. The numbers below are copied from `report/task5_prospective_registration.json`, which `python -m exp.task5_prospective --register` wrote and which is committed together with the predictor, scorer and tests, **before any simulation of this condition**. The first run happens in a later commit.
 
 ## Why this test
 
@@ -49,16 +49,16 @@
 | H(1 ms) | 1.0391 − 0.0078j (1.039∠−0.43°) |
 | H(5 ms) | 1.1058 − 0.0276j (1.106∠−1.43°) |
 | **ΔH** | **+0.0667 − 0.0199j** (0.070∠−16.6°): about +0.54 dB gain, −1.0° phase |
-| Acceptance | a disc of radius **0.0217** around ΔH (model bound 0.0117 + declared floor 0.010); **excludes 0** |
+| Acceptance | a disc of radius **0.0264** around ΔH (model bound 0.0164 + declared floor 0.010); **excludes 0** (|ΔH| = 2.6 × radius) |
 
 **Model bound.** The largest deviation of ΔH over the declared grid:
 
 - command-path and feedback-age accounting ±0.5 ms;
 - CAN bursts on or off;
 - discrete vs continuous controller;
-- friction describing-function gain × 0.5–1.5.
+- the plant's friction describing-function gain × 0.5–1.5. The controller's own friction feed-forward is known exactly and is not varied.
 
-**Floor.** The 0.010 floor covers effects the linear model omits: friction harmonics, quantization and integrator transients.
+**Floor.** The 0.010 floor covers effects the linear model omits: friction harmonics, quantization and integrator transients. It is a declared judgment, not derived or fitted.
 
 **Why this direction.** The extra 4 ms would lag the feed-forward by about 4.3° at 3 Hz. But it also removes about 6° of phase margin near the 4.46 Hz crossover, and that raises the closed-loop peaking. So the model predicts mainly a gain increase.
 
@@ -66,6 +66,23 @@
 
 - **Supported:** the measured mean ΔH lies inside the disc.
 - **Contradicted:** it lies outside.
-- **Inconclusive:** any registered cell is missing or duplicated, any transfer is invalid, or any run has a fault event, suspension, rejection or fallback.
+- **Inconclusive:** any registered cell is missing or duplicated, any transfer is invalid, or any run has a latched fault event, suspension or rejection, or drive fallback **inside the scoring window**. The drive's normal start-up fallback, the first ticks before the first valid command, is not a fault. Any later fallback latches an event.
 
 Every run is published whatever the outcome. No seeds, conditions, windows or metrics are added or changed after the first run.
+
+## Revision before any run: version 1 → version 2
+
+An independent pre-run review of version 1 (commit `1f4d982`) found one blocking defect.
+
+- **The defect:** the scorer counted drive fallback over the whole log. The drive is always in fallback for 2–3 ticks before the first valid command, so every run would have been scored inconclusive.
+- **Also adopted (non-blocking suggestions):**
+  - Friction uncertainty is applied to the plant only.
+  - The registration now binds a SHA-256 of the scoring and outcome functions (`scorer_sha256`), so any later change to them makes the run refuse.
+- **Unchanged:** the central prediction. Only the model bound, and hence the radius (0.0217 → 0.0264), changed.
+- **Ordering:** both versions were committed before any simulation of this condition.
+
+## Disclosed limitations of the prediction (from the pre-run review)
+
+- **Absolute gain may be low:** against Packet 4B's frictionless bench, the model's absolute |H| is low by about 0.025 at 4 Hz, consistent with 0.5–1 ms of unmodelled effective delay. Only ΔH is scored, and ΔH moves about 0.0024 per ms of extra delay.
+- **Reference sampling:** `c_q_c` is updated at 500 Hz and logged at 1 kHz, an effective 0.5 ms reference advance. It is common to both arms, about 0.0007 in ΔH.
+- **Not in the outcome rules:** governor limiting and clipping are recorded for every run but are not outcome rules. Neither is expected at this demand (about 0.17 N·m against a 0.308 N·m budget).

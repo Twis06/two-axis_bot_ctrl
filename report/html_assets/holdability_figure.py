@@ -35,7 +35,7 @@ def render(path=None):
 
     plt.rcParams.update({"font.size": 11.5, "axes.spines.top": False,
                          "axes.spines.right": False, "savefig.facecolor": "white",
-                         "svg.fonttype": "none"})
+                         "svg.fonttype": "none", "svg.hashsalt": "static-holdability-v1"})
     fig, (ax, band) = plt.subplots(2, 1, figsize=(9.4, 6.4), dpi=170,
                                    gridspec_kw={"height_ratios": [3.2, 1.15], "hspace": 0.16},
                                    sharex=True)
@@ -88,7 +88,9 @@ def render(path=None):
              fontsize=9.4, color="#454545", va="bottom")
     fig.subplots_adjust(left=0.30, right=0.98, top=0.79, bottom=0.18)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path, dpi=170)
+    metadata = ({"Date": None} if path.suffix == ".svg" else
+                {"CreationDate": None, "ModDate": None} if path.suffix == ".pdf" else None)
+    fig.savefig(path, dpi=170, metadata=metadata)
     if path.suffix == ".svg":
         path.write_text("\n".join(line.rstrip() for line in path.read_text().splitlines()) + "\n")
     plt.close(fig)

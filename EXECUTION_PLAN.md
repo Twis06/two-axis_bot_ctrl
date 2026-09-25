@@ -300,12 +300,12 @@ Before edits, record the working-tree source snapshot, original report hashes an
 
 **Owner:** provenance/reproduction agent; sole owner of final generated artifact publication. **Starts after:** R1–R3 source changes are frozen. **Files:** `run_all.py`, reproduction documentation, generated Task 3/4B/5 packets and manifests; source changes needed for correct staging only.
 
-- [ ] Preserve the old artifacts and registrations. Verify the frozen baseline fingerprint remains `7d857df507c389c9`; do not refreeze merely to suppress a mismatch.
-- [ ] Republish Packet 4B from its reviewed round-2 source, incorporating any shared scoring change that genuinely affects it. Verify generated tables/figures and source hashes correspond; reconcile the existing scratch-export/round-1 publication note.
-- [ ] Stage and publish R1/R2/R3 results only after each complete run succeeds and source hashes remain stable. New run IDs caused by an expanded declared source set must be explained, not mistaken for metric changes.
-- [ ] Make the documented full reproduction command cover tests, the declared current analyses, Task 2 evaluation/robustness, Task 3 L2/L4/supplementary validation, Task 4B and Task 5. Define quick mode honestly; it cannot satisfy the full gate. Preserve original prospective registration instead of regenerating it after results.
-- [ ] Construct a clean isolated delivery snapshot containing every required tracked and currently untracked source plus dependency versions. Identify it by full hashes. Run the full command there, retaining failures and logs. Avoid publishing partial success over the working evidence.
-- [ ] Compare regenerated metrics to corrected reference outputs using declared numerical tolerances. Classify differences as deliberate corrections, numerical/environment differences, or unexplained failures. Verify all selected figures and cited rows have traceable sources.
+- [x] Preserve the old artifacts and registrations. Verify the frozen baseline fingerprint remains `7d857df507c389c9`; do not refreeze merely to suppress a mismatch.
+- [x] Republish Packet 4B from its reviewed round-2 source, incorporating any shared scoring change that genuinely affects it. Verify generated tables/figures and source hashes correspond; reconcile the existing scratch-export/round-1 publication note.
+- [x] Stage and publish R1/R2/R3 results only after each complete run succeeds and source hashes remain stable. New run IDs caused by an expanded declared source set must be explained, not mistaken for metric changes.
+- [x] Make the documented full reproduction command cover tests, the declared current analyses, Task 2 evaluation/robustness, Task 3 L2/L4/supplementary validation, Task 4B and Task 5. Define quick mode honestly; it cannot satisfy the full gate. Preserve original prospective registration instead of regenerating it after results.
+- [x] Construct a clean isolated delivery snapshot containing every required tracked and currently untracked source plus dependency versions. Identify it by full hashes. Run the full command there, retaining failures and logs. Avoid publishing partial success over the working evidence.
+- [x] Compare regenerated metrics to corrected reference outputs using declared numerical tolerances. Classify differences as deliberate corrections, numerical/environment differences, or unexplained failures. Verify all selected figures and cited rows have traceable sources.
 
 **Gate:** a fresh recipient can reproduce the declared current evidence from the delivered snapshot with the documented command; no omitted scripts, source/result mismatch or failed stage is described as success. Do not claim a committed clean checkout unless the required sources are actually included in one.
 

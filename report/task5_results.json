@@ -1,4 +1,105 @@
 {
+  "analysis": "R2 retrospective correction: windows, units and prediction-to-measurement mapping",
+  "metric_defs": {
+    "controller_coupling_ff_peak_current_A": "that torque / nominal Kt: the commanded coupling FF current, A",
+    "controller_coupling_ff_peak_torque_Nm": "max |c_tau_cpl| over the window: the controller's estimated coupling feed-forward torque, N m",
+    "coupling_estimate_ls_gain": "least-squares gain of c_tau_cpl on the aligned true coupling over the window",
+    "coupling_estimate_peak_ratio": "max|c_tau_cpl| / max|true coupling| over the window (a peak statistic)",
+    "coupling_residual_peak_Nm": "max over the window of |tau_couple(t + T_act) - (Kt_true/Kt_nom) c_tau_cpl(t)|: coupling torque the unchanged feed-forward leaves for feedback, N m (FF on only)",
+    "coupling_residual_peak_by_shift_ms": "residual peak for alignments of 0, 2, 4, 6 ms (sensitivity)",
+    "governed_rms_deg": "RMS of q - c_q_c over the window (governed reference actually commanded)",
+    "ideal_true_coupling_peak_current_A": "max |tau_couple| / true Kt: current an ideal controller would need for the true coupling in this plant, A",
+    "original_rms_deg": "RMS of q - q_req(t) over the window (original request, wall clock)",
+    "whole_run": "whole-run (0-8 s) safety evidence kept separately: events, trips, clipping, peak current",
+    "window": "every windowed quantity uses t in [2, 8) s (the registered window)",
+    "yaw_scale_end_of_run": "yaw planner scale at the end of the run (not windowed)"
+  },
+  "prediction_matrix": [
+    {
+      "basis": "registered",
+      "measured": "logged true coupling peak, weakened runs (median)",
+      "note": "the simulator's coupling uses the same equation; this checks arithmetic, not the hardware explanation",
+      "predicted": 0.135622193311501,
+      "prediction": "peak coupling torque of the registered yaw trajectory",
+      "tolerance": "none registered",
+      "unit": "N m",
+      "value": 0.135622193311501,
+      "verdict": "consistency check only",
+      "window": "[2, 8) s"
+    },
+    {
+      "basis": "registered",
+      "measured": "ideal true-plant coupling current peak, nominal motor (median)",
+      "note": "the like-for-like quantity is again the prescribed model's arithmetic",
+      "predicted": 0.968729952225007,
+      "prediction": "peak ideal coupling current at nominal Kt (registered primary component metric)",
+      "tolerance": "+/-0.15 A",
+      "unit": "A",
+      "value": 0.968729952225007,
+      "verdict": "consistency check only",
+      "window": "[2, 8) s"
+    },
+    {
+      "basis": "post hoc",
+      "measured": "controller's commanded coupling FF current peak, nominal motor (median)",
+      "note": "the causal estimate's sustained gain is 1.046-1.047 (least squares, about +5 %) while its peak ratio is 1.172-1.200: the +20 % is transient overshoot at the coupling extrema, not a sustained gain error",
+      "predicted": 0.968729952225007,
+      "prediction": "DIAGNOSTIC (post hoc): commanded coupling FF current of the frozen baseline",
+      "tolerance": "+/-0.15 A applied for reference only",
+      "unit": "A",
+      "value": 1.1597355121324384,
+      "verdict": "diagnostic (peak outside tolerance)",
+      "window": "[2, 8) s"
+    },
+    {
+      "basis": "registered",
+      "measured": "ideal true-plant coupling current, weak minus nominal (median, paired)",
+      "note": "the ideal value is the prescribed model's arithmetic; the commanded coupling FF current does not rise (paired change +0.0000 A, nominal FF unchanged), and the extra current feedback supplies for the coupling component is not separable in the total current",
+      "predicted": 0.10763666135833416,
+      "prediction": "extra ideal coupling current at Kt x 0.90",
+      "tolerance": "+/-0.15 A registered; it includes 0 A, so it cannot discriminate the predicted change from no change",
+      "unit": "A",
+      "value": 0.10763666135833394,
+      "verdict": "not tested",
+      "window": "[2, 8) s"
+    },
+    {
+      "basis": "post hoc operationalization",
+      "measured": "increase of the measured coupling-residual PEAK, weak minus nominal, FF on (median, paired); metric chosen after the results",
+      "note": "paired range -0.0027 to +0.0003 N m; by alignment 0/2/4/6 ms: +0.0017, +0.0003, -0.0007, -0.0021 (fails at every alignment); RMS residual change -0.0003 N m. The residual PEAK is dominated by the estimator's transient error (about 0.03 N m), so a difference of peaks cannot resolve an added 0.0136 N m component. DIAGNOSTIC plan mode (exact FF): +0.0123 N m, within tolerance: the prediction holds when FF equals the true coupling",
+      "predicted": 0.0135622193311501,
+      "prediction": "coupling residual left by unchanged nominal FF",
+      "tolerance": "+/-0.01 N m (registered)",
+      "unit": "N m",
+      "value": -0.0007356018331432373,
+      "verdict": "failed",
+      "window": "[2, 8) s"
+    },
+    {
+      "basis": "post hoc criterion",
+      "measured": "governed RMS, FF off minus FF on, weak motor (median, paired)",
+      "note": "FF off is worse by +3.505 to +3.886 deg in the 3 pairs",
+      "predicted": null,
+      "prediction": "qualitative: yaw feed-forward remains valuable with the weaker motor",
+      "tolerance": "sign in every pair (criterion chosen afterwards)",
+      "unit": "deg",
+      "value": 3.6784435189423417,
+      "verdict": "supported",
+      "window": "[2, 8) s"
+    },
+    {
+      "basis": "post hoc criterion",
+      "measured": "governed RMS, weak minus nominal motor, FF on (median, paired)",
+      "note": "2 of 3 pairs increase; paired range -0.002 to +0.058 deg (the original analysis had the same negative pair)",
+      "predicted": null,
+      "prediction": "qualitative: a weaker motor leaves more tracking error for feedback",
+      "tolerance": "sign in every pair (criterion chosen afterwards)",
+      "unit": "deg",
+      "value": 0.05397703706206103,
+      "verdict": "not uniform",
+      "window": "[2, 8) s"
+    }
+  ],
   "quick": false,
   "registration": {
     "back_emf_ratio": 0.9,
@@ -7,11 +108,11 @@
     "motor_strength_ratio": 0.9,
     "prediction": {
       "component_current_tolerance_A": 0.15,
-      "coupling_peak_current_A": 0.9687299522250176,
-      "coupling_peak_torque_Nm": 0.13562219331150246,
-      "extra_current_A": 0.10763666135833533,
+      "coupling_peak_current_A": 0.968729952225007,
+      "coupling_peak_torque_Nm": 0.135622193311501,
+      "extra_current_A": 0.10763666135833416,
       "rationale": "The plant coupling torque is unchanged. Ideal current is inverse in true Kt; the unchanged nominal feed-forward therefore delivers 0.90 of the intended torque, leaving 0.10 of the peak coupling torque as residual.",
-      "residual_torque_Nm": 0.013562219331150243,
+      "residual_torque_Nm": 0.0135622193311501,
       "residual_torque_tolerance_Nm": 0.01
     },
     "primary_component_metric": "peak ideal yaw-coupling current from the registered 1.5 Hz trajectory",
@@ -19,13 +120,6 @@
       "exact_matched_condition_new": true,
       "note": "Prior evidence contains Kt \u00b115% random/corner cases, including combined corners, but not this nominal Run B, Kt\u00d70.90 paired intervention with seeds 21\u201323."
     },
-    "secondary_metrics": [
-      "measured peak/RMS current",
-      "governed RMS error",
-      "path/original RMS error",
-      "yaw scale",
-      "fault events"
-    ],
     "seeds": [
       21,
       22,
@@ -36,258 +130,756 @@
       8.0
     ]
   },
+  "registration_audit": {
+    "differences": [
+      {
+        "frozen": 0.968729952225007,
+        "key": "prediction.coupling_peak_current_A",
+        "kind": "numeric, relative 1.1e-14",
+        "regenerated": 0.9687299522250176
+      },
+      {
+        "frozen": 0.135622193311501,
+        "key": "prediction.coupling_peak_torque_Nm",
+        "kind": "numeric, relative 1.1e-14",
+        "regenerated": 0.13562219331150246
+      },
+      {
+        "frozen": 0.10763666135833416,
+        "key": "prediction.extra_current_A",
+        "kind": "numeric, relative 1.1e-14",
+        "regenerated": 0.10763666135833533
+      },
+      {
+        "frozen": 0.0135622193311501,
+        "key": "prediction.residual_torque_Nm",
+        "kind": "numeric, relative 1.0e-14",
+        "regenerated": 0.013562219331150243
+      },
+      {
+        "frozen": "<absent>",
+        "key": "secondary_metrics",
+        "kind": "structural",
+        "regenerated": [
+          "measured peak/RMS current",
+          "governed RMS error",
+          "path/original RMS error",
+          "yaw scale",
+          "fault events"
+        ]
+      }
+    ],
+    "frozen_file": "report/task5_registration.json",
+    "ordering_evidence": "registration and original results were first committed together (f19fff2); git gives no evidence that the registration preceded the run"
+  },
   "rows": [
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 1.1597355121324384,
+      "controller_coupling_ff_peak_torque_Nm": 0.1623629716985414,
+      "coupling_estimate_ls_gain": 1.0473904559341614,
+      "coupling_estimate_peak_ratio": 1.1971711099349456,
+      "coupling_residual_peak_Nm": 0.030294810596250568,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.027178237484426576,
+        "2": 0.028541472915031244,
+        "4": 0.030294810596250568,
+        "6": 0.032082901478295886
+      },
+      "coupling_residual_rms_Nm": 0.010158314732998872,
       "events": [],
       "governed_peak_deg": 0.7595638276447232,
-      "governed_rms_deg": 0.3619370659752031,
+      "governed_rms_deg": 0.374033619675546,
+      "ideal_true_coupling_peak_current_A": 0.968729952225007,
       "measured_peak_current_A": 1.2555801459593445,
       "measured_rms_current_A": 0.7283053484229064,
       "motor_strength_ratio": 1.0,
-      "original_rms_deg": 0.3619370659752031,
-      "path_speed": 0.99925,
-      "predicted_coupling_peak_current_A": 0.1623629716985414,
+      "original_rms_deg": 0.374033619675546,
+      "path_speed": 1.0,
       "seed": 21,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": true,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.3619370659752031,
+        "measured_peak_current_A": 1.2555801459593445,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.0,
+      "controller_coupling_ff_peak_torque_Nm": 0.0,
+      "coupling_estimate_ls_gain": NaN,
+      "coupling_estimate_peak_ratio": NaN,
+      "coupling_residual_peak_Nm": NaN,
+      "coupling_residual_peak_by_shift_ms": {},
+      "coupling_residual_rms_Nm": NaN,
       "events": [],
       "governed_peak_deg": 6.136990103351239,
-      "governed_rms_deg": 3.363383851479528,
+      "governed_rms_deg": 3.5110319427593657,
+      "ideal_true_coupling_peak_current_A": 0.968729952225007,
       "measured_peak_current_A": 1.0540197193074952,
       "measured_rms_current_A": 0.5802152295313509,
       "motor_strength_ratio": 1.0,
-      "original_rms_deg": 3.363383851479528,
-      "path_speed": 0.99925,
-      "predicted_coupling_peak_current_A": 0.0,
+      "original_rms_deg": 3.5110319427593657,
+      "path_speed": 1.0,
       "seed": 21,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": false,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 3.363383851479528,
+        "measured_peak_current_A": 1.0540197193074952,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.9687292188279615,
+      "controller_coupling_ff_peak_torque_Nm": 0.13562209063591463,
+      "coupling_estimate_ls_gain": 0.9999746509937144,
+      "coupling_estimate_peak_ratio": 0.9999992429293182,
+      "coupling_residual_peak_Nm": 0.001278205420814582,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.00511252959885794,
+        "2": 0.0025563802709420436,
+        "4": 0.001278205420814582,
+        "6": 0.0038344867053331927
+      },
+      "coupling_residual_rms_Nm": 0.0006391093210965926,
+      "events": [],
+      "governed_peak_deg": 0.6525282185314898,
+      "governed_rms_deg": 0.345260099485244,
+      "ideal_true_coupling_peak_current_A": 0.968729952225007,
+      "measured_peak_current_A": 1.1343692853570622,
+      "measured_rms_current_A": 0.69246843681001,
+      "motor_strength_ratio": 1.0,
+      "original_rms_deg": 0.345260099485244,
+      "path_speed": 1.0,
+      "seed": 21,
+      "true_coupling_peak_torque_Nm": 0.135622193311501,
+      "use_yaw_ff": true,
+      "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.3328074318261005,
+        "measured_peak_current_A": 1.1343692853570622,
+        "watchdog_trips": 0
+      },
+      "window_s": [
+        2.0,
+        8.0
+      ],
+      "yaw_info": "plan",
+      "yaw_scale_end_of_run": 1.0
+    },
+    {
+      "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 1.1597355121324384,
+      "controller_coupling_ff_peak_torque_Nm": 0.1623629716985414,
+      "coupling_estimate_ls_gain": 1.0473904559341614,
+      "coupling_estimate_peak_ratio": 1.1971711099349456,
+      "coupling_residual_peak_Nm": 0.02955920876310733,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.02891169330231591,
+        "2": 0.029259349996707595,
+        "4": 0.02955920876310733,
+        "6": 0.02981116306312301
+      },
+      "coupling_residual_rms_Nm": 0.009853998423776227,
       "events": [],
       "governed_peak_deg": 0.8722313523925751,
-      "governed_rms_deg": 0.4105147076737022,
+      "governed_rms_deg": 0.4319700897605567,
+      "ideal_true_coupling_peak_current_A": 1.076366613583341,
       "measured_peak_current_A": 1.2889414945848412,
       "measured_rms_current_A": 0.7360994626945736,
       "motor_strength_ratio": 0.9,
-      "original_rms_deg": 0.4105147076737022,
-      "path_speed": 0.99925,
-      "predicted_coupling_peak_current_A": 0.1623629716985414,
+      "original_rms_deg": 0.4319700897605567,
+      "path_speed": 1.0,
       "seed": 21,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": true,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.4105147076737022,
+        "measured_peak_current_A": 1.2889414945848412,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.0,
+      "controller_coupling_ff_peak_torque_Nm": 0.0,
+      "coupling_estimate_ls_gain": NaN,
+      "coupling_estimate_peak_ratio": NaN,
+      "coupling_residual_peak_Nm": NaN,
+      "coupling_residual_peak_by_shift_ms": {},
+      "coupling_residual_rms_Nm": NaN,
       "events": [],
       "governed_peak_deg": 6.894760030509981,
-      "governed_rms_deg": 3.7676123736210796,
+      "governed_rms_deg": 3.9364772521676823,
+      "ideal_true_coupling_peak_current_A": 1.076366613583341,
       "measured_peak_current_A": 1.173203744365937,
       "measured_rms_current_A": 0.6498681965846654,
       "motor_strength_ratio": 0.9,
-      "original_rms_deg": 3.7676123736210796,
-      "path_speed": 0.99925,
-      "predicted_coupling_peak_current_A": 0.0,
+      "original_rms_deg": 3.9364772521676823,
+      "path_speed": 1.0,
       "seed": 21,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": false,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 3.7676123736210796,
+        "measured_peak_current_A": 1.173203744365937,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.9687292188279615,
+      "controller_coupling_ff_peak_torque_Nm": 0.13562209063591463,
+      "coupling_estimate_ls_gain": 0.9999746509937144,
+      "coupling_estimate_peak_ratio": 0.9999992429293182,
+      "coupling_residual_peak_Nm": 0.01361631694712466,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.014403356610042259,
+        "2": 0.013777315386835493,
+        "4": 0.01361631694712466,
+        "6": 0.014041597634497749
+      },
+      "coupling_residual_rms_Nm": 0.009609265181493512,
+      "events": [],
+      "governed_peak_deg": 0.7770958410720518,
+      "governed_rms_deg": 0.37341697747707403,
+      "ideal_true_coupling_peak_current_A": 1.076366613583341,
+      "measured_peak_current_A": 1.148825293158969,
+      "measured_rms_current_A": 0.6980774556806547,
+      "motor_strength_ratio": 0.9,
+      "original_rms_deg": 0.37341697747707403,
+      "path_speed": 1.0,
+      "seed": 21,
+      "true_coupling_peak_torque_Nm": 0.135622193311501,
+      "use_yaw_ff": true,
+      "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.35853846593583405,
+        "measured_peak_current_A": 1.148825293158969,
+        "watchdog_trips": 0
+      },
+      "window_s": [
+        2.0,
+        8.0
+      ],
+      "yaw_info": "plan",
+      "yaw_scale_end_of_run": 1.0
+    },
+    {
+      "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 1.1620153555644164,
+      "controller_coupling_ff_peak_torque_Nm": 0.1626821497790183,
+      "coupling_estimate_ls_gain": 1.0464336455335488,
+      "coupling_estimate_peak_ratio": 1.199524545406556,
+      "coupling_residual_peak_Nm": 0.031081181517788867,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.027996070927052114,
+        "2": 0.029327843836569542,
+        "4": 0.031081181517788867,
+        "6": 0.03286927239983484
+      },
+      "coupling_residual_rms_Nm": 0.010219952720591433,
       "events": [],
       "governed_peak_deg": 0.5520193965046588,
-      "governed_rms_deg": 0.22235997877945746,
+      "governed_rms_deg": 0.24285058072446034,
+      "ideal_true_coupling_peak_current_A": 0.968729952225007,
       "measured_peak_current_A": 1.20375942413899,
       "measured_rms_current_A": 0.722839287920817,
       "motor_strength_ratio": 1.0,
-      "original_rms_deg": 0.22235997877945746,
-      "path_speed": 0.999,
-      "predicted_coupling_peak_current_A": 0.1626821497790183,
+      "original_rms_deg": 0.24285058072446034,
+      "path_speed": 1.0,
       "seed": 22,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": true,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.22235997877945746,
+        "measured_peak_current_A": 1.20375942413899,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.0,
+      "controller_coupling_ff_peak_torque_Nm": 0.0,
+      "coupling_estimate_ls_gain": NaN,
+      "coupling_estimate_peak_ratio": NaN,
+      "coupling_residual_peak_Nm": NaN,
+      "coupling_residual_peak_by_shift_ms": {},
+      "coupling_residual_rms_Nm": NaN,
       "events": [],
       "governed_peak_deg": 5.8485308022699805,
-      "governed_rms_deg": 3.284106586819684,
+      "governed_rms_deg": 3.497808322111364,
+      "ideal_true_coupling_peak_current_A": 0.968729952225007,
       "measured_peak_current_A": 1.121696402999956,
       "measured_rms_current_A": 0.5842013005590075,
       "motor_strength_ratio": 1.0,
-      "original_rms_deg": 3.284106586819684,
-      "path_speed": 0.999,
-      "predicted_coupling_peak_current_A": 0.0,
+      "original_rms_deg": 3.497808322111364,
+      "path_speed": 1.0,
       "seed": 22,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": false,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 3.284106586819684,
+        "measured_peak_current_A": 1.121696402999956,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.9687292188279615,
+      "controller_coupling_ff_peak_torque_Nm": 0.13562209063591463,
+      "coupling_estimate_ls_gain": 0.9999746509937144,
+      "coupling_estimate_peak_ratio": 0.9999992429293182,
+      "coupling_residual_peak_Nm": 0.001278205420814582,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.00511252959885794,
+        "2": 0.0025563802709420436,
+        "4": 0.001278205420814582,
+        "6": 0.0038344867053331927
+      },
+      "coupling_residual_rms_Nm": 0.0006391093210965926,
+      "events": [],
+      "governed_peak_deg": 0.4429678507184623,
+      "governed_rms_deg": 0.1925089600669587,
+      "ideal_true_coupling_peak_current_A": 0.968729952225007,
+      "measured_peak_current_A": 1.0743554090034229,
+      "measured_rms_current_A": 0.6875861799605698,
+      "motor_strength_ratio": 1.0,
+      "original_rms_deg": 0.1925089600669587,
+      "path_speed": 1.0,
+      "seed": 22,
+      "true_coupling_peak_torque_Nm": 0.135622193311501,
+      "use_yaw_ff": true,
+      "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.1779074165853709,
+        "measured_peak_current_A": 1.0743554090034229,
+        "watchdog_trips": 0
+      },
+      "window_s": [
+        2.0,
+        8.0
+      ],
+      "yaw_info": "plan",
+      "yaw_scale_end_of_run": 1.0
+    },
+    {
+      "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 1.1620153555644164,
+      "controller_coupling_ff_peak_torque_Nm": 0.1626821497790183,
+      "coupling_estimate_ls_gain": 1.0464336455335488,
+      "coupling_estimate_peak_ratio": 1.199524545406556,
+      "coupling_residual_peak_Nm": 0.02833303875473348,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.02557762683391851,
+        "2": 0.025877485600318245,
+        "4": 0.02833303875473348,
+        "6": 0.030799711348708295
+      },
+      "coupling_residual_rms_Nm": 0.00998511812805793,
       "events": [],
       "governed_peak_deg": 0.5845450263498514,
-      "governed_rms_deg": 0.21987215254140682,
+      "governed_rms_deg": 0.2409324874362474,
+      "ideal_true_coupling_peak_current_A": 1.076366613583341,
       "measured_peak_current_A": 1.202948743402635,
       "measured_rms_current_A": 0.7277414324375753,
       "motor_strength_ratio": 0.9,
-      "original_rms_deg": 0.21987215254140682,
-      "path_speed": 0.999,
-      "predicted_coupling_peak_current_A": 0.1626821497790183,
+      "original_rms_deg": 0.2409324874362474,
+      "path_speed": 1.0,
       "seed": 22,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": true,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.21987215254140682,
+        "measured_peak_current_A": 1.2035908050570254,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.0,
+      "controller_coupling_ff_peak_torque_Nm": 0.0,
+      "coupling_estimate_ls_gain": NaN,
+      "coupling_estimate_peak_ratio": NaN,
+      "coupling_residual_peak_Nm": NaN,
+      "coupling_residual_peak_by_shift_ms": {},
+      "coupling_residual_rms_Nm": NaN,
       "events": [],
       "governed_peak_deg": 6.571613879724118,
-      "governed_rms_deg": 3.6767070890888953,
+      "governed_rms_deg": 3.919376006378589,
+      "ideal_true_coupling_peak_current_A": 1.076366613583341,
       "measured_peak_current_A": 1.261466157677209,
       "measured_rms_current_A": 0.6537168760280763,
       "motor_strength_ratio": 0.9,
-      "original_rms_deg": 3.6767070890888953,
-      "path_speed": 0.999,
-      "predicted_coupling_peak_current_A": 0.0,
+      "original_rms_deg": 3.919376006378589,
+      "path_speed": 1.0,
       "seed": 22,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": false,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 3.6767070890888953,
+        "measured_peak_current_A": 1.261466157677209,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.9687292188279615,
+      "controller_coupling_ff_peak_torque_Nm": 0.13562209063591463,
+      "coupling_estimate_ls_gain": 0.9999746509937144,
+      "coupling_estimate_peak_ratio": 0.9999992429293182,
+      "coupling_residual_peak_Nm": 0.01361631694712466,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.014403356610042259,
+        "2": 0.013777315386835493,
+        "4": 0.01361631694712466,
+        "6": 0.014041597634497749
+      },
+      "coupling_residual_rms_Nm": 0.009609265181493512,
+      "events": [],
+      "governed_peak_deg": 0.713995863601076,
+      "governed_rms_deg": 0.2507831784809263,
+      "ideal_true_coupling_peak_current_A": 1.076366613583341,
+      "measured_peak_current_A": 1.1041114617880545,
+      "measured_rms_current_A": 0.6941237361116254,
+      "motor_strength_ratio": 0.9,
+      "original_rms_deg": 0.2507831784809263,
+      "path_speed": 1.0,
+      "seed": 22,
+      "true_coupling_peak_torque_Nm": 0.135622193311501,
+      "use_yaw_ff": true,
+      "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.22633228302489203,
+        "measured_peak_current_A": 1.1041114617880545,
+        "watchdog_trips": 0
+      },
+      "window_s": [
+        2.0,
+        8.0
+      ],
+      "yaw_info": "plan",
+      "yaw_scale_end_of_run": 1.0
+    },
+    {
+      "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 1.1350822440172574,
+      "controller_coupling_ff_peak_torque_Nm": 0.15891151416241606,
+      "coupling_estimate_ls_gain": 1.046985730251772,
+      "coupling_estimate_peak_ratio": 1.1717220484513435,
+      "coupling_residual_peak_Nm": 0.03160547674735696,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.02663636910259866,
+        "2": 0.029126589755530716,
+        "4": 0.03160547674735696,
+        "6": 0.03407214934133087
+      },
+      "coupling_residual_rms_Nm": 0.0101620423999429,
       "events": [],
       "governed_peak_deg": 0.6067348113240101,
-      "governed_rms_deg": 0.24194824359296968,
+      "governed_rms_deg": 0.2738867041773904,
+      "ideal_true_coupling_peak_current_A": 0.968729952225007,
       "measured_peak_current_A": 1.231341093335532,
       "measured_rms_current_A": 0.7307702195836149,
       "motor_strength_ratio": 1.0,
-      "original_rms_deg": 0.24194824359296968,
-      "path_speed": 0.99925,
-      "predicted_coupling_peak_current_A": 0.15891151416241606,
+      "original_rms_deg": 0.2738867041773904,
+      "path_speed": 1.0,
       "seed": 23,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": true,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.24194824359296968,
+        "measured_peak_current_A": 1.231341093335532,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.0,
+      "controller_coupling_ff_peak_torque_Nm": 0.0,
+      "coupling_estimate_ls_gain": NaN,
+      "coupling_estimate_peak_ratio": NaN,
+      "coupling_residual_peak_Nm": NaN,
+      "coupling_residual_peak_by_shift_ms": {},
+      "coupling_residual_rms_Nm": NaN,
       "events": [],
       "governed_peak_deg": 6.094336374370371,
-      "governed_rms_deg": 3.525945037309498,
+      "governed_rms_deg": 3.7584480772307067,
+      "ideal_true_coupling_peak_current_A": 0.968729952225007,
       "measured_peak_current_A": 1.1207889855471056,
       "measured_rms_current_A": 0.6258496309303266,
       "motor_strength_ratio": 1.0,
-      "original_rms_deg": 3.525945037309498,
-      "path_speed": 0.99925,
-      "predicted_coupling_peak_current_A": 0.0,
+      "original_rms_deg": 3.7584480772307067,
+      "path_speed": 1.0,
       "seed": 23,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": false,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 3.525945037309498,
+        "measured_peak_current_A": 1.1207889855471056,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.9687292188279615,
+      "controller_coupling_ff_peak_torque_Nm": 0.13562209063591463,
+      "coupling_estimate_ls_gain": 0.9999746509937144,
+      "coupling_estimate_peak_ratio": 0.9999992429293182,
+      "coupling_residual_peak_Nm": 0.001278205420814582,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.00511252959885794,
+        "2": 0.0025563802709420436,
+        "4": 0.001278205420814582,
+        "6": 0.0038344867053331927
+      },
+      "coupling_residual_rms_Nm": 0.0006391093210965926,
       "events": [],
-      "governed_peak_deg": 0.7314450172944126,
-      "governed_rms_deg": 0.2887834427302359,
-      "measured_peak_current_A": 1.2569212508134255,
-      "measured_rms_current_A": 0.7352572900067728,
-      "motor_strength_ratio": 0.9,
-      "original_rms_deg": 0.2887834427302359,
-      "path_speed": 0.99925,
-      "predicted_coupling_peak_current_A": 0.15891151416241606,
+      "governed_peak_deg": 0.5670760060963038,
+      "governed_rms_deg": 0.26024276596498924,
+      "ideal_true_coupling_peak_current_A": 0.968729952225007,
+      "measured_peak_current_A": 1.1378361587340629,
+      "measured_rms_current_A": 0.6951233722904497,
+      "motor_strength_ratio": 1.0,
+      "original_rms_deg": 0.26024276596498924,
+      "path_speed": 1.0,
       "seed": 23,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": true,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.23104169101592184,
+        "measured_peak_current_A": 1.1378361587340629,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "plan",
+      "yaw_scale_end_of_run": 1.0
     },
     {
       "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 1.1350822440172574,
+      "controller_coupling_ff_peak_torque_Nm": 0.15891151416241606,
+      "coupling_estimate_ls_gain": 1.046985730251772,
+      "coupling_estimate_peak_ratio": 1.1717220484513435,
+      "coupling_residual_peak_Nm": 0.03188274543825502,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.029025289991354966,
+        "2": 0.029403858446428777,
+        "4": 0.03188274543825502,
+        "6": 0.03434941803222893
+      },
+      "coupling_residual_rms_Nm": 0.009891036971092707,
+      "events": [],
+      "governed_peak_deg": 0.7314450172944126,
+      "governed_rms_deg": 0.32786374123945144,
+      "ideal_true_coupling_peak_current_A": 1.076366613583341,
+      "measured_peak_current_A": 1.2569212508134255,
+      "measured_rms_current_A": 0.7352572900067728,
+      "motor_strength_ratio": 0.9,
+      "original_rms_deg": 0.32786374123945144,
+      "path_speed": 1.0,
+      "seed": 23,
+      "true_coupling_peak_torque_Nm": 0.135622193311501,
+      "use_yaw_ff": true,
+      "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.2887834427302359,
+        "measured_peak_current_A": 1.2569212508134255,
+        "watchdog_trips": 0
+      },
+      "window_s": [
+        2.0,
+        8.0
+      ],
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
+    },
+    {
+      "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.0,
+      "controller_coupling_ff_peak_torque_Nm": 0.0,
+      "coupling_estimate_ls_gain": NaN,
+      "coupling_estimate_peak_ratio": NaN,
+      "coupling_residual_peak_Nm": NaN,
+      "coupling_residual_peak_by_shift_ms": {},
+      "coupling_residual_rms_Nm": NaN,
       "events": [],
       "governed_peak_deg": 6.832318975455987,
-      "governed_rms_deg": 3.950225206210535,
+      "governed_rms_deg": 4.2136211584084275,
+      "ideal_true_coupling_peak_current_A": 1.076366613583341,
       "measured_peak_current_A": 1.2522387770424763,
       "measured_rms_current_A": 0.7008651265188416,
       "motor_strength_ratio": 0.9,
-      "original_rms_deg": 3.950225206210535,
-      "path_speed": 0.99925,
-      "predicted_coupling_peak_current_A": 0.0,
+      "original_rms_deg": 4.2136211584084275,
+      "path_speed": 1.0,
       "seed": 23,
       "true_coupling_peak_torque_Nm": 0.135622193311501,
       "use_yaw_ff": false,
       "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 3.950225206210535,
+        "measured_peak_current_A": 1.2522387770424763,
+        "watchdog_trips": 0
+      },
       "window_s": [
         2.0,
         8.0
       ],
-      "yaw_scale": 1.0
+      "yaw_info": "estimate",
+      "yaw_scale_end_of_run": 1.0
+    },
+    {
+      "clip_pct": 0.0,
+      "controller_coupling_ff_peak_current_A": 0.9687292188279615,
+      "controller_coupling_ff_peak_torque_Nm": 0.13562209063591463,
+      "coupling_estimate_ls_gain": 0.9999746509937144,
+      "coupling_estimate_peak_ratio": 0.9999992429293182,
+      "coupling_residual_peak_Nm": 0.01361631694712466,
+      "coupling_residual_peak_by_shift_ms": {
+        "0": 0.014403356610042259,
+        "2": 0.013777315386835493,
+        "4": 0.01361631694712466,
+        "6": 0.014041597634497749
+      },
+      "coupling_residual_rms_Nm": 0.009609265181493512,
+      "events": [],
+      "governed_peak_deg": 0.6900281877479496,
+      "governed_rms_deg": 0.3140309395040723,
+      "ideal_true_coupling_peak_current_A": 1.076366613583341,
+      "measured_peak_current_A": 1.1551483887770477,
+      "measured_rms_current_A": 0.6998709927341099,
+      "motor_strength_ratio": 0.9,
+      "original_rms_deg": 0.3140309395040723,
+      "path_speed": 1.0,
+      "seed": 23,
+      "true_coupling_peak_torque_Nm": 0.135622193311501,
+      "use_yaw_ff": true,
+      "watchdog_trips": 0,
+      "whole_run": {
+        "clip_pct": 0.0,
+        "events": [],
+        "governed_rms_deg": 0.27782018296929595,
+        "measured_peak_current_A": 1.1551483887770477,
+        "watchdog_trips": 0
+      },
+      "window_s": [
+        2.0,
+        8.0
+      ],
+      "yaw_info": "plan",
+      "yaw_scale_end_of_run": 1.0
     }
   ],
   "scenario": {
@@ -301,7 +893,7 @@
     "ctrl/supervisor.py": "fb2146ce4c58ede1b2b5dd4872534527b842a4d9cc61763e610142102267e68e",
     "exp/common.py": "0cbdaa05925f997704e3158bdb4b6ac5ea313432755787aefccd922bbd783198",
     "exp/scenarios.py": "d3b543c9db8bdc6e4c35c5905e18a99261029dec33696b6a787cc7757a49f9bc",
-    "exp/task5_prediction.py": "379fec13b5e531c6e84f5ab7beebed423c30ff8791a0468a8407ab3fec562ded",
+    "exp/task5_prediction.py": "1bab613d23374bdc97d09c3d6d18bd7a9a8ca4ddc7ddc57eb9c2391a6fe2efd7",
     "sim/config.py": "94b9d37a7336ff21821ea6efa615e82c8935cbd55ea1d6bd59c1998a9be679a4",
     "sim/engine.py": "755e3ca1fc6916c61deb2b26f030666a10f6fd6fb95a629435b078179d91fd88",
     "sim/params.py": "4f9b323b29f5b3616e920e195920898a5f796ba846c135ed850ef56011198fe4",

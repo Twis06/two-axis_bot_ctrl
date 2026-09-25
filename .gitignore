@@ -12,3 +12,4 @@ venv/
 # Assessment brief: third-party material, kept local only.
 # Remove this line if you have permission to publish it.
 Robotics Controls Technical Assessment.pdf
+.stage-*/

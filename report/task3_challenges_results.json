@@ -1,0 +1,9403 @@
+{
+ "amendment": {
+  "amends": "report/task3_challenges_registration.json",
+  "candidate": {
+   "controller": "ctrl.adaptive.AdaptiveController",
+   "est_seed": "= run seed",
+   "estimator": "ctrl.payload_estimator.PayloadEstimator (frozen L1 settings)",
+   "stationarity": "frozen default (2 encoder counts)",
+   "variant": "adaptive"
+  },
+  "challenges": {
+   "derate@late": "current limit 3.2 -> 2.4 A at t = 17.5 s",
+   "feedback_outage@late": "feedback-only loss for 60 ms at t = [17.5, 17.56) s",
+   "yaw_B@late": "yaw 75 deg at 1.5 Hz, ramped over 1 s from t = 17.5 s",
+   "yaw_C@late": "yaw 75 deg at 2.2 Hz, ramped over 1 s from t = 17.5 s"
+  },
+  "comparator": "int1 (frozen baseline, wi_ratio 0.1)",
+  "label": "supplementary validation, not held-out discovery data; registered after the original challenge results (onset chosen from the L4 first-usable times), before this amendment ran",
+  "limit_A": 3.2,
+  "loads": [
+   [
+    0.0,
+    0.18
+   ],
+   [
+    0.06,
+    0.14
+   ]
+  ],
+  "packet": "R3 supplementary adaptive challenges, late-onset amendment",
+  "reason": "original onsets precede the candidate's typical first usable time (median 16.6 s over the 37 ever-usable L4 runs), leaving yaw B/C unexercised",
+  "scoring": {
+   "onset_s": {
+    "derate@late": 17.5,
+    "feedback_outage@late": 17.5,
+    "yaw_B@late": 17.5,
+    "yaw_C@late": 17.5
+   },
+   "same_as": "original registration"
+  },
+  "seeds": [
+   201,
+   202,
+   203
+  ]
+ },
+ "expected_keys": [
+  [
+   "yaw_B",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   201
+  ],
+  [
+   "yaw_B",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   202
+  ],
+  [
+   "yaw_B",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   203
+  ],
+  [
+   "yaw_B",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   201
+  ],
+  [
+   "yaw_B",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   202
+  ],
+  [
+   "yaw_B",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   203
+  ],
+  [
+   "yaw_C",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   201
+  ],
+  [
+   "yaw_C",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   202
+  ],
+  [
+   "yaw_C",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   203
+  ],
+  [
+   "yaw_C",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   201
+  ],
+  [
+   "yaw_C",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   202
+  ],
+  [
+   "yaw_C",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   203
+  ],
+  [
+   "feedback_outage",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   201
+  ],
+  [
+   "feedback_outage",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   202
+  ],
+  [
+   "feedback_outage",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   203
+  ],
+  [
+   "feedback_outage",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   201
+  ],
+  [
+   "feedback_outage",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   202
+  ],
+  [
+   "feedback_outage",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   203
+  ],
+  [
+   "derate",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   201
+  ],
+  [
+   "derate",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   202
+  ],
+  [
+   "derate",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   203
+  ],
+  [
+   "derate",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   201
+  ],
+  [
+   "derate",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   202
+  ],
+  [
+   "derate",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   203
+  ],
+  [
+   "yaw_B@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   201
+  ],
+  [
+   "yaw_B@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   202
+  ],
+  [
+   "yaw_B@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   203
+  ],
+  [
+   "yaw_B@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   201
+  ],
+  [
+   "yaw_B@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   202
+  ],
+  [
+   "yaw_B@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   203
+  ],
+  [
+   "yaw_C@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   201
+  ],
+  [
+   "yaw_C@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   202
+  ],
+  [
+   "yaw_C@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   203
+  ],
+  [
+   "yaw_C@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   201
+  ],
+  [
+   "yaw_C@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   202
+  ],
+  [
+   "yaw_C@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   203
+  ],
+  [
+   "feedback_outage@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   201
+  ],
+  [
+   "feedback_outage@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   202
+  ],
+  [
+   "feedback_outage@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   203
+  ],
+  [
+   "feedback_outage@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   201
+  ],
+  [
+   "feedback_outage@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   202
+  ],
+  [
+   "feedback_outage@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   203
+  ],
+  [
+   "derate@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   201
+  ],
+  [
+   "derate@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   202
+  ],
+  [
+   "derate@late",
+   [
+    0.0,
+    0.18
+   ],
+   3.2,
+   203
+  ],
+  [
+   "derate@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   201
+  ],
+  [
+   "derate@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   202
+  ],
+  [
+   "derate@late",
+   [
+    0.06,
+    0.14
+   ],
+   3.2,
+   203
+  ]
+ ],
+ "registration": {
+  "candidate": {
+   "controller": "ctrl.adaptive.AdaptiveController",
+   "est_seed": "= run seed",
+   "estimator": "ctrl.payload_estimator.PayloadEstimator (frozen L1 settings)",
+   "stationarity": "frozen default (2 encoder counts)",
+   "variant": "adaptive"
+  },
+  "challenges": {
+   "derate": "current limit 3.2 -> 2.4 A at t = 12.5 s",
+   "feedback_outage": "feedback-only loss for 60 ms at t = [12.5, 12.56) s (second test dwell)",
+   "payload_change": "NOT EXECUTABLE in the frozen simulator (no time-varying plant parameters); reported as missing, so the gate is incomplete",
+   "yaw_B": "yaw 75 deg at 1.5 Hz, ramped over 1 s from t = 9 s (test phase only)",
+   "yaw_C": "yaw 75 deg at 2.2 Hz, ramped over 1 s from t = 9 s (test phase only)"
+  },
+  "comparator": "int1 (frozen baseline, wi_ratio 0.1)",
+  "label": "supplementary validation, not held-out discovery data",
+  "limit_A": 3.2,
+  "loads": [
+   [
+    0.0,
+    0.18
+   ],
+   [
+    0.06,
+    0.14
+   ]
+  ],
+  "packet": "R3 supplementary adaptive challenges",
+  "scoring": {
+   "completion": "R1 phase-correct test waypoints",
+   "observations": [
+    "learned correction usable at onset and during the challenge",
+    "correction disable / re-enable times",
+    "applied correction bound",
+    "current-target compliance",
+    "fault timeline",
+    "delivered progress"
+   ],
+   "onset_s": {
+    "derate": 12.5,
+    "feedback_outage": 12.5,
+    "yaw_B": 9.0,
+    "yaw_C": 9.0
+   },
+   "primary": "governed RMS over the first 0.5 s of each test dwell (as L4)"
+  },
+  "seeds": [
+   201,
+   202,
+   203
+  ],
+  "sequence": "docs/plans/task3-learning.md \u00a78 calibration + test sequence (exp.task3_l4.sequence)"
+ },
+ "rows": [
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.014113828395444727,
+   "missing_waypoints": [],
+   "primary_deg": 2.2047275102208452,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "f840ecdb09f81c76",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.431,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.741999999999923,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.746
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.850000000000627,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.855
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.796993119811985,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.805
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.871738935933738,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.932
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.34632032646618,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.431
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.018956928271275597,
+   "missing_waypoints": [],
+   "primary_deg": 2.2441561612359044,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "c7fd5e71383333c3",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.445,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.767999999999931,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.768
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.83200000000062,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.832
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.79598131605578,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.8
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.477233343872303,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.549
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.119272046674848,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.445
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B",
+   "command_over_limit": -0.24566656811707377,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.2660989076759006,
+   "missing_waypoints": [],
+   "primary_deg": 1.7388392339272736,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "19b4ce62c7b57e63",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.632,
+   "target_over_limit": -0.24566656811707377,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.741999999999923,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.745000000000001
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.818000000000616,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.82
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.799947433429455,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.804
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.365913597871035,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.434
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.310829891576724,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.632
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B",
+   "command_over_limit": -0.11985698578562243,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.13156389531484525,
+   "missing_waypoints": [],
+   "primary_deg": 2.1120344425848314,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "6a832dad58e7598c",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.599,
+   "target_over_limit": -0.11985698578562243,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79399999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.798
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.906000000000645,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.911
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.851732147411118,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.859
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.59969982304537,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.672
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.515015008358684,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.599
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B",
+   "command_over_limit": -0.06041573164425218,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.08532073885703761,
+   "missing_waypoints": [],
+   "primary_deg": 2.245039922429475,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "934d1bc3934c703f",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.807000000000002,
+   "target_over_limit": -0.06041573164425218,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.801999999999943,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.803
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.880000000000637,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.881
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.857033450352057,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.86
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.529681956281106,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.677
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.483028674910745,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.807000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B",
+   "command_over_limit": -0.25705008144820773,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.2662118482337057,
+   "missing_waypoints": [],
+   "primary_deg": 2.2916272898912737,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "3ff2832782559054",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 19.118000000000002,
+   "target_over_limit": -0.25705008144820773,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.775999999999934,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.779
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.882000000000637,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.884
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 14.056707604985519,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 14.066
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.52410959787095,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.608
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.796829891576454,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 19.118000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.014113828395444727,
+   "missing_waypoints": [],
+   "primary_deg": 2.2047275102208452,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "7cdf99addb03e3b7",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.431,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.741999999999923,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.746
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.850000000000627,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.855
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.796993119811985,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.805
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.871738935933738,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.932
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.34632032646618,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.431
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.018956928271275597,
+   "missing_waypoints": [],
+   "primary_deg": 2.2441561612359044,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "5c8c7ceedb024321",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.445,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.767999999999931,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.768
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.83200000000062,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.832
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.79598131605578,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.8
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.477233343872303,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.549
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.119272046674848,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.445
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B",
+   "command_over_limit": -0.24566656811707377,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.2660989076759006,
+   "missing_waypoints": [],
+   "primary_deg": 1.7388392339272736,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "6be664fd821948f7",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.632,
+   "target_over_limit": -0.24566656811707377,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.741999999999923,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.745000000000001
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.818000000000616,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.82
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.799947433429455,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.804
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.365913597871035,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.434
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.310829891576724,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.632
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B",
+   "command_over_limit": -0.11985698578562243,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.13156389531484525,
+   "missing_waypoints": [],
+   "primary_deg": 2.1120344425848314,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "e870411d26d5c880",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.599,
+   "target_over_limit": -0.11985698578562243,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79399999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.798
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.906000000000645,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.911
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.851732147411118,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.859
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.59969982304537,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.672
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.515015008358684,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.599
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B",
+   "command_over_limit": -0.06041573164425218,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.08532073885703761,
+   "missing_waypoints": [],
+   "primary_deg": 2.245039922429475,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "ab1e8e45ba17b56d",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.807000000000002,
+   "target_over_limit": -0.06041573164425218,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.801999999999943,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.803
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.880000000000637,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.881
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.857033450352057,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.86
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.529681956281106,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.677
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.483028674910745,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.807000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B",
+   "command_over_limit": -0.25705008144820773,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.2662118482337057,
+   "missing_waypoints": [],
+   "primary_deg": 2.2916272898912737,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "453b84fa8a276ea4",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 19.118000000000002,
+   "target_over_limit": -0.25705008144820773,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.775999999999934,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.779
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.882000000000637,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.884
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 14.056707604985519,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 14.066
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.52410959787095,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.608
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.796829891576454,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 19.118000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [],
+   "primary_deg": 1.4736608590170401,
+   "primary_samples": 5510,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "f6eb4b53def95908",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 21.416,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.898761805207103,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.92
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.840298805207418,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 13.929
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.809688376510442,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 15.917
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.961306147864546,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 19.138
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.238253012994928,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 21.416
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [],
+   "primary_deg": 1.696362142409979,
+   "primary_samples": 4666,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "701a198d1985ada8",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 21.19,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815295393255859,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.804051143994748,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 12.942
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.796140105894734,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 14.963000000000001
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.34342936813517,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 19.089
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.444228794414588,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 21.19
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [],
+   "primary_deg": 1.375092392045957,
+   "primary_samples": 5814,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "395d3ca87705aa7d",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 21.412,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.78565311662906,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.788
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.77011921452932,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 13.909
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.783646848513735,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 15.942
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.923122071865182,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 19.383
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.949311056031828,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 21.412
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [
+    3,
+    4
+   ],
+   "primary_deg": 0.6267804602485993,
+   "primary_samples": 7184,
+   "progress": 0.8808837675905401,
+   "rejected": false,
+   "run_id": "361e7a0488615b07",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.934661805207107,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.973
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 12.230548843037516,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 16.573
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.847178486105093,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 18.227
+    },
+    {
+     "index": 3,
+     "missing": true,
+     "path_t": null,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": null
+    },
+    {
+     "index": 4,
+     "missing": true,
+     "path_t": null,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": null
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [
+    4
+   ],
+   "primary_deg": 1.6089982401519491,
+   "primary_samples": 5400,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "022d50fd65425024",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.84731939325586,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.851
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 12.049253984792678,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 13.747
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.853109070264324,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 15.583
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.63283807695035,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 19.653
+    },
+    {
+     "index": 4,
+     "missing": true,
+     "path_t": null,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": null
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [
+    4
+   ],
+   "primary_deg": 1.4270577733958785,
+   "primary_samples": 5858,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "e35d28823f22d15a",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.905123116629062,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.925
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 12.184209654635653,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 14.703000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.85452788468516,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 16.397000000000002
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.496809750803166,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 20.153
+    },
+    {
+     "index": 4,
+     "missing": true,
+     "path_t": null,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": null
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [],
+   "primary_deg": 1.4736608590170401,
+   "primary_samples": 5510,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "987822eb3c0630c7",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 21.416,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.898761805207103,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.92
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.840298805207418,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 13.929
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.809688376510442,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 15.917
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.961306147864546,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 19.138
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.238253012994928,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 21.416
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [],
+   "primary_deg": 1.696362142409979,
+   "primary_samples": 4666,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "44b7e4c3304fad77",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 21.19,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815295393255859,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.804051143994748,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 12.942
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.796140105894734,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 14.963000000000001
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.34342936813517,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 19.089
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.444228794414588,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 21.19
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [],
+   "primary_deg": 1.375092392045957,
+   "primary_samples": 5814,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "f4dcab3dbc7be31e",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 21.412,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.78565311662906,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.788
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.77011921452932,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 13.909
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.783646848513735,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 15.942
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.923122071865182,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 19.383
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.949311056031828,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 21.412
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [
+    3,
+    4
+   ],
+   "primary_deg": 0.6267804602485993,
+   "primary_samples": 7184,
+   "progress": 0.8808837675905401,
+   "rejected": false,
+   "run_id": "5bd05f210bdde3d1",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.934661805207107,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.973
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 12.230548843037516,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 16.573
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.847178486105093,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 18.227
+    },
+    {
+     "index": 3,
+     "missing": true,
+     "path_t": null,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": null
+    },
+    {
+     "index": 4,
+     "missing": true,
+     "path_t": null,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": null
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [
+    4
+   ],
+   "primary_deg": 1.6089982401519491,
+   "primary_samples": 5400,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "fcf985740b549556",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.84731939325586,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.851
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 12.049253984792678,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 13.747
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.853109070264324,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 15.583
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.63283807695035,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 19.653
+    },
+    {
+     "index": 4,
+     "missing": true,
+     "path_t": null,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": null
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C",
+   "command_over_limit": 0.0,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [
+    4
+   ],
+   "primary_deg": 1.4270577733958785,
+   "primary_samples": 5858,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "8b078ae39ba30e5b",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.905123116629062,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.925
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 12.184209654635653,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 14.703000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.85452788468516,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 16.397000000000002
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.496809750803166,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 20.153
+    },
+    {
+     "index": 4,
+     "missing": true,
+     "path_t": null,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": null
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.9215477707312361,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004681818181818182,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.9479534469278965,
+   "missing_waypoints": [],
+   "primary_deg": 1.9598602381333126,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "6a06b547e235a12f",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.775000000000002,
+   "target_over_limit": -0.9215477707312361,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.812000000001282,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.92
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.87200000000197,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.98
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.666000000000533,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.775000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.7893933380022715,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.0045,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.8757653759478696,
+   "missing_waypoints": [],
+   "primary_deg": 2.243077997658596,
+   "primary_samples": 2500,
+   "progress": 0.9995555555555554,
+   "rejected": false,
+   "run_id": "1c15c3252d2f0c42",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.719,
+   "target_over_limit": -0.7893933380022715,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.820000000001285,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.922
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.43200000000177,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.534
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.61600000000056,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.719
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.7597081652403492,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004590909090909091,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.7801399691999555,
+   "missing_waypoints": [],
+   "primary_deg": 2.084115583714511,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "44476ff2e49c25b7",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.7,
+   "target_over_limit": -0.7597081652403492,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.858000000001297,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.964
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.23600000000188,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.342
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.594000000000573,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.7
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.9622398021472569,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004681818181818182,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.9686155506556675,
+   "missing_waypoints": [],
+   "primary_deg": 2.2987532173136884,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "34663fa43e68bc40",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.786,
+   "target_over_limit": -0.9622398021472569,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.904000000000645,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.909
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.858000000001297,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.966000000000001
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.782000000001577,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.891000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.678000000000527,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.786
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.7987832136036026,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.0045,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.8820799624879347,
+   "missing_waypoints": [],
+   "primary_deg": 2.329116546831384,
+   "primary_samples": 2500,
+   "progress": 0.9995555555555554,
+   "rejected": false,
+   "run_id": "f7c8fcb0450ce5af",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.725,
+   "target_over_limit": -0.7987832136036026,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.874000000001303,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.977
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.63200000000166,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.735
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.622000000000558,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.725
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.9476748913708737,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004590909090909091,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.967569308776393,
+   "missing_waypoints": [],
+   "primary_deg": 2.3989591854400296,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "f76ea21a2eb1616e",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.7,
+   "target_over_limit": -0.9476748913708737,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.92800000000132,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 14.035
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.538000000001713,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.644000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.594000000000573,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.7
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.9215477707312361,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004681818181818182,
+   "learn_applied_max_Nm": 0.18617717516920312,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.5313684210526316,
+   "learn_usable_in_dwells": 0.2,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.9479534469278965,
+   "missing_waypoints": [],
+   "primary_deg": 1.9532054014686149,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "68d3c9f37d62c3d1",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.772000000000002,
+   "target_over_limit": -0.9215477707312361,
+   "transitions": [
+    [
+     16.952,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.812000000001282,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.92
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.87200000000197,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.98
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.664000000000534,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.772000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.7893933380022715,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.0045,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.8757653759478696,
+   "missing_waypoints": [],
+   "primary_deg": 2.243077997658596,
+   "primary_samples": 2500,
+   "progress": 0.9995555555555554,
+   "rejected": false,
+   "run_id": "30d021c0dd546627",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.719,
+   "target_over_limit": -0.7893933380022715,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.820000000001285,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.922
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.43200000000177,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.534
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.61600000000056,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.719
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.7597081652403492,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004590909090909091,
+   "learn_applied_max_Nm": 0.10642423886735163,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.11305263157894736,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.7801399691999555,
+   "missing_waypoints": [],
+   "primary_deg": 2.084115583714511,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "cb50270bfe647f40",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.7,
+   "target_over_limit": -0.7597081652403492,
+   "transitions": [
+    [
+     20.926000000000002,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.858000000001297,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.964
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.23600000000188,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.342
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.594000000000573,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.7
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.9524313352116538,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004681818181818182,
+   "learn_applied_max_Nm": 0.14731935149193023,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 0.8014736842105263,
+   "learn_usable_in_dwells": 0.6832,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.9871759087493648,
+   "missing_waypoints": [],
+   "primary_deg": 1.654650867599189,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "016c78ac804dec97",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.772000000000002,
+   "target_over_limit": -0.9524313352116538,
+   "transitions": [
+    [
+     12.514000000000001,
+     "disabled"
+    ],
+    [
+     14.4,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.898000000000643,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.903
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.858000000001297,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.967
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.510000000001728,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.619
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.664000000000534,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.772000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.7987832136036026,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.0045,
+   "learn_applied_max_Nm": 0.025878742624938753,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 0.1168421052631579,
+   "learn_usable_in_dwells": 0.1072,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.8820799624879347,
+   "missing_waypoints": [],
+   "primary_deg": 2.329116546831384,
+   "primary_samples": 2500,
+   "progress": 0.9995555555555554,
+   "rejected": false,
+   "run_id": "294f1c8c1f70b66e",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.725,
+   "target_over_limit": -0.7987832136036026,
+   "transitions": [
+    [
+     12.232000000000001,
+     "enabled"
+    ],
+    [
+     12.514000000000001,
+     "disabled"
+    ],
+    [
+     20.904,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.874000000001303,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.977
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.63200000000166,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.735
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.622000000000558,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.725
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage",
+   "command_over_limit": -0.9476748913708737,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004590909090909091,
+   "learn_applied_max_Nm": 0.11500679086775853,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.13347368421052633,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.967569308776393,
+   "missing_waypoints": [],
+   "primary_deg": 2.3989591854400296,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "e2dd391f725a8239",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.7,
+   "target_over_limit": -0.9476748913708737,
+   "transitions": [
+    [
+     20.732,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.92800000000132,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 14.035
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.538000000001713,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.644000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.594000000000573,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.7
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate",
+   "command_over_limit": -0.017603931512610416,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.04177104498266537,
+   "missing_waypoints": [],
+   "primary_deg": 2.1375171407818616,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "0d28d79df466c100",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": -0.017603931512610416,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80600000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.858830699798556,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.869
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.37083069979729,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.381
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate",
+   "command_over_limit": -0.18312867020656842,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.21067371962126025,
+   "missing_waypoints": [],
+   "primary_deg": 2.3273902872931034,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "abe8b660cabfd8eb",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.958000000000002,
+   "target_over_limit": -0.18312867020656842,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.802000000001279,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.802
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.386830699798388,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.393
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.95283069979752,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.958000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate",
+   "command_over_limit": -0.3457185059143906,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.37602690933173344,
+   "missing_waypoints": [],
+   "primary_deg": 1.992358451834556,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "c21112dc2d9d6fce",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.698,
+   "target_over_limit": -0.3457185059143906,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80800000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.32883069979842,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.337
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.69083069979711,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.698
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate",
+   "command_over_limit": -0.21726373147523192,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.23970152672941536,
+   "missing_waypoints": [],
+   "primary_deg": 2.1595071792587515,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "102f0f763907fa21",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.775000000000002,
+   "target_over_limit": -0.21726373147523192,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.904000000000645,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.909
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.862000000001299,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.866
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.65683069979824,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.666
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.76483069979707,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.775000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate",
+   "command_over_limit": -0.1487170212236668,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.21373110850926125,
+   "missing_waypoints": [],
+   "primary_deg": 2.320340294622676,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "1900430dd132cc99",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.721,
+   "target_over_limit": -0.1487170212236668,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.8660000000013,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.866
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.68883069979822,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.695
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.714830699797098,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.721
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate",
+   "command_over_limit": -0.3385918327925608,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.34809745372092493,
+   "missing_waypoints": [],
+   "primary_deg": 2.5713993447860317,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "7b1f728cd47db098",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.697,
+   "target_over_limit": -0.3385918327925608,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.98400000000134,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.986
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.58083069979828,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.589
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.688830699797112,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.697
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate",
+   "command_over_limit": -0.017603931512610416,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.004799862645292759,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.10736842105263159,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.04177104498266537,
+   "missing_waypoints": [],
+   "primary_deg": 2.1375171407818616,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "4e1efa1fd18aff33",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": -0.017603931512610416,
+   "transitions": [
+    [
+     20.98,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80600000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.858830699798556,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.869
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.37083069979729,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.381
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate",
+   "command_over_limit": -0.18312867020656842,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.21067371962126025,
+   "missing_waypoints": [],
+   "primary_deg": 2.3273902872931034,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "a5ca946dc568d600",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.958000000000002,
+   "target_over_limit": -0.18312867020656842,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.802000000001279,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.802
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.386830699798388,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.393
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.95283069979752,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.958000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate",
+   "command_over_limit": -0.3457185059143906,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.18497077055771624,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.19873684210526316,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.37602690933173344,
+   "missing_waypoints": [],
+   "primary_deg": 1.992358451834556,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "ab39b3f418dc9792",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.698,
+   "target_over_limit": -0.3457185059143906,
+   "transitions": [
+    [
+     20.112000000000002,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80800000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.32883069979842,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.337
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.69083069979711,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.698
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate",
+   "command_over_limit": -0.18766359413740208,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.16174126649587728,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 1.0,
+   "learn_usable_in_dwells": 0.8,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.21104662313198608,
+   "missing_waypoints": [],
+   "primary_deg": 1.0193996608002762,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "8c5430dd7aed30ba",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 17.93,
+   "target_over_limit": -0.18766359413740208,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.898000000000643,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.903
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.846000000001293,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.851
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.836830699798549,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.847
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.920830699797538,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.93
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate",
+   "command_over_limit": -0.17216998736131917,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.15204354826448555,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 1.0,
+   "learn_usable_in_dwells": 0.7072,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.2354180694083552,
+   "missing_waypoints": [],
+   "primary_deg": 0.8110542070379384,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "7ca22ad13b24d574",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.943,
+   "target_over_limit": -0.17216998736131917,
+   "transitions": [
+    [
+     12.232000000000001,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.862000000001299,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.863
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.878830699798563,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.884
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.93683069979753,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.943
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate",
+   "command_over_limit": -0.3385918327925608,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.34809745372092493,
+   "missing_waypoints": [],
+   "primary_deg": 2.5713993447860317,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "2beebfa4ff746d38",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.697,
+   "target_over_limit": -0.3385918327925608,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.98400000000134,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.986
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.58083069979828,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.589
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.688830699797112,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.697
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.5326907065362789,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.5634442317530031,
+   "missing_waypoints": [],
+   "primary_deg": 2.125005100586659,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "dcf024a601d20279",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": -0.5326907065362789,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80600000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.858000000001965,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.862
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.252000000000763,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.257
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.6766036426327986,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.7153929729167041,
+   "missing_waypoints": [],
+   "primary_deg": 2.3416725323805077,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "9a7fa1c210407043",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.947,
+   "target_over_limit": -0.6766036426327986,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.802000000001279,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.802
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.390000000001795,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.391000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.946000000000932,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.947
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.5775914112046969,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.5967674026377994,
+   "missing_waypoints": [],
+   "primary_deg": 1.9587527264718005,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "9cc1e0fea36f522d",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.405,
+   "target_over_limit": -0.5775914112046969,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80800000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.334000000001826,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.336000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.40200000000068,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.405
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.8074264214040441,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.8400973808987726,
+   "missing_waypoints": [],
+   "primary_deg": 2.127984283935939,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "f22f7f4099a3bf78",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.831,
+   "target_over_limit": -0.8074264214040441,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.904000000000645,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.909
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.862000000001299,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.866
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.65400000000165,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.658
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.826000000000445,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.831
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.9487170212236671,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -1.0103365515988827,
+   "missing_waypoints": [],
+   "primary_deg": 2.3478997140093543,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "4f4642f926a2a76b",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.738,
+   "target_over_limit": -0.9487170212236671,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.8660000000013,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.866
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.692000000001627,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.693
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.738000000000493,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.738
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.8899912291859984,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.9076464874204864,
+   "missing_waypoints": [],
+   "primary_deg": 2.5499646464082075,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "ea13f64c9c64316d",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.712,
+   "target_over_limit": -0.8899912291859984,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.98400000000134,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.986
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.586000000001686,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.588
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.71000000000051,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.712
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.5255066420336147,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.0003997216847464065,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 1.0,
+   "learn_usable_in_dwells": 0.2,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.5605761538867067,
+   "missing_waypoints": [],
+   "primary_deg": 2.122706015071084,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "058893d13e283eab",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": -0.5255066420336147,
+   "transitions": [
+    [
+     17.07,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80600000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.858000000001965,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.862
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.252000000000763,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.257
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.6766036426327986,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.7153929729167041,
+   "missing_waypoints": [],
+   "primary_deg": 2.3416725323805077,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "084d5fe7d5517287",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.947,
+   "target_over_limit": -0.6766036426327986,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.802000000001279,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.802
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.390000000001795,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.391000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.946000000000932,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.947
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.5775914112046969,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.5967674026377994,
+   "missing_waypoints": [],
+   "primary_deg": 1.9587527264718005,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "e73ab372b959c939",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.405,
+   "target_over_limit": -0.5775914112046969,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80800000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.334000000001826,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.336000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.40200000000068,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.405
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.9841241982935194,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.16174133099978033,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 1.0,
+   "learn_usable_in_dwells": 0.8,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -1.0110466231319863,
+   "missing_waypoints": [],
+   "primary_deg": 1.015317013383516,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "3aa88040a50cbddf",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 17.918,
+   "target_over_limit": -0.9841241982935194,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.898000000000643,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.903
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.846000000001293,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.851
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.836000000001958,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.841000000000001
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.91400000000095,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.918
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.9721699873613194,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.1520441713021818,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 1.0,
+   "learn_usable_in_dwells": 0.7072,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -1.0354180694083555,
+   "missing_waypoints": [],
+   "primary_deg": 0.7877973796689828,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "38ae2bb377046aad",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.932,
+   "target_over_limit": -0.9721699873613194,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.862000000001299,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.863
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.878000000001972,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.878
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.93200000000094,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.932
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_B@late",
+   "command_over_limit": -0.8899912291859984,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.9076464874204864,
+   "missing_waypoints": [],
+   "primary_deg": 2.5499646464082075,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "fe5db71580212d54",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.712,
+   "target_over_limit": -0.8899912291859984,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.98400000000134,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.986
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.586000000001686,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.588
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.71000000000051,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.712
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C@late",
+   "command_over_limit": 0.0,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [],
+   "primary_deg": 2.0442737854714426,
+   "primary_samples": 2758,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "7cf89b06552b5c69",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80600000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.858000000001965,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.862
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.36138800000073,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.508
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C@late",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.1471097788605675e-08,
+   "missing_waypoints": [],
+   "primary_deg": 2.201024737515717,
+   "primary_samples": 2756,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "4757072b7046c657",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.978,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.802000000001279,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.802
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.390000000001795,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.391000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.978000000000915,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.978
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C@late",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [],
+   "primary_deg": 1.762715685940358,
+   "primary_samples": 3232,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "c35270e6a2120632",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.517,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80800000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.334000000001826,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.336000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.364644000000737,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.517
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C@late",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.013055002028486307,
+   "missing_waypoints": [],
+   "primary_deg": 2.0612640610018222,
+   "primary_samples": 2756,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "d408cf32cae492d4",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.508,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.904000000000645,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.909
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.862000000001299,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.866
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.65400000000165,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.658
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.362048000000716,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.508
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C@late",
+   "command_over_limit": -0.07819631989992226,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.11030316812554064,
+   "missing_waypoints": [],
+   "primary_deg": 2.193120893483717,
+   "primary_samples": 2756,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "d59ea402f840e366",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.489,
+   "target_over_limit": -0.07819631989992226,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.8660000000013,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.866
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.692000000001627,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.693
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.360528000000716,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.489
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "yaw_C@late",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.006375723614107098,
+   "missing_waypoints": [],
+   "primary_deg": 2.4366519577229995,
+   "primary_samples": 2756,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "53c30b3e733be4de",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.505,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.98400000000134,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.986
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.586000000001686,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.588
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.362783000000725,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.505
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C@late",
+   "command_over_limit": 0.0,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.0003997216847464065,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 0.18133333333333335,
+   "learn_usable_in_dwells": 0.11312545322697606,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [],
+   "primary_deg": 2.0441781982488934,
+   "primary_samples": 2758,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "065c542ed0ad9927",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": 0.0,
+   "transitions": [
+    [
+     17.07,
+     "enabled"
+    ],
+    [
+     18.316,
+     "disabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80600000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.858000000001965,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.862
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.360668000000732,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.507
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C@late",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.1471097788605675e-08,
+   "missing_waypoints": [],
+   "primary_deg": 2.201024737515717,
+   "primary_samples": 2756,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "230fb55c118a2d05",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.978,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.802000000001279,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.802
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.390000000001795,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.391000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.978000000000915,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.978
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C@late",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -2.6645352591003757e-15,
+   "missing_waypoints": [],
+   "primary_deg": 1.762715685940358,
+   "primary_samples": 3232,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "7a3a29fe241d07b4",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.517,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80800000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.334000000001826,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.336000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.364644000000737,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.517
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C@late",
+   "command_over_limit": -0.1926297512524746,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.16174133099978033,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 1.0,
+   "learn_usable_in_dwells": 0.818577648766328,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.23242338789279104,
+   "missing_waypoints": [],
+   "primary_deg": 0.96770490694829,
+   "primary_samples": 2756,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "f92e74d45ba48340",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 17.938,
+   "target_over_limit": -0.1926297512524746,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.898000000000643,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.903
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.846000000001293,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.851
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.836000000001958,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.841000000000001
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.93400000000094,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.938
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C@late",
+   "command_over_limit": -0.32424280480211465,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.1520441713021818,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 1.0,
+   "learn_usable_in_dwells": 0.7343976777939042,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.354916766731876,
+   "missing_waypoints": [],
+   "primary_deg": 0.7840573084506647,
+   "primary_samples": 2756,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "0619b8ef1a84a1ba",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.962,
+   "target_over_limit": -0.32424280480211465,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.862000000001299,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.863
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.878000000001972,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.878
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.962000000000923,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.962
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "yaw_C@late",
+   "command_over_limit": 0.0,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.006375723614107098,
+   "missing_waypoints": [],
+   "primary_deg": 2.4366519577229995,
+   "primary_samples": 2756,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "7f2b8ff9c51955da",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.505,
+   "target_over_limit": 0.0,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.98400000000134,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.986
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.586000000001686,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.588
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.362783000000725,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.505
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.8176039315126107,
+   "completed": false,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004909090909090909,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.8417710449826656,
+   "missing_waypoints": [],
+   "primary_deg": 2.6506924464487898,
+   "primary_samples": 2500,
+   "progress": 0.9997742380152729,
+   "rejected": false,
+   "run_id": "e8a1ab6625118900",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": -0.8176039315126107,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80600000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.858000000001965,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.862
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.66957061696204,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.806
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.6003201296709575,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004636363636363636,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.6145525022752159,
+   "missing_waypoints": [],
+   "primary_deg": 2.783697281846698,
+   "primary_samples": 2500,
+   "progress": 0.9996631359679243,
+   "rejected": false,
+   "run_id": "c5aa3902498d498b",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.736,
+   "target_over_limit": -0.6003201296709575,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.802000000001279,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.802
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.390000000001795,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.391000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.607648723737427,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.736
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.7597081652403492,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004636363636363636,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.7801399691999555,
+   "missing_waypoints": [],
+   "primary_deg": 2.3826569061345135,
+   "primary_samples": 2500,
+   "progress": 0.9997742426523776,
+   "rejected": false,
+   "run_id": "3b2b7e55117b2af4",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.704,
+   "target_over_limit": -0.7597081652403492,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80800000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.334000000001826,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.336000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.57561002650393,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.704
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.5280804905950958,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004909090909090909,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.965873510219363,
+   "missing_waypoints": [],
+   "primary_deg": 2.2300853106127603,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "98fed81fec108202",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.804000000000002,
+   "target_over_limit": -0.5280804905950958,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.904000000000645,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.909
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.862000000001299,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.866
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.65400000000165,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.658
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.600449813551037,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.804000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.9487170212236671,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004636363636363636,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -1.0078141866119306,
+   "missing_waypoints": [],
+   "primary_deg": 2.504698070897094,
+   "primary_samples": 2500,
+   "progress": 0.9996631359679243,
+   "rejected": false,
+   "run_id": "f4ac5759cee5089d",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.73,
+   "target_over_limit": -0.9487170212236671,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.8660000000013,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.866
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.692000000001627,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.693
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.60164872373743,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.73
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.9476748913708737,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004636363636363636,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.967569308776393,
+   "missing_waypoints": [],
+   "primary_deg": 2.5778025216344433,
+   "primary_samples": 2500,
+   "progress": 0.9997742426523776,
+   "rejected": false,
+   "run_id": "d088dccc965cafa6",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.701,
+   "target_over_limit": -0.9476748913708737,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.98400000000134,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.986
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.586000000001686,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.588
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.571610026503933,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.701
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.8176039315126107,
+   "completed": false,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004909090909090909,
+   "learn_applied_max_Nm": 0.03538952640469809,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 0.30266666666666664,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.8417710449826656,
+   "missing_waypoints": [],
+   "primary_deg": 2.6499334378285972,
+   "primary_samples": 2500,
+   "progress": 0.9997742380152729,
+   "rejected": false,
+   "run_id": "32f3eaac70eeda1e",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": -0.8176039315126107,
+   "transitions": [
+    [
+     17.07,
+     "enabled"
+    ],
+    [
+     17.514,
+     "disabled"
+    ],
+    [
+     20.652,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80600000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.858000000001965,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.862
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.66957061696204,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.806
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.6003201296709575,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004636363636363636,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.6145525022752159,
+   "missing_waypoints": [],
+   "primary_deg": 2.783697281846698,
+   "primary_samples": 2500,
+   "progress": 0.9996631359679243,
+   "rejected": false,
+   "run_id": "7d386919942215ab",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.736,
+   "target_over_limit": -0.6003201296709575,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.802000000001279,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.802
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.390000000001795,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.391000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.607648723737427,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.736
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.7597081652403492,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004636363636363636,
+   "learn_applied_max_Nm": 0.12545515251238779,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.2808888888888889,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.7801399691999555,
+   "missing_waypoints": [],
+   "primary_deg": 2.3826569061345135,
+   "primary_samples": 2500,
+   "progress": 0.9997742426523776,
+   "rejected": false,
+   "run_id": "9a68ce9da4aecdf8",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.704,
+   "target_over_limit": -0.7597081652403492,
+   "transitions": [
+    [
+     20.736,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80800000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.334000000001826,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.336000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.57561002650393,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.704
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.399468754047303,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004909090909090909,
+   "learn_applied_max_Nm": 0.16174133099978033,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 0.2653333333333333,
+   "learn_usable_in_dwells": 0.6,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.8137079843025594,
+   "missing_waypoints": [],
+   "primary_deg": 1.7192045741337374,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "7d0d74240ac25296",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.815,
+   "target_over_limit": -0.399468754047303,
+   "transitions": [
+    [
+     17.514,
+     "disabled"
+    ],
+    [
+     20.82,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.898000000000643,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.903
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.846000000001293,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.851
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.836000000001958,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.841000000000001
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.56244981355106,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.815
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.28617852019476153,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004636363636363636,
+   "learn_applied_max_Nm": 0.1520441713021818,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 0.003111111111111111,
+   "learn_usable_in_dwells": 0.5072,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.46358284347304357,
+   "missing_waypoints": [],
+   "primary_deg": 1.5130479023012835,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "dfe6d8646af47d93",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.733,
+   "target_over_limit": -0.28617852019476153,
+   "transitions": [
+    [
+     17.514,
+     "disabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.862000000001299,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.863
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.878000000001972,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.878
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.51644218194055,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.733
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "feedback_outage@late",
+   "command_over_limit": -0.9476748913708737,
+   "completed": true,
+   "events": [
+    "invalid_command",
+    "rearm_after_invalid_command"
+   ],
+   "fallback_frac": 0.004636363636363636,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.967569308776393,
+   "missing_waypoints": [],
+   "primary_deg": 2.5778025216344433,
+   "primary_samples": 2500,
+   "progress": 0.9997742426523776,
+   "rejected": false,
+   "run_id": "a87f390b9e72170a",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.701,
+   "target_over_limit": -0.9476748913708737,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.98400000000134,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.986
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.586000000001686,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.588
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.571610026503933,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.701
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate@late",
+   "command_over_limit": -0.7799917865028418,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.7813603873168047,
+   "missing_waypoints": [],
+   "primary_deg": 2.1310235222401785,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "3443dfa2cdc83556",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": -0.7799917865028418,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80600000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.858000000001965,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.862
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.35000000000071,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.354
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate@late",
+   "command_over_limit": -0.8656871864206597,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.911783104498421,
+   "missing_waypoints": [],
+   "primary_deg": 2.320890656682855,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "bf35f9a22e087d7d",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.956,
+   "target_over_limit": -0.8656871864206597,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.802000000001279,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.802
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.390000000001795,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.391000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.956000000000927,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.956
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate@late",
+   "command_over_limit": -0.7597081652403492,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.7733985749347732,
+   "missing_waypoints": [],
+   "primary_deg": 1.9913795055378658,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "8f48b7e48548e47b",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.697,
+   "target_over_limit": -0.7597081652403492,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80800000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.334000000001826,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.336000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.694000000000518,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.697
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate@late",
+   "command_over_limit": -0.9841241982935194,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -1.0321895590982035,
+   "missing_waypoints": [],
+   "primary_deg": 2.1552970644317013,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "7c596f55f508deb0",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 18.775000000000002,
+   "target_over_limit": -0.9841241982935194,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.904000000000645,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.909
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.862000000001299,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.866
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.65400000000165,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.658
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.770000000000476,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.775000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate@late",
+   "command_over_limit": -0.9487170212236671,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -1.0137311085092615,
+   "missing_waypoints": [],
+   "primary_deg": 2.326281534398561,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "cd63b81a02508dcf",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 18.721,
+   "target_over_limit": -0.9487170212236671,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.8660000000013,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.866
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.692000000001627,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.693
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.720000000000503,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.721
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": null,
+   "challenge": "derate@late",
+   "command_over_limit": -0.9476748913708737,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": null,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": null,
+   "learn_usable_in_dwells": null,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.967569308776393,
+   "missing_waypoints": [],
+   "primary_deg": 2.5783203751398673,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "b606b5c8bbe753cf",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.696,
+   "target_over_limit": -0.9476748913708737,
+   "transitions": [],
+   "variant": "int1",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.98400000000134,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.986
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.586000000001686,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.588
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.694000000000518,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.696
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate@late",
+   "command_over_limit": -0.7816708361446205,
+   "completed": false,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.1852716356426526,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 1.0,
+   "learn_usable_in_dwells": 0.2,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.7821848064985615,
+   "missing_waypoints": [],
+   "primary_deg": 2.1297906928229113,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "87dbf502168e4b1c",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": {
+    "$float": "nan"
+   },
+   "target_over_limit": -0.7816708361446205,
+   "transitions": [
+    [
+     17.07,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.755999999999927,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.76
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.844000000000625,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.849
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80600000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.858000000001965,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.862
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.342000000000713,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.347
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate@late",
+   "command_over_limit": -0.8656871864206597,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.911783104498421,
+   "missing_waypoints": [],
+   "primary_deg": 2.320890656682855,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "a265bc9a6e5aaa7c",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.956,
+   "target_over_limit": -0.8656871864206597,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.779999999999935,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.781
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.820000000000617,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.821
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.802000000001279,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.802
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.390000000001795,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.391000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.956000000000927,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.956
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate@late",
+   "command_over_limit": -0.7597081652403492,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.18495428931521524,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.41955555555555557,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.0,
+    0.18
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.7733985749347732,
+   "missing_waypoints": [],
+   "primary_deg": 1.9913795055378658,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "436377c49c6d605c",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.697,
+   "target_over_limit": -0.7597081652403492,
+   "transitions": [
+    [
+     20.112000000000002,
+     "enabled"
+    ]
+   ],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.751999999999926,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.754
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.806000000000612,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.809000000000001
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.80800000000128,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.81
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.334000000001826,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.336000000000002
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.694000000000518,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.697
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate@late",
+   "command_over_limit": -0.9841241982935194,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.00022727272727272727,
+   "learn_applied_max_Nm": 0.16174133099978033,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 1.0,
+   "learn_usable_in_dwells": 0.8,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -1.0110466231319863,
+   "missing_waypoints": [],
+   "primary_deg": 1.0251816716700004,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "b8c62c9843cfdf83",
+   "seed": 201,
+   "suspended": false,
+   "t_complete": 17.926000000000002,
+   "target_over_limit": -0.9841241982935194,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.82199999999995,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.826
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.898000000000643,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.903
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.846000000001293,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.851
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.836000000001958,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.841000000000001
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.922000000000946,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.926000000000002
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate@late",
+   "command_over_limit": -0.9721699873613194,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.1520441713021818,
+   "learn_usable_at_onset": true,
+   "learn_usable_during_challenge": 1.0,
+   "learn_usable_in_dwells": 0.7072,
+   "learn_usable_max": 1.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -1.0354180694083555,
+   "missing_waypoints": [],
+   "primary_deg": 0.8141578154187741,
+   "primary_samples": 2500,
+   "progress": 0.9996666666666667,
+   "rejected": false,
+   "run_id": "3e2d18260aee5f99",
+   "seed": 202,
+   "suspended": false,
+   "t_complete": 17.94,
+   "target_over_limit": -0.9721699873613194,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.815999999999947,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.816
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.872000000000634,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.872
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.862000000001299,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.863
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 15.878000000001972,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 15.878
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 17.940000000000936,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 17.94
+    }
+   ],
+   "wd_trips": 0
+  },
+  {
+   "applied_while_unusable": 0,
+   "challenge": "derate@late",
+   "command_over_limit": -0.9476748913708737,
+   "completed": true,
+   "events": [],
+   "fallback_frac": 0.0001818181818181818,
+   "learn_applied_max_Nm": 0.0,
+   "learn_usable_at_onset": false,
+   "learn_usable_during_challenge": 0.0,
+   "learn_usable_in_dwells": 0.0,
+   "learn_usable_max": 0.0,
+   "limit": 3.2,
+   "load": [
+    0.06,
+    0.14
+   ],
+   "lockout": false,
+   "measured_over_limit": -0.967569308776393,
+   "missing_waypoints": [],
+   "primary_deg": 2.5783203751398673,
+   "primary_samples": 2500,
+   "progress": 0.9997777777777779,
+   "rejected": false,
+   "run_id": "4b918464bdd9e755",
+   "seed": 203,
+   "suspended": false,
+   "t_complete": 18.696,
+   "target_over_limit": -0.9476748913708737,
+   "transitions": [],
+   "variant": "adaptive",
+   "waypoint_visits": [
+    {
+     "index": 0,
+     "missing": false,
+     "path_t": 9.79199999999994,
+     "path_window": [
+      9.0,
+      11.0
+     ],
+     "target_rad": 0.5235987755982988,
+     "wall_t": 9.795
+    },
+    {
+     "index": 1,
+     "missing": false,
+     "path_t": 11.874000000000635,
+     "path_window": [
+      11.0,
+      13.0
+     ],
+     "target_rad": -0.5235987755982988,
+     "wall_t": 11.876
+    },
+    {
+     "index": 2,
+     "missing": false,
+     "path_t": 13.98400000000134,
+     "path_window": [
+      13.0,
+      15.0
+     ],
+     "target_rad": 1.1344640137963142,
+     "wall_t": 13.986
+    },
+    {
+     "index": 3,
+     "missing": false,
+     "path_t": 16.586000000001686,
+     "path_window": [
+      15.0,
+      17.0
+     ],
+     "target_rad": -1.1344640137963142,
+     "wall_t": 16.588
+    },
+    {
+     "index": 4,
+     "missing": false,
+     "path_t": 18.694000000000518,
+     "path_window": [
+      17.0,
+      null
+     ],
+     "target_rad": 0.0,
+     "wall_t": 18.696
+    }
+   ],
+   "wd_trips": 0
+  }
+ ]
+}

@@ -1,0 +1,3030 @@
+{
+ "code": {
+  "code_hash": "2a39c313793f237480c9d7067f7d098784ecfc44997f624cf2a400ef447c7e86",
+  "entry": "exp.task5_prospective",
+  "git": {
+   "commit": "dc85377548ad7cf6dad929a94700f6d7e24e611e",
+   "dirty": true,
+   "dirty_sources": []
+  },
+  "source_set": "declared: ctrl/**, sim/**, EXP_CORE, entry + PROVENANCE_SOURCES",
+  "sources": {
+   "ctrl/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "ctrl/adaptive.py": "afb53f4c1bdcf73d2a914254c447f7e56731122e1d7683963f296a5c58ebda99",
+   "ctrl/baseline.py": "fb726352882b3edf469d2e85511718f23ac13df5f0d26d6bdc7020656efcf3aa",
+   "ctrl/governor.py": "f397281ecedc8492b3d7b2c6fd6570ac25c9f10bf15809efb84d25192a072789",
+   "ctrl/interfaces.py": "252bc4fd1bef8e94a32d93f56becf49d8f456065d10d1b0e0280fc81c80967a5",
+   "ctrl/legacy.py": "eb0796172f7436d048e3a10ba3dee301cd1e9d3acb37d6ac1dad121e51d8a6a5",
+   "ctrl/loopshape.py": "d04d330274476a9564c49a97affba3621f68301e6ccb076e7e364a231fd910de",
+   "ctrl/payload_estimator.py": "cefc2b5169bfd66593dbb525ec8f143f0c829dd51c53611e64a9784060aab392",
+   "ctrl/supervisor.py": "fb2146ce4c58ede1b2b5dd4872534527b842a4d9cc61763e610142102267e68e",
+   "ctrl/yaw_estimator.py": "f1516d24b5a59d223d00c64c6dbbb0c4b8a81b48c78bc6dad0a863ee41105bde",
+   "exp/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "exp/common.py": "0cbdaa05925f997704e3158bdb4b6ac5ea313432755787aefccd922bbd783198",
+   "exp/evidence.py": "259e84b35ebe9ae037e6a339f395bf512afcfbe973d9a19305f5938b5116aa38",
+   "exp/manifest.py": "1ffa87e89b1d78df6ad1f56cd61eccd7e877aaf4e2dd803cc0408c59fdf9a47c",
+   "exp/motions.py": "9adb2772149e158bcf02c831b7aef74097b1e62b13473ab6c9c871a43a4e4c9e",
+   "exp/scenarios.py": "d3b543c9db8bdc6e4c35c5905e18a99261029dec33696b6a787cc7757a49f9bc",
+   "exp/task5_prospective.py": "6c76396af81b6c4d718b2066b6984d1ca8f38dc3d25a8ed076f3826e8c941000",
+   "sim/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "sim/config.py": "94b9d37a7336ff21821ea6efa615e82c8935cbd55ea1d6bd59c1998a9be679a4",
+   "sim/drive.py": "c401a3f3cf4e093bdceac0c4c23b42f82e995fc6f577b5467aa629ebfa9b8b4d",
+   "sim/engine.py": "755e3ca1fc6916c61deb2b26f030666a10f6fd6fb95a629435b078179d91fd88",
+   "sim/metrics.py": "207365c53d5cc29cde89f03e3d5dd2d677e61862b8ebfcd895f6c921c555f544",
+   "sim/params.py": "4f9b323b29f5b3616e920e195920898a5f796ba846c135ed850ef56011198fe4",
+   "sim/plant.py": "550a289754b2d2a95b4d32aaab2560ebcad083d68e87183f98bc8aa7e6928378",
+   "sim/sensing.py": "70db83c911447189f979c2a9cce815e5dc6f0f46368f000fba277fc886e2e194",
+   "sim/timing.py": "6f0f2e20abd6f65f0fd0463b3a062ec96bec9c4c53298a35320d8aa8e6929f60",
+   "sim/trajectories.py": "19de92945a1b1cf543756043fb10411d459b5b33ec99ef832be2f9b2cb94c44f"
+  },
+  "undeclared_imports": []
+ },
+ "entry": "exp.task5_prospective",
+ "env": {
+  "executable": "<repo>/.venv/bin/python3",
+  "numpy": "2.0.2",
+  "platform": "macOS-26.5.2-arm64-arm-64bit",
+  "python": "3.9.24",
+  "scipy": "1.13.1"
+ },
+ "manifest_version": "4A.2",
+ "metric_defs": {
+  "completed": "plant visits every waypoint in order within 2.0 deg on a healthy sample; arrives: 0.2 s of consecutive healthy samples within 2.0 deg of the final target with |qd| <= 0.1 rad/s (t_complete = its start); then stays within 2.0 deg to the END of the run, healthy except for fallback caused by cmd_timeout, invalid_command (reported as post_arrival_transient); leaving the band restarts the search for arrival; a latched fault, suspension, coordinated stop or rejection after the first arrival voids completion (voided_at); excursion beyond the path range <= 5.0 deg",
+  "geo": "distance of q(t) from [min, max] of q_req over sigma(t) +/- 0.25 s",
+  "gov": "q(t) - c_q_c(t): governed reference actually commanded (host rate, forward-filled)",
+  "healthy": "drive mode 0, host not in fallback, request not rejected (c_request_rejected or status rejected), not suspended (c_suspended) and no coordinated stop (c_coord_stop)",
+  "host_demand": "c_i_unsat if logged, else (c_tau_ff + c_tau_fb) / K_T nominal: host current demand before its own clamp",
+  "orig": "q(t) - q_req(t): original request on the wall clock (log.err)",
+  "path": "q(t) - q_req(sigma(t))",
+  "phase_completion": "optional own-segment [start,end) governor path-time waypoint visits; final end=None permits slack; elapsed completion includes calibration; whole-run overshoot retained",
+  "progress": "net: increments of the running max of sigma clipped to [sigma_start, T_request], counted only when <= one host period and while healthy at both ends; divided by T_request (<= 1). Forward clock jumps and backsteps are counted separately, never as progress",
+  "request_window": "samples with sigma <= T_request (the requested motion, excluding end slack); *_request error keys and the tracking threshold use it",
+  "sigma": "c_gov_sigma if logged (forward-filled over uninitialised NaN), else host tick time - c_gov_lag; sigma = t where c_gov_active == 0, where evaluate(governed=False), or without governor telemetry. sigma is held over the half host period between host ticks (known alignment artefact: ~0.07 deg RMS for a perfect tracker of M1)",
+  "strata": "priority rejected > fallback > suspended > recovery > reshaping > normal; startup = pure fallback samples before the first active one (rejected/suspended samples are never startup); reshaping = governor status reshaped/joining/restricted/over_budget; fallback = drive mode 1 or host fallback; recovery = 0.5 s after a fallback/suspended/rejected span ends (except the startup span), after a rearm_after_* event, or after a replan (c_replans increments)",
+  "tracked": "progress >= 0.95; request-window path RMS <= 2.0 deg; no rejected, suspended or coordinated-stop sample; no latched fault event other than cmd_timeout, invalid_command (and their re-arms); no path-clock backstep; finite motions completed",
+  "version": "4A.4"
+ },
+ "metrics_version": "4A.4",
+ "runs": {
+  "11f9a9c2df27cdff": {
+   "metrics": {
+    "completion": null,
+    "errors": {
+     "geo_peak": 0.4982357754561942,
+     "geo_peak_request": 0.4982357754561942,
+     "geo_rms": 0.07776395613601884,
+     "geo_rms_request": 0.07776395613601884,
+     "gov_peak": 0.7139292470582108,
+     "gov_peak_request": 0.7139292470582108,
+     "gov_rms": 0.21389794557637437,
+     "gov_rms_request": 0.2139157726335855,
+     "orig_peak": 0.8697534513938506,
+     "orig_peak_request": 0.8697534513938506,
+     "orig_rms": 0.448166412153987,
+     "orig_rms_request": 0.44820376402404843,
+     "path_peak": 0.7139292470582108,
+     "path_peak_request": 0.7139292470582108,
+     "path_rms": 0.21391577263358955,
+     "path_rms_request": 0.21391577263358955
+    },
+    "not_tracked_because": [],
+    "progress": {
+     "T_request": 12.0,
+     "clock_backsteps": 0,
+     "clock_jumps": 0,
+     "path_time": 11.990000000000675,
+     "progress": 0.9991666666667229,
+     "sigma_end": 11.993000000000675,
+     "sigma_start": 0.002
+    },
+    "summary": {
+     "clip_pct": 0.0,
+     "cmd_age_max": 6.000000000000227,
+     "cmd_age_p50": 3.0000000000001137,
+     "events": 0,
+     "fallback_pct": 0.04166666666666667,
+     "heat_J": 10.897704061918407,
+     "i_peak": 1.176552785955827,
+     "i_rms": 0.7102980615206029,
+     "lag_end": 0.004999999999325766,
+     "mean": 0.01261504483178231,
+     "peak": 0.8697534513938506,
+     "peak_gov": 0.7139292470582108,
+     "rejected_pct": 0.0,
+     "rms": 0.448166412153987,
+     "rms_gov": 0.21389794557637437,
+     "sat_entries": 0,
+     "speed": 0.9993333333333333,
+     "vlim_pct": 0.0,
+     "wd_trips": 0,
+     "yaw_scale": 1.0
+    },
+    "tracked": true
+   },
+   "run": {
+    "config": {
+     "drive": {
+      "cmd_timeout": 0.01,
+      "derate_schedule": [],
+      "fallback_damping": 0.05,
+      "i_limit": 3.2
+     },
+     "duration": 12.0,
+     "plant": {
+      "J": 0.004,
+      "L": 0.00045,
+      "R": 1.8,
+      "b": 0.012,
+      "d_amp": 0.0,
+      "d_bw_hz": 3.0,
+      "k_e": 0.14,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "m_payload": 0.0,
+      "s_lat": 0.035,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "tau_i": 0.0012,
+      "v_bus": 24.0,
+      "v_fric": 0.02,
+      "v_util": 0.5773502691896258,
+      "voltage_limit": true
+     },
+     "q0": 0.0,
+     "sensor": {
+      "enc_bits": 14,
+      "enc_offset": 0.0
+     },
+     "timing": {
+      "blackout": [],
+      "burst_len_s": [
+       0.02,
+       0.1
+      ],
+      "burst_rate_hz": 0.5,
+      "can_burst": 0.004,
+      "can_max": 0.0018,
+      "can_min": 0.0006,
+      "command_blackout": [],
+      "drop_prob": 0.0,
+      "dt_sim": 0.0001,
+      "f_ctrl": 500.0,
+      "f_drive": 1000.0,
+      "feedback_blackout": [],
+      "feedback_over_can": true,
+      "t_cmd_delay": 0.001,
+      "t_compute": 0.0005
+     }
+    },
+    "controller": {
+     "class": "ctrl.baseline.BaselineController",
+     "components": {
+      "gov": {
+       "class": "ctrl.governor.RollGovernor",
+       "options": {
+        "J": 0.004,
+        "_cache": null,
+        "a": 0.0,
+        "align_tol": 0.0005752427954571154,
+        "b": 0.012,
+        "blend": null,
+        "blend_max": 0.03490658503988659,
+        "blocked": false,
+        "braking_short": false,
+        "cpl_peak": 0.0,
+        "cpl_tau": 1.0,
+        "d_margin": 0.05,
+        "fresh": true,
+        "hold_iv": null,
+        "horizon": 0.4,
+        "incons": 0.0,
+        "infeasibility": "",
+        "jump_tol": 0.0001,
+        "k_t": 0.14,
+        "kappa": 1.0,
+        "kappa_drop": 3.0,
+        "kappa_min": 0.1,
+        "kappa_rise": 0.25,
+        "latched": false,
+        "limited": false,
+        "mode": "sync",
+        "n_look": 48,
+        "over_budget": false,
+        "pq": 0.0,
+        "pv": 0.0,
+        "q": 0.0,
+        "q_range": 1.5707963267948966,
+        "reason": "",
+        "rejected": false,
+        "reserve": 0.2,
+        "s": 1.0,
+        "s_free": false,
+        "s_rate": 2.0,
+        "seg": null,
+        "sig_seen": 0.0,
+        "sigma": 0.0,
+        "speed_capped": false,
+        "stall": 0.0,
+        "stall_time": 0.5,
+        "status": "accepted",
+        "suspended": "",
+        "t_drop": {
+         "$float": "-inf"
+        },
+        "t_int": 0.0,
+        "tau_c": 0.04,
+        "tau_g": 0.12,
+        "tau_prev": null,
+        "v": 0.0,
+        "v_max": 20.0
+       }
+      },
+      "mon": {
+       "class": "ctrl.governor.YawMonitor",
+       "options": {
+        "complete": 0.9,
+        "hold_off": 0.6,
+        "sat_frac": 0.05,
+        "shrink": 0.8,
+        "window": 0.5
+       }
+      },
+      "rest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      },
+      "yest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      }
+     },
+     "name": "baseline",
+     "options": {
+      "J": 0.004,
+      "K": 0.7553255135705494,
+      "T_act": 0.004,
+      "alpha": 16,
+      "anti_windup": true,
+      "b": 0.012,
+      "fb_stale": 0.015,
+      "i_max": 3.2,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "load_model": null,
+      "over_budget_escalate": 0.3,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "use_governor": true,
+      "use_yaw_ff": true,
+      "use_yaw_monitor": true,
+      "wc": 28.0,
+      "wi_ratio": 0.1,
+      "yaw_info": "estimate"
+     }
+    },
+    "governed_yaw": true,
+    "note": "roll sine 5.0 deg at 3.0 Hz, yaw still, d(t) off, current-command delay 1 ms",
+    "roll_request": {
+     "attrs": {
+      "A": 0.08726646259971647,
+      "Tr": 1.0,
+      "off": 0.0,
+      "t0": 0.0,
+      "w": 18.84955592153876
+     },
+     "class": "sim.trajectories.RampedSine"
+    },
+    "scenario": "T5P-1ms",
+    "seed": 305,
+    "supervisor": {
+     "attrs": {
+      "C_th": 7.5,
+      "R0": 1.8,
+      "R_th": 4.0,
+      "T_amb": 25.0,
+      "T_derate": 90.0,
+      "T_full": 110.0,
+      "T_trip": 130.0,
+      "cmd_timeout": 0.01,
+      "damping": 0.05,
+      "i_der": 2.4,
+      "i_nom": 3.2,
+      "k_t": 0.14,
+      "lockout_trips": 3,
+      "lockout_window": 30.0,
+      "rearm_err": 0.03490658503988659,
+      "rearm_time": 0.05,
+      "thermal": true,
+      "v_max": 25.0,
+      "wd_action": "fallback",
+      "wd_persist": 0.04,
+      "wd_threshold": 0.20943951023931956
+     },
+     "class": "ctrl.supervisor.DriveSupervisor"
+    },
+    "t_window": [
+     0.0,
+     12.0
+    ],
+    "yaw_request": {
+     "attrs": {
+      "q": 0.0
+     },
+     "class": "sim.trajectories.Hold"
+    }
+   }
+  },
+  "2689b4a0aa801cce": {
+   "metrics": {
+    "completion": null,
+    "errors": {
+     "geo_peak": 0.4184397654884222,
+     "geo_peak_request": 0.4184397654884222,
+     "geo_rms": 0.07493953757227982,
+     "geo_rms_request": 0.07493953757227982,
+     "gov_peak": 0.4799618231737193,
+     "gov_peak_request": 0.4799618231737193,
+     "gov_rms": 0.20815456919876738,
+     "gov_rms_request": 0.20817191758144526,
+     "orig_peak": 0.5866002406124134,
+     "orig_peak_request": 0.5866002406124134,
+     "orig_rms": 0.2836340957283134,
+     "orig_rms_request": 0.28365773485788964,
+     "path_peak": 0.4799618231737193,
+     "path_peak_request": 0.4799618231737193,
+     "path_rms": 0.208171917581461,
+     "path_rms_request": 0.208171917581461
+    },
+    "not_tracked_because": [],
+    "progress": {
+     "T_request": 12.0,
+     "clock_backsteps": 0,
+     "clock_jumps": 0,
+     "path_time": 11.992000000000676,
+     "progress": 0.9993333333333897,
+     "sigma_end": 11.996000000000675,
+     "sigma_start": 0.003
+    },
+    "summary": {
+     "clip_pct": 0.0,
+     "cmd_age_max": 6.000000000000227,
+     "cmd_age_p50": 3.0000000000001137,
+     "events": 0,
+     "fallback_pct": 0.03333333333333333,
+     "heat_J": 10.878241625558886,
+     "i_peak": 1.2119394429198669,
+     "i_rms": 0.709663510038087,
+     "lag_end": 0.0019999999993256523,
+     "mean": 0.005863180663324445,
+     "peak": 0.5866002406124134,
+     "peak_gov": 0.4799618231737193,
+     "rejected_pct": 0.0,
+     "rms": 0.2836340957283134,
+     "rms_gov": 0.20815456919876738,
+     "sat_entries": 0,
+     "speed": 0.9996666666666667,
+     "vlim_pct": 0.0,
+     "wd_trips": 0,
+     "yaw_scale": 1.0
+    },
+    "tracked": true
+   },
+   "run": {
+    "config": {
+     "drive": {
+      "cmd_timeout": 0.01,
+      "derate_schedule": [],
+      "fallback_damping": 0.05,
+      "i_limit": 3.2
+     },
+     "duration": 12.0,
+     "plant": {
+      "J": 0.004,
+      "L": 0.00045,
+      "R": 1.8,
+      "b": 0.012,
+      "d_amp": 0.0,
+      "d_bw_hz": 3.0,
+      "k_e": 0.14,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "m_payload": 0.0,
+      "s_lat": 0.035,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "tau_i": 0.0012,
+      "v_bus": 24.0,
+      "v_fric": 0.02,
+      "v_util": 0.5773502691896258,
+      "voltage_limit": true
+     },
+     "q0": 0.0,
+     "sensor": {
+      "enc_bits": 14,
+      "enc_offset": 0.0
+     },
+     "timing": {
+      "blackout": [],
+      "burst_len_s": [
+       0.02,
+       0.1
+      ],
+      "burst_rate_hz": 0.5,
+      "can_burst": 0.004,
+      "can_max": 0.0018,
+      "can_min": 0.0006,
+      "command_blackout": [],
+      "drop_prob": 0.0,
+      "dt_sim": 0.0001,
+      "f_ctrl": 500.0,
+      "f_drive": 1000.0,
+      "feedback_blackout": [],
+      "feedback_over_can": true,
+      "t_cmd_delay": 0.001,
+      "t_compute": 0.0005
+     }
+    },
+    "controller": {
+     "class": "ctrl.baseline.BaselineController",
+     "components": {
+      "gov": {
+       "class": "ctrl.governor.RollGovernor",
+       "options": {
+        "J": 0.004,
+        "_cache": null,
+        "a": 0.0,
+        "align_tol": 0.0005752427954571154,
+        "b": 0.012,
+        "blend": null,
+        "blend_max": 0.03490658503988659,
+        "blocked": false,
+        "braking_short": false,
+        "cpl_peak": 0.0,
+        "cpl_tau": 1.0,
+        "d_margin": 0.05,
+        "fresh": true,
+        "hold_iv": null,
+        "horizon": 0.4,
+        "incons": 0.0,
+        "infeasibility": "",
+        "jump_tol": 0.0001,
+        "k_t": 0.14,
+        "kappa": 1.0,
+        "kappa_drop": 3.0,
+        "kappa_min": 0.1,
+        "kappa_rise": 0.25,
+        "latched": false,
+        "limited": false,
+        "mode": "sync",
+        "n_look": 48,
+        "over_budget": false,
+        "pq": 0.0,
+        "pv": 0.0,
+        "q": 0.0,
+        "q_range": 1.5707963267948966,
+        "reason": "",
+        "rejected": false,
+        "reserve": 0.2,
+        "s": 1.0,
+        "s_free": false,
+        "s_rate": 2.0,
+        "seg": null,
+        "sig_seen": 0.0,
+        "sigma": 0.0,
+        "speed_capped": false,
+        "stall": 0.0,
+        "stall_time": 0.5,
+        "status": "accepted",
+        "suspended": "",
+        "t_drop": {
+         "$float": "-inf"
+        },
+        "t_int": 0.0,
+        "tau_c": 0.04,
+        "tau_g": 0.12,
+        "tau_prev": null,
+        "v": 0.0,
+        "v_max": 20.0
+       }
+      },
+      "mon": {
+       "class": "ctrl.governor.YawMonitor",
+       "options": {
+        "complete": 0.9,
+        "hold_off": 0.6,
+        "sat_frac": 0.05,
+        "shrink": 0.8,
+        "window": 0.5
+       }
+      },
+      "rest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      },
+      "yest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      }
+     },
+     "name": "baseline",
+     "options": {
+      "J": 0.004,
+      "K": 0.7553255135705494,
+      "T_act": 0.004,
+      "alpha": 16,
+      "anti_windup": true,
+      "b": 0.012,
+      "fb_stale": 0.015,
+      "i_max": 3.2,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "load_model": null,
+      "over_budget_escalate": 0.3,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "use_governor": true,
+      "use_yaw_ff": true,
+      "use_yaw_monitor": true,
+      "wc": 28.0,
+      "wi_ratio": 0.1,
+      "yaw_info": "estimate"
+     }
+    },
+    "governed_yaw": true,
+    "note": "roll sine 5.0 deg at 3.0 Hz, yaw still, d(t) off, current-command delay 1 ms",
+    "roll_request": {
+     "attrs": {
+      "A": 0.08726646259971647,
+      "Tr": 1.0,
+      "off": 0.0,
+      "t0": 0.0,
+      "w": 18.84955592153876
+     },
+     "class": "sim.trajectories.RampedSine"
+    },
+    "scenario": "T5P-1ms",
+    "seed": 301,
+    "supervisor": {
+     "attrs": {
+      "C_th": 7.5,
+      "R0": 1.8,
+      "R_th": 4.0,
+      "T_amb": 25.0,
+      "T_derate": 90.0,
+      "T_full": 110.0,
+      "T_trip": 130.0,
+      "cmd_timeout": 0.01,
+      "damping": 0.05,
+      "i_der": 2.4,
+      "i_nom": 3.2,
+      "k_t": 0.14,
+      "lockout_trips": 3,
+      "lockout_window": 30.0,
+      "rearm_err": 0.03490658503988659,
+      "rearm_time": 0.05,
+      "thermal": true,
+      "v_max": 25.0,
+      "wd_action": "fallback",
+      "wd_persist": 0.04,
+      "wd_threshold": 0.20943951023931956
+     },
+     "class": "ctrl.supervisor.DriveSupervisor"
+    },
+    "t_window": [
+     0.0,
+     12.0
+    ],
+    "yaw_request": {
+     "attrs": {
+      "q": 0.0
+     },
+     "class": "sim.trajectories.Hold"
+    }
+   }
+  },
+  "29373e03d1615f8a": {
+   "metrics": {
+    "completion": null,
+    "errors": {
+     "geo_peak": 0.46610498890365337,
+     "geo_peak_request": 0.46610498890365337,
+     "geo_rms": 0.07709425492997855,
+     "geo_rms_request": 0.07709425492997855,
+     "gov_peak": 0.5207552533260285,
+     "gov_peak_request": 0.5207552533260285,
+     "gov_rms": 0.21145989755177044,
+     "gov_rms_request": 0.211477521412913,
+     "orig_peak": 0.7218614933845106,
+     "orig_peak_request": 0.7218614933845106,
+     "orig_rms": 0.3905021644570828,
+     "orig_rms_request": 0.3905347103724168,
+     "path_peak": 0.5207552533260285,
+     "path_peak_request": 0.5207552533260285,
+     "path_rms": 0.21147752141293685,
+     "path_rms_request": 0.21147752141293685
+    },
+    "not_tracked_because": [],
+    "progress": {
+     "T_request": 12.0,
+     "clock_backsteps": 0,
+     "clock_jumps": 0,
+     "path_time": 11.990000000000675,
+     "progress": 0.9991666666667229,
+     "sigma_end": 11.994000000000675,
+     "sigma_start": 0.003
+    },
+    "summary": {
+     "clip_pct": 0.0,
+     "cmd_age_max": 6.000000000000227,
+     "cmd_age_p50": 3.0000000000001137,
+     "events": 0,
+     "fallback_pct": 0.03333333333333333,
+     "heat_J": 10.895783679877825,
+     "i_peak": 1.2288875742345022,
+     "i_rms": 0.710235474771553,
+     "lag_end": 0.00399999999932632,
+     "mean": 0.011910002348259799,
+     "peak": 0.7218614933845106,
+     "peak_gov": 0.5207552533260285,
+     "rejected_pct": 0.0,
+     "rms": 0.3905021644570828,
+     "rms_gov": 0.21145989755177044,
+     "sat_entries": 0,
+     "speed": 0.9995,
+     "vlim_pct": 0.0,
+     "wd_trips": 0,
+     "yaw_scale": 1.0
+    },
+    "tracked": true
+   },
+   "run": {
+    "config": {
+     "drive": {
+      "cmd_timeout": 0.01,
+      "derate_schedule": [],
+      "fallback_damping": 0.05,
+      "i_limit": 3.2
+     },
+     "duration": 12.0,
+     "plant": {
+      "J": 0.004,
+      "L": 0.00045,
+      "R": 1.8,
+      "b": 0.012,
+      "d_amp": 0.0,
+      "d_bw_hz": 3.0,
+      "k_e": 0.14,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "m_payload": 0.0,
+      "s_lat": 0.035,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "tau_i": 0.0012,
+      "v_bus": 24.0,
+      "v_fric": 0.02,
+      "v_util": 0.5773502691896258,
+      "voltage_limit": true
+     },
+     "q0": 0.0,
+     "sensor": {
+      "enc_bits": 14,
+      "enc_offset": 0.0
+     },
+     "timing": {
+      "blackout": [],
+      "burst_len_s": [
+       0.02,
+       0.1
+      ],
+      "burst_rate_hz": 0.5,
+      "can_burst": 0.004,
+      "can_max": 0.0018,
+      "can_min": 0.0006,
+      "command_blackout": [],
+      "drop_prob": 0.0,
+      "dt_sim": 0.0001,
+      "f_ctrl": 500.0,
+      "f_drive": 1000.0,
+      "feedback_blackout": [],
+      "feedback_over_can": true,
+      "t_cmd_delay": 0.001,
+      "t_compute": 0.0005
+     }
+    },
+    "controller": {
+     "class": "ctrl.baseline.BaselineController",
+     "components": {
+      "gov": {
+       "class": "ctrl.governor.RollGovernor",
+       "options": {
+        "J": 0.004,
+        "_cache": null,
+        "a": 0.0,
+        "align_tol": 0.0005752427954571154,
+        "b": 0.012,
+        "blend": null,
+        "blend_max": 0.03490658503988659,
+        "blocked": false,
+        "braking_short": false,
+        "cpl_peak": 0.0,
+        "cpl_tau": 1.0,
+        "d_margin": 0.05,
+        "fresh": true,
+        "hold_iv": null,
+        "horizon": 0.4,
+        "incons": 0.0,
+        "infeasibility": "",
+        "jump_tol": 0.0001,
+        "k_t": 0.14,
+        "kappa": 1.0,
+        "kappa_drop": 3.0,
+        "kappa_min": 0.1,
+        "kappa_rise": 0.25,
+        "latched": false,
+        "limited": false,
+        "mode": "sync",
+        "n_look": 48,
+        "over_budget": false,
+        "pq": 0.0,
+        "pv": 0.0,
+        "q": 0.0,
+        "q_range": 1.5707963267948966,
+        "reason": "",
+        "rejected": false,
+        "reserve": 0.2,
+        "s": 1.0,
+        "s_free": false,
+        "s_rate": 2.0,
+        "seg": null,
+        "sig_seen": 0.0,
+        "sigma": 0.0,
+        "speed_capped": false,
+        "stall": 0.0,
+        "stall_time": 0.5,
+        "status": "accepted",
+        "suspended": "",
+        "t_drop": {
+         "$float": "-inf"
+        },
+        "t_int": 0.0,
+        "tau_c": 0.04,
+        "tau_g": 0.12,
+        "tau_prev": null,
+        "v": 0.0,
+        "v_max": 20.0
+       }
+      },
+      "mon": {
+       "class": "ctrl.governor.YawMonitor",
+       "options": {
+        "complete": 0.9,
+        "hold_off": 0.6,
+        "sat_frac": 0.05,
+        "shrink": 0.8,
+        "window": 0.5
+       }
+      },
+      "rest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      },
+      "yest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      }
+     },
+     "name": "baseline",
+     "options": {
+      "J": 0.004,
+      "K": 0.7553255135705494,
+      "T_act": 0.004,
+      "alpha": 16,
+      "anti_windup": true,
+      "b": 0.012,
+      "fb_stale": 0.015,
+      "i_max": 3.2,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "load_model": null,
+      "over_budget_escalate": 0.3,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "use_governor": true,
+      "use_yaw_ff": true,
+      "use_yaw_monitor": true,
+      "wc": 28.0,
+      "wi_ratio": 0.1,
+      "yaw_info": "estimate"
+     }
+    },
+    "governed_yaw": true,
+    "note": "roll sine 5.0 deg at 3.0 Hz, yaw still, d(t) off, current-command delay 1 ms",
+    "roll_request": {
+     "attrs": {
+      "A": 0.08726646259971647,
+      "Tr": 1.0,
+      "off": 0.0,
+      "t0": 0.0,
+      "w": 18.84955592153876
+     },
+     "class": "sim.trajectories.RampedSine"
+    },
+    "scenario": "T5P-1ms",
+    "seed": 303,
+    "supervisor": {
+     "attrs": {
+      "C_th": 7.5,
+      "R0": 1.8,
+      "R_th": 4.0,
+      "T_amb": 25.0,
+      "T_derate": 90.0,
+      "T_full": 110.0,
+      "T_trip": 130.0,
+      "cmd_timeout": 0.01,
+      "damping": 0.05,
+      "i_der": 2.4,
+      "i_nom": 3.2,
+      "k_t": 0.14,
+      "lockout_trips": 3,
+      "lockout_window": 30.0,
+      "rearm_err": 0.03490658503988659,
+      "rearm_time": 0.05,
+      "thermal": true,
+      "v_max": 25.0,
+      "wd_action": "fallback",
+      "wd_persist": 0.04,
+      "wd_threshold": 0.20943951023931956
+     },
+     "class": "ctrl.supervisor.DriveSupervisor"
+    },
+    "t_window": [
+     0.0,
+     12.0
+    ],
+    "yaw_request": {
+     "attrs": {
+      "q": 0.0
+     },
+     "class": "sim.trajectories.Hold"
+    }
+   }
+  },
+  "2c53e604123e1687": {
+   "metrics": {
+    "completion": null,
+    "errors": {
+     "geo_peak": 0.7787032057279253,
+     "geo_peak_request": 0.7787032057279253,
+     "geo_rms": 0.21639376051403275,
+     "geo_rms_request": 0.21639376051403275,
+     "gov_peak": 0.8192818124478918,
+     "gov_peak_request": 0.8192818124478918,
+     "gov_rms": 0.4517064616172674,
+     "gov_rms_request": 0.45174410852833147,
+     "orig_peak": 0.9948645792236039,
+     "orig_peak_request": 0.9948645792236039,
+     "orig_rms": 0.5604388233123002,
+     "orig_rms_request": 0.5604855323862916,
+     "path_peak": 0.8192818124478918,
+     "path_peak_request": 0.8192818124478918,
+     "path_rms": 0.4517441085283327,
+     "path_rms_request": 0.4517441085283327
+    },
+    "not_tracked_because": [],
+    "progress": {
+     "T_request": 12.0,
+     "clock_backsteps": 0,
+     "clock_jumps": 0,
+     "path_time": 11.992000000000676,
+     "progress": 0.9993333333333897,
+     "sigma_end": 11.995000000000676,
+     "sigma_start": 0.002
+    },
+    "summary": {
+     "clip_pct": 0.0,
+     "cmd_age_max": 6.000000000000227,
+     "cmd_age_p50": 3.0000000000001137,
+     "events": 0,
+     "fallback_pct": 0.03333333333333333,
+     "heat_J": 12.135989471791643,
+     "i_peak": 1.2518153346757002,
+     "i_rms": 0.7495674515577623,
+     "lag_end": 0.002999999999325098,
+     "mean": 0.007619802547106422,
+     "peak": 0.9948645792236039,
+     "peak_gov": 0.8192818124478918,
+     "rejected_pct": 0.0,
+     "rms": 0.5604388233123002,
+     "rms_gov": 0.4517064616172674,
+     "sat_entries": 0,
+     "speed": 0.9995,
+     "vlim_pct": 0.0,
+     "wd_trips": 0,
+     "yaw_scale": 1.0
+    },
+    "tracked": true
+   },
+   "run": {
+    "config": {
+     "drive": {
+      "cmd_timeout": 0.01,
+      "derate_schedule": [],
+      "fallback_damping": 0.05,
+      "i_limit": 3.2
+     },
+     "duration": 12.0,
+     "plant": {
+      "J": 0.004,
+      "L": 0.00045,
+      "R": 1.8,
+      "b": 0.012,
+      "d_amp": 0.0,
+      "d_bw_hz": 3.0,
+      "k_e": 0.14,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "m_payload": 0.0,
+      "s_lat": 0.035,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "tau_i": 0.0012,
+      "v_bus": 24.0,
+      "v_fric": 0.02,
+      "v_util": 0.5773502691896258,
+      "voltage_limit": true
+     },
+     "q0": 0.0,
+     "sensor": {
+      "enc_bits": 14,
+      "enc_offset": 0.0
+     },
+     "timing": {
+      "blackout": [],
+      "burst_len_s": [
+       0.02,
+       0.1
+      ],
+      "burst_rate_hz": 0.5,
+      "can_burst": 0.004,
+      "can_max": 0.0018,
+      "can_min": 0.0006,
+      "command_blackout": [],
+      "drop_prob": 0.0,
+      "dt_sim": 0.0001,
+      "f_ctrl": 500.0,
+      "f_drive": 1000.0,
+      "feedback_blackout": [],
+      "feedback_over_can": true,
+      "t_cmd_delay": 0.005,
+      "t_compute": 0.0005
+     }
+    },
+    "controller": {
+     "class": "ctrl.baseline.BaselineController",
+     "components": {
+      "gov": {
+       "class": "ctrl.governor.RollGovernor",
+       "options": {
+        "J": 0.004,
+        "_cache": null,
+        "a": 0.0,
+        "align_tol": 0.0005752427954571154,
+        "b": 0.012,
+        "blend": null,
+        "blend_max": 0.03490658503988659,
+        "blocked": false,
+        "braking_short": false,
+        "cpl_peak": 0.0,
+        "cpl_tau": 1.0,
+        "d_margin": 0.05,
+        "fresh": true,
+        "hold_iv": null,
+        "horizon": 0.4,
+        "incons": 0.0,
+        "infeasibility": "",
+        "jump_tol": 0.0001,
+        "k_t": 0.14,
+        "kappa": 1.0,
+        "kappa_drop": 3.0,
+        "kappa_min": 0.1,
+        "kappa_rise": 0.25,
+        "latched": false,
+        "limited": false,
+        "mode": "sync",
+        "n_look": 48,
+        "over_budget": false,
+        "pq": 0.0,
+        "pv": 0.0,
+        "q": 0.0,
+        "q_range": 1.5707963267948966,
+        "reason": "",
+        "rejected": false,
+        "reserve": 0.2,
+        "s": 1.0,
+        "s_free": false,
+        "s_rate": 2.0,
+        "seg": null,
+        "sig_seen": 0.0,
+        "sigma": 0.0,
+        "speed_capped": false,
+        "stall": 0.0,
+        "stall_time": 0.5,
+        "status": "accepted",
+        "suspended": "",
+        "t_drop": {
+         "$float": "-inf"
+        },
+        "t_int": 0.0,
+        "tau_c": 0.04,
+        "tau_g": 0.12,
+        "tau_prev": null,
+        "v": 0.0,
+        "v_max": 20.0
+       }
+      },
+      "mon": {
+       "class": "ctrl.governor.YawMonitor",
+       "options": {
+        "complete": 0.9,
+        "hold_off": 0.6,
+        "sat_frac": 0.05,
+        "shrink": 0.8,
+        "window": 0.5
+       }
+      },
+      "rest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      },
+      "yest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      }
+     },
+     "name": "baseline",
+     "options": {
+      "J": 0.004,
+      "K": 0.7553255135705494,
+      "T_act": 0.004,
+      "alpha": 16,
+      "anti_windup": true,
+      "b": 0.012,
+      "fb_stale": 0.015,
+      "i_max": 3.2,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "load_model": null,
+      "over_budget_escalate": 0.3,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "use_governor": true,
+      "use_yaw_ff": true,
+      "use_yaw_monitor": true,
+      "wc": 28.0,
+      "wi_ratio": 0.1,
+      "yaw_info": "estimate"
+     }
+    },
+    "governed_yaw": true,
+    "note": "roll sine 5.0 deg at 3.0 Hz, yaw still, d(t) off, current-command delay 5 ms",
+    "roll_request": {
+     "attrs": {
+      "A": 0.08726646259971647,
+      "Tr": 1.0,
+      "off": 0.0,
+      "t0": 0.0,
+      "w": 18.84955592153876
+     },
+     "class": "sim.trajectories.RampedSine"
+    },
+    "scenario": "T5P-5ms",
+    "seed": 304,
+    "supervisor": {
+     "attrs": {
+      "C_th": 7.5,
+      "R0": 1.8,
+      "R_th": 4.0,
+      "T_amb": 25.0,
+      "T_derate": 90.0,
+      "T_full": 110.0,
+      "T_trip": 130.0,
+      "cmd_timeout": 0.01,
+      "damping": 0.05,
+      "i_der": 2.4,
+      "i_nom": 3.2,
+      "k_t": 0.14,
+      "lockout_trips": 3,
+      "lockout_window": 30.0,
+      "rearm_err": 0.03490658503988659,
+      "rearm_time": 0.05,
+      "thermal": true,
+      "v_max": 25.0,
+      "wd_action": "fallback",
+      "wd_persist": 0.04,
+      "wd_threshold": 0.20943951023931956
+     },
+     "class": "ctrl.supervisor.DriveSupervisor"
+    },
+    "t_window": [
+     0.0,
+     12.0
+    ],
+    "yaw_request": {
+     "attrs": {
+      "q": 0.0
+     },
+     "class": "sim.trajectories.Hold"
+    }
+   }
+  },
+  "331bf705d2721e1b": {
+   "metrics": {
+    "completion": null,
+    "errors": {
+     "geo_peak": 0.7735481400632951,
+     "geo_peak_request": 0.7735481400632951,
+     "geo_rms": 0.2185041371627593,
+     "geo_rms_request": 0.2185041371627593,
+     "gov_peak": 0.8473757614277225,
+     "gov_peak_request": 0.8473757614277225,
+     "gov_rms": 0.4554500327179699,
+     "gov_rms_request": 0.4554879916322933,
+     "orig_peak": 0.9600259210115599,
+     "orig_peak_request": 0.9600259210115599,
+     "orig_rms": 0.5227853098480701,
+     "orig_rms_request": 0.5228288807369942,
+     "path_peak": 0.8473757614277225,
+     "path_peak_request": 0.8473757614277225,
+     "path_rms": 0.45548799163230047,
+     "path_rms_request": 0.45548799163230047
+    },
+    "not_tracked_because": [],
+    "progress": {
+     "T_request": 12.0,
+     "clock_backsteps": 0,
+     "clock_jumps": 0,
+     "path_time": 11.992000000000676,
+     "progress": 0.9993333333333897,
+     "sigma_end": 11.996000000000675,
+     "sigma_start": 0.003
+    },
+    "summary": {
+     "clip_pct": 0.0,
+     "cmd_age_max": 6.000000000000227,
+     "cmd_age_p50": 3.0000000000001137,
+     "events": 0,
+     "fallback_pct": 0.03333333333333333,
+     "heat_J": 12.167864556243526,
+     "i_peak": 1.278488163566385,
+     "i_rms": 0.7505511726651635,
+     "lag_end": 0.0019999999993256523,
+     "mean": 0.003877906643637926,
+     "peak": 0.9600259210115599,
+     "peak_gov": 0.8473757614277225,
+     "rejected_pct": 0.0,
+     "rms": 0.5227853098480701,
+     "rms_gov": 0.4554500327179699,
+     "sat_entries": 0,
+     "speed": 0.9996666666666667,
+     "vlim_pct": 0.0,
+     "wd_trips": 0,
+     "yaw_scale": 1.0
+    },
+    "tracked": true
+   },
+   "run": {
+    "config": {
+     "drive": {
+      "cmd_timeout": 0.01,
+      "derate_schedule": [],
+      "fallback_damping": 0.05,
+      "i_limit": 3.2
+     },
+     "duration": 12.0,
+     "plant": {
+      "J": 0.004,
+      "L": 0.00045,
+      "R": 1.8,
+      "b": 0.012,
+      "d_amp": 0.0,
+      "d_bw_hz": 3.0,
+      "k_e": 0.14,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "m_payload": 0.0,
+      "s_lat": 0.035,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "tau_i": 0.0012,
+      "v_bus": 24.0,
+      "v_fric": 0.02,
+      "v_util": 0.5773502691896258,
+      "voltage_limit": true
+     },
+     "q0": 0.0,
+     "sensor": {
+      "enc_bits": 14,
+      "enc_offset": 0.0
+     },
+     "timing": {
+      "blackout": [],
+      "burst_len_s": [
+       0.02,
+       0.1
+      ],
+      "burst_rate_hz": 0.5,
+      "can_burst": 0.004,
+      "can_max": 0.0018,
+      "can_min": 0.0006,
+      "command_blackout": [],
+      "drop_prob": 0.0,
+      "dt_sim": 0.0001,
+      "f_ctrl": 500.0,
+      "f_drive": 1000.0,
+      "feedback_blackout": [],
+      "feedback_over_can": true,
+      "t_cmd_delay": 0.005,
+      "t_compute": 0.0005
+     }
+    },
+    "controller": {
+     "class": "ctrl.baseline.BaselineController",
+     "components": {
+      "gov": {
+       "class": "ctrl.governor.RollGovernor",
+       "options": {
+        "J": 0.004,
+        "_cache": null,
+        "a": 0.0,
+        "align_tol": 0.0005752427954571154,
+        "b": 0.012,
+        "blend": null,
+        "blend_max": 0.03490658503988659,
+        "blocked": false,
+        "braking_short": false,
+        "cpl_peak": 0.0,
+        "cpl_tau": 1.0,
+        "d_margin": 0.05,
+        "fresh": true,
+        "hold_iv": null,
+        "horizon": 0.4,
+        "incons": 0.0,
+        "infeasibility": "",
+        "jump_tol": 0.0001,
+        "k_t": 0.14,
+        "kappa": 1.0,
+        "kappa_drop": 3.0,
+        "kappa_min": 0.1,
+        "kappa_rise": 0.25,
+        "latched": false,
+        "limited": false,
+        "mode": "sync",
+        "n_look": 48,
+        "over_budget": false,
+        "pq": 0.0,
+        "pv": 0.0,
+        "q": 0.0,
+        "q_range": 1.5707963267948966,
+        "reason": "",
+        "rejected": false,
+        "reserve": 0.2,
+        "s": 1.0,
+        "s_free": false,
+        "s_rate": 2.0,
+        "seg": null,
+        "sig_seen": 0.0,
+        "sigma": 0.0,
+        "speed_capped": false,
+        "stall": 0.0,
+        "stall_time": 0.5,
+        "status": "accepted",
+        "suspended": "",
+        "t_drop": {
+         "$float": "-inf"
+        },
+        "t_int": 0.0,
+        "tau_c": 0.04,
+        "tau_g": 0.12,
+        "tau_prev": null,
+        "v": 0.0,
+        "v_max": 20.0
+       }
+      },
+      "mon": {
+       "class": "ctrl.governor.YawMonitor",
+       "options": {
+        "complete": 0.9,
+        "hold_off": 0.6,
+        "sat_frac": 0.05,
+        "shrink": 0.8,
+        "window": 0.5
+       }
+      },
+      "rest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      },
+      "yest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      }
+     },
+     "name": "baseline",
+     "options": {
+      "J": 0.004,
+      "K": 0.7553255135705494,
+      "T_act": 0.004,
+      "alpha": 16,
+      "anti_windup": true,
+      "b": 0.012,
+      "fb_stale": 0.015,
+      "i_max": 3.2,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "load_model": null,
+      "over_budget_escalate": 0.3,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "use_governor": true,
+      "use_yaw_ff": true,
+      "use_yaw_monitor": true,
+      "wc": 28.0,
+      "wi_ratio": 0.1,
+      "yaw_info": "estimate"
+     }
+    },
+    "governed_yaw": true,
+    "note": "roll sine 5.0 deg at 3.0 Hz, yaw still, d(t) off, current-command delay 5 ms",
+    "roll_request": {
+     "attrs": {
+      "A": 0.08726646259971647,
+      "Tr": 1.0,
+      "off": 0.0,
+      "t0": 0.0,
+      "w": 18.84955592153876
+     },
+     "class": "sim.trajectories.RampedSine"
+    },
+    "scenario": "T5P-5ms",
+    "seed": 301,
+    "supervisor": {
+     "attrs": {
+      "C_th": 7.5,
+      "R0": 1.8,
+      "R_th": 4.0,
+      "T_amb": 25.0,
+      "T_derate": 90.0,
+      "T_full": 110.0,
+      "T_trip": 130.0,
+      "cmd_timeout": 0.01,
+      "damping": 0.05,
+      "i_der": 2.4,
+      "i_nom": 3.2,
+      "k_t": 0.14,
+      "lockout_trips": 3,
+      "lockout_window": 30.0,
+      "rearm_err": 0.03490658503988659,
+      "rearm_time": 0.05,
+      "thermal": true,
+      "v_max": 25.0,
+      "wd_action": "fallback",
+      "wd_persist": 0.04,
+      "wd_threshold": 0.20943951023931956
+     },
+     "class": "ctrl.supervisor.DriveSupervisor"
+    },
+    "t_window": [
+     0.0,
+     12.0
+    ],
+    "yaw_request": {
+     "attrs": {
+      "q": 0.0
+     },
+     "class": "sim.trajectories.Hold"
+    }
+   }
+  },
+  "4ab8ca73521a7fcf": {
+   "metrics": {
+    "completion": null,
+    "errors": {
+     "geo_peak": 0.7081546354143708,
+     "geo_peak_request": 0.7081546354143708,
+     "geo_rms": 0.21578875875168393,
+     "geo_rms_request": 0.21578875875168393,
+     "gov_peak": 0.8045393226243108,
+     "gov_peak_request": 0.8045393226243108,
+     "gov_rms": 0.4535258605370217,
+     "gov_rms_request": 0.4535636590836171,
+     "orig_peak": 0.935963956496657,
+     "orig_peak_request": 0.935963956496657,
+     "orig_rms": 0.561625552186333,
+     "orig_rms_request": 0.5616723601667607,
+     "path_peak": 0.8045393226243108,
+     "path_peak_request": 0.8045393226243108,
+     "path_rms": 0.4535636590836184,
+     "path_rms_request": 0.4535636590836184
+    },
+    "not_tracked_because": [],
+    "progress": {
+     "T_request": 12.0,
+     "clock_backsteps": 0,
+     "clock_jumps": 0,
+     "path_time": 11.992000000000676,
+     "progress": 0.9993333333333897,
+     "sigma_end": 11.995000000000676,
+     "sigma_start": 0.002
+    },
+    "summary": {
+     "clip_pct": 0.0,
+     "cmd_age_max": 6.000000000000227,
+     "cmd_age_p50": 3.0000000000001137,
+     "events": 0,
+     "fallback_pct": 0.03333333333333333,
+     "heat_J": 12.161697827791675,
+     "i_peak": 1.303798137230177,
+     "i_rms": 0.7503609572075738,
+     "lag_end": 0.002999999999325098,
+     "mean": 0.007082798483432055,
+     "peak": 0.935963956496657,
+     "peak_gov": 0.8045393226243108,
+     "rejected_pct": 0.0,
+     "rms": 0.561625552186333,
+     "rms_gov": 0.4535258605370217,
+     "sat_entries": 0,
+     "speed": 0.9995,
+     "vlim_pct": 0.0,
+     "wd_trips": 0,
+     "yaw_scale": 1.0
+    },
+    "tracked": true
+   },
+   "run": {
+    "config": {
+     "drive": {
+      "cmd_timeout": 0.01,
+      "derate_schedule": [],
+      "fallback_damping": 0.05,
+      "i_limit": 3.2
+     },
+     "duration": 12.0,
+     "plant": {
+      "J": 0.004,
+      "L": 0.00045,
+      "R": 1.8,
+      "b": 0.012,
+      "d_amp": 0.0,
+      "d_bw_hz": 3.0,
+      "k_e": 0.14,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "m_payload": 0.0,
+      "s_lat": 0.035,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "tau_i": 0.0012,
+      "v_bus": 24.0,
+      "v_fric": 0.02,
+      "v_util": 0.5773502691896258,
+      "voltage_limit": true
+     },
+     "q0": 0.0,
+     "sensor": {
+      "enc_bits": 14,
+      "enc_offset": 0.0
+     },
+     "timing": {
+      "blackout": [],
+      "burst_len_s": [
+       0.02,
+       0.1
+      ],
+      "burst_rate_hz": 0.5,
+      "can_burst": 0.004,
+      "can_max": 0.0018,
+      "can_min": 0.0006,
+      "command_blackout": [],
+      "drop_prob": 0.0,
+      "dt_sim": 0.0001,
+      "f_ctrl": 500.0,
+      "f_drive": 1000.0,
+      "feedback_blackout": [],
+      "feedback_over_can": true,
+      "t_cmd_delay": 0.005,
+      "t_compute": 0.0005
+     }
+    },
+    "controller": {
+     "class": "ctrl.baseline.BaselineController",
+     "components": {
+      "gov": {
+       "class": "ctrl.governor.RollGovernor",
+       "options": {
+        "J": 0.004,
+        "_cache": null,
+        "a": 0.0,
+        "align_tol": 0.0005752427954571154,
+        "b": 0.012,
+        "blend": null,
+        "blend_max": 0.03490658503988659,
+        "blocked": false,
+        "braking_short": false,
+        "cpl_peak": 0.0,
+        "cpl_tau": 1.0,
+        "d_margin": 0.05,
+        "fresh": true,
+        "hold_iv": null,
+        "horizon": 0.4,
+        "incons": 0.0,
+        "infeasibility": "",
+        "jump_tol": 0.0001,
+        "k_t": 0.14,
+        "kappa": 1.0,
+        "kappa_drop": 3.0,
+        "kappa_min": 0.1,
+        "kappa_rise": 0.25,
+        "latched": false,
+        "limited": false,
+        "mode": "sync",
+        "n_look": 48,
+        "over_budget": false,
+        "pq": 0.0,
+        "pv": 0.0,
+        "q": 0.0,
+        "q_range": 1.5707963267948966,
+        "reason": "",
+        "rejected": false,
+        "reserve": 0.2,
+        "s": 1.0,
+        "s_free": false,
+        "s_rate": 2.0,
+        "seg": null,
+        "sig_seen": 0.0,
+        "sigma": 0.0,
+        "speed_capped": false,
+        "stall": 0.0,
+        "stall_time": 0.5,
+        "status": "accepted",
+        "suspended": "",
+        "t_drop": {
+         "$float": "-inf"
+        },
+        "t_int": 0.0,
+        "tau_c": 0.04,
+        "tau_g": 0.12,
+        "tau_prev": null,
+        "v": 0.0,
+        "v_max": 20.0
+       }
+      },
+      "mon": {
+       "class": "ctrl.governor.YawMonitor",
+       "options": {
+        "complete": 0.9,
+        "hold_off": 0.6,
+        "sat_frac": 0.05,
+        "shrink": 0.8,
+        "window": 0.5
+       }
+      },
+      "rest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      },
+      "yest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      }
+     },
+     "name": "baseline",
+     "options": {
+      "J": 0.004,
+      "K": 0.7553255135705494,
+      "T_act": 0.004,
+      "alpha": 16,
+      "anti_windup": true,
+      "b": 0.012,
+      "fb_stale": 0.015,
+      "i_max": 3.2,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "load_model": null,
+      "over_budget_escalate": 0.3,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "use_governor": true,
+      "use_yaw_ff": true,
+      "use_yaw_monitor": true,
+      "wc": 28.0,
+      "wi_ratio": 0.1,
+      "yaw_info": "estimate"
+     }
+    },
+    "governed_yaw": true,
+    "note": "roll sine 5.0 deg at 3.0 Hz, yaw still, d(t) off, current-command delay 5 ms",
+    "roll_request": {
+     "attrs": {
+      "A": 0.08726646259971647,
+      "Tr": 1.0,
+      "off": 0.0,
+      "t0": 0.0,
+      "w": 18.84955592153876
+     },
+     "class": "sim.trajectories.RampedSine"
+    },
+    "scenario": "T5P-5ms",
+    "seed": 302,
+    "supervisor": {
+     "attrs": {
+      "C_th": 7.5,
+      "R0": 1.8,
+      "R_th": 4.0,
+      "T_amb": 25.0,
+      "T_derate": 90.0,
+      "T_full": 110.0,
+      "T_trip": 130.0,
+      "cmd_timeout": 0.01,
+      "damping": 0.05,
+      "i_der": 2.4,
+      "i_nom": 3.2,
+      "k_t": 0.14,
+      "lockout_trips": 3,
+      "lockout_window": 30.0,
+      "rearm_err": 0.03490658503988659,
+      "rearm_time": 0.05,
+      "thermal": true,
+      "v_max": 25.0,
+      "wd_action": "fallback",
+      "wd_persist": 0.04,
+      "wd_threshold": 0.20943951023931956
+     },
+     "class": "ctrl.supervisor.DriveSupervisor"
+    },
+    "t_window": [
+     0.0,
+     12.0
+    ],
+    "yaw_request": {
+     "attrs": {
+      "q": 0.0
+     },
+     "class": "sim.trajectories.Hold"
+    }
+   }
+  },
+  "5ac135d95e5754df": {
+   "metrics": {
+    "completion": null,
+    "errors": {
+     "geo_peak": 0.8954175228659325,
+     "geo_peak_request": 0.8954175228659325,
+     "geo_rms": 0.22232017217169622,
+     "geo_rms_request": 0.22232017217169622,
+     "gov_peak": 1.050567782773191,
+     "gov_peak_request": 1.050567782773191,
+     "gov_rms": 0.46062253661839303,
+     "gov_rms_request": 0.46066092662859576,
+     "orig_peak": 1.2281091847142809,
+     "orig_peak_request": 1.2281091847142809,
+     "orig_rms": 0.6600564236139134,
+     "orig_rms_request": 0.660111435192424,
+     "path_peak": 1.050567782773191,
+     "path_peak_request": 1.050567782773191,
+     "path_rms": 0.46066092662859764,
+     "path_rms_request": 0.46066092662859764
+    },
+    "not_tracked_because": [],
+    "progress": {
+     "T_request": 12.0,
+     "clock_backsteps": 0,
+     "clock_jumps": 0,
+     "path_time": 11.990000000000675,
+     "progress": 0.9991666666667229,
+     "sigma_end": 11.993000000000675,
+     "sigma_start": 0.002
+    },
+    "summary": {
+     "clip_pct": 0.0,
+     "cmd_age_max": 6.000000000000227,
+     "cmd_age_p50": 3.0000000000001137,
+     "events": 0,
+     "fallback_pct": 0.04166666666666667,
+     "heat_J": 12.196226290991328,
+     "i_peak": 1.2411368624901513,
+     "i_rms": 0.7514253828986703,
+     "lag_end": 0.004999999999325766,
+     "mean": 0.011300239900899924,
+     "peak": 1.2281091847142809,
+     "peak_gov": 1.050567782773191,
+     "rejected_pct": 0.0,
+     "rms": 0.6600564236139134,
+     "rms_gov": 0.46062253661839303,
+     "sat_entries": 0,
+     "speed": 0.9993333333333333,
+     "vlim_pct": 0.0,
+     "wd_trips": 0,
+     "yaw_scale": 1.0
+    },
+    "tracked": true
+   },
+   "run": {
+    "config": {
+     "drive": {
+      "cmd_timeout": 0.01,
+      "derate_schedule": [],
+      "fallback_damping": 0.05,
+      "i_limit": 3.2
+     },
+     "duration": 12.0,
+     "plant": {
+      "J": 0.004,
+      "L": 0.00045,
+      "R": 1.8,
+      "b": 0.012,
+      "d_amp": 0.0,
+      "d_bw_hz": 3.0,
+      "k_e": 0.14,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "m_payload": 0.0,
+      "s_lat": 0.035,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "tau_i": 0.0012,
+      "v_bus": 24.0,
+      "v_fric": 0.02,
+      "v_util": 0.5773502691896258,
+      "voltage_limit": true
+     },
+     "q0": 0.0,
+     "sensor": {
+      "enc_bits": 14,
+      "enc_offset": 0.0
+     },
+     "timing": {
+      "blackout": [],
+      "burst_len_s": [
+       0.02,
+       0.1
+      ],
+      "burst_rate_hz": 0.5,
+      "can_burst": 0.004,
+      "can_max": 0.0018,
+      "can_min": 0.0006,
+      "command_blackout": [],
+      "drop_prob": 0.0,
+      "dt_sim": 0.0001,
+      "f_ctrl": 500.0,
+      "f_drive": 1000.0,
+      "feedback_blackout": [],
+      "feedback_over_can": true,
+      "t_cmd_delay": 0.005,
+      "t_compute": 0.0005
+     }
+    },
+    "controller": {
+     "class": "ctrl.baseline.BaselineController",
+     "components": {
+      "gov": {
+       "class": "ctrl.governor.RollGovernor",
+       "options": {
+        "J": 0.004,
+        "_cache": null,
+        "a": 0.0,
+        "align_tol": 0.0005752427954571154,
+        "b": 0.012,
+        "blend": null,
+        "blend_max": 0.03490658503988659,
+        "blocked": false,
+        "braking_short": false,
+        "cpl_peak": 0.0,
+        "cpl_tau": 1.0,
+        "d_margin": 0.05,
+        "fresh": true,
+        "hold_iv": null,
+        "horizon": 0.4,
+        "incons": 0.0,
+        "infeasibility": "",
+        "jump_tol": 0.0001,
+        "k_t": 0.14,
+        "kappa": 1.0,
+        "kappa_drop": 3.0,
+        "kappa_min": 0.1,
+        "kappa_rise": 0.25,
+        "latched": false,
+        "limited": false,
+        "mode": "sync",
+        "n_look": 48,
+        "over_budget": false,
+        "pq": 0.0,
+        "pv": 0.0,
+        "q": 0.0,
+        "q_range": 1.5707963267948966,
+        "reason": "",
+        "rejected": false,
+        "reserve": 0.2,
+        "s": 1.0,
+        "s_free": false,
+        "s_rate": 2.0,
+        "seg": null,
+        "sig_seen": 0.0,
+        "sigma": 0.0,
+        "speed_capped": false,
+        "stall": 0.0,
+        "stall_time": 0.5,
+        "status": "accepted",
+        "suspended": "",
+        "t_drop": {
+         "$float": "-inf"
+        },
+        "t_int": 0.0,
+        "tau_c": 0.04,
+        "tau_g": 0.12,
+        "tau_prev": null,
+        "v": 0.0,
+        "v_max": 20.0
+       }
+      },
+      "mon": {
+       "class": "ctrl.governor.YawMonitor",
+       "options": {
+        "complete": 0.9,
+        "hold_off": 0.6,
+        "sat_frac": 0.05,
+        "shrink": 0.8,
+        "window": 0.5
+       }
+      },
+      "rest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      },
+      "yest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      }
+     },
+     "name": "baseline",
+     "options": {
+      "J": 0.004,
+      "K": 0.7553255135705494,
+      "T_act": 0.004,
+      "alpha": 16,
+      "anti_windup": true,
+      "b": 0.012,
+      "fb_stale": 0.015,
+      "i_max": 3.2,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "load_model": null,
+      "over_budget_escalate": 0.3,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "use_governor": true,
+      "use_yaw_ff": true,
+      "use_yaw_monitor": true,
+      "wc": 28.0,
+      "wi_ratio": 0.1,
+      "yaw_info": "estimate"
+     }
+    },
+    "governed_yaw": true,
+    "note": "roll sine 5.0 deg at 3.0 Hz, yaw still, d(t) off, current-command delay 5 ms",
+    "roll_request": {
+     "attrs": {
+      "A": 0.08726646259971647,
+      "Tr": 1.0,
+      "off": 0.0,
+      "t0": 0.0,
+      "w": 18.84955592153876
+     },
+     "class": "sim.trajectories.RampedSine"
+    },
+    "scenario": "T5P-5ms",
+    "seed": 305,
+    "supervisor": {
+     "attrs": {
+      "C_th": 7.5,
+      "R0": 1.8,
+      "R_th": 4.0,
+      "T_amb": 25.0,
+      "T_derate": 90.0,
+      "T_full": 110.0,
+      "T_trip": 130.0,
+      "cmd_timeout": 0.01,
+      "damping": 0.05,
+      "i_der": 2.4,
+      "i_nom": 3.2,
+      "k_t": 0.14,
+      "lockout_trips": 3,
+      "lockout_window": 30.0,
+      "rearm_err": 0.03490658503988659,
+      "rearm_time": 0.05,
+      "thermal": true,
+      "v_max": 25.0,
+      "wd_action": "fallback",
+      "wd_persist": 0.04,
+      "wd_threshold": 0.20943951023931956
+     },
+     "class": "ctrl.supervisor.DriveSupervisor"
+    },
+    "t_window": [
+     0.0,
+     12.0
+    ],
+    "yaw_request": {
+     "attrs": {
+      "q": 0.0
+     },
+     "class": "sim.trajectories.Hold"
+    }
+   }
+  },
+  "80fc88bb62fb9dbd": {
+   "metrics": {
+    "completion": null,
+    "errors": {
+     "geo_peak": 0.8240432321788336,
+     "geo_peak_request": 0.8240432321788336,
+     "geo_rms": 0.22151180063541687,
+     "geo_rms_request": 0.22151180063541687,
+     "gov_peak": 0.8512311894029861,
+     "gov_peak_request": 0.8512311894029861,
+     "gov_rms": 0.4595352298753361,
+     "gov_rms_request": 0.45957352926531597,
+     "orig_peak": 1.0887724065669953,
+     "orig_peak_request": 1.0887724065669953,
+     "orig_rms": 0.6110668952049364,
+     "orig_rms_request": 0.6111178238123678,
+     "path_peak": 0.8512311894029861,
+     "path_peak_request": 0.8512311894029861,
+     "path_rms": 0.45957352926533024,
+     "path_rms_request": 0.45957352926533024
+    },
+    "not_tracked_because": [],
+    "progress": {
+     "T_request": 12.0,
+     "clock_backsteps": 0,
+     "clock_jumps": 0,
+     "path_time": 11.990000000000675,
+     "progress": 0.9991666666667229,
+     "sigma_end": 11.994000000000675,
+     "sigma_start": 0.003
+    },
+    "summary": {
+     "clip_pct": 0.0,
+     "cmd_age_max": 6.000000000000227,
+     "cmd_age_p50": 3.0000000000001137,
+     "events": 0,
+     "fallback_pct": 0.03333333333333333,
+     "heat_J": 12.190398684559591,
+     "i_peak": 1.2892066323175704,
+     "i_rms": 0.7512458382382904,
+     "lag_end": 0.00399999999932632,
+     "mean": 0.01034504564828478,
+     "peak": 1.0887724065669953,
+     "peak_gov": 0.8512311894029861,
+     "rejected_pct": 0.0,
+     "rms": 0.6110668952049364,
+     "rms_gov": 0.4595352298753361,
+     "sat_entries": 0,
+     "speed": 0.9995,
+     "vlim_pct": 0.0,
+     "wd_trips": 0,
+     "yaw_scale": 1.0
+    },
+    "tracked": true
+   },
+   "run": {
+    "config": {
+     "drive": {
+      "cmd_timeout": 0.01,
+      "derate_schedule": [],
+      "fallback_damping": 0.05,
+      "i_limit": 3.2
+     },
+     "duration": 12.0,
+     "plant": {
+      "J": 0.004,
+      "L": 0.00045,
+      "R": 1.8,
+      "b": 0.012,
+      "d_amp": 0.0,
+      "d_bw_hz": 3.0,
+      "k_e": 0.14,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "m_payload": 0.0,
+      "s_lat": 0.035,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "tau_i": 0.0012,
+      "v_bus": 24.0,
+      "v_fric": 0.02,
+      "v_util": 0.5773502691896258,
+      "voltage_limit": true
+     },
+     "q0": 0.0,
+     "sensor": {
+      "enc_bits": 14,
+      "enc_offset": 0.0
+     },
+     "timing": {
+      "blackout": [],
+      "burst_len_s": [
+       0.02,
+       0.1
+      ],
+      "burst_rate_hz": 0.5,
+      "can_burst": 0.004,
+      "can_max": 0.0018,
+      "can_min": 0.0006,
+      "command_blackout": [],
+      "drop_prob": 0.0,
+      "dt_sim": 0.0001,
+      "f_ctrl": 500.0,
+      "f_drive": 1000.0,
+      "feedback_blackout": [],
+      "feedback_over_can": true,
+      "t_cmd_delay": 0.005,
+      "t_compute": 0.0005
+     }
+    },
+    "controller": {
+     "class": "ctrl.baseline.BaselineController",
+     "components": {
+      "gov": {
+       "class": "ctrl.governor.RollGovernor",
+       "options": {
+        "J": 0.004,
+        "_cache": null,
+        "a": 0.0,
+        "align_tol": 0.0005752427954571154,
+        "b": 0.012,
+        "blend": null,
+        "blend_max": 0.03490658503988659,
+        "blocked": false,
+        "braking_short": false,
+        "cpl_peak": 0.0,
+        "cpl_tau": 1.0,
+        "d_margin": 0.05,
+        "fresh": true,
+        "hold_iv": null,
+        "horizon": 0.4,
+        "incons": 0.0,
+        "infeasibility": "",
+        "jump_tol": 0.0001,
+        "k_t": 0.14,
+        "kappa": 1.0,
+        "kappa_drop": 3.0,
+        "kappa_min": 0.1,
+        "kappa_rise": 0.25,
+        "latched": false,
+        "limited": false,
+        "mode": "sync",
+        "n_look": 48,
+        "over_budget": false,
+        "pq": 0.0,
+        "pv": 0.0,
+        "q": 0.0,
+        "q_range": 1.5707963267948966,
+        "reason": "",
+        "rejected": false,
+        "reserve": 0.2,
+        "s": 1.0,
+        "s_free": false,
+        "s_rate": 2.0,
+        "seg": null,
+        "sig_seen": 0.0,
+        "sigma": 0.0,
+        "speed_capped": false,
+        "stall": 0.0,
+        "stall_time": 0.5,
+        "status": "accepted",
+        "suspended": "",
+        "t_drop": {
+         "$float": "-inf"
+        },
+        "t_int": 0.0,
+        "tau_c": 0.04,
+        "tau_g": 0.12,
+        "tau_prev": null,
+        "v": 0.0,
+        "v_max": 20.0
+       }
+      },
+      "mon": {
+       "class": "ctrl.governor.YawMonitor",
+       "options": {
+        "complete": 0.9,
+        "hold_off": 0.6,
+        "sat_frac": 0.05,
+        "shrink": 0.8,
+        "window": 0.5
+       }
+      },
+      "rest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      },
+      "yest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      }
+     },
+     "name": "baseline",
+     "options": {
+      "J": 0.004,
+      "K": 0.7553255135705494,
+      "T_act": 0.004,
+      "alpha": 16,
+      "anti_windup": true,
+      "b": 0.012,
+      "fb_stale": 0.015,
+      "i_max": 3.2,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "load_model": null,
+      "over_budget_escalate": 0.3,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "use_governor": true,
+      "use_yaw_ff": true,
+      "use_yaw_monitor": true,
+      "wc": 28.0,
+      "wi_ratio": 0.1,
+      "yaw_info": "estimate"
+     }
+    },
+    "governed_yaw": true,
+    "note": "roll sine 5.0 deg at 3.0 Hz, yaw still, d(t) off, current-command delay 5 ms",
+    "roll_request": {
+     "attrs": {
+      "A": 0.08726646259971647,
+      "Tr": 1.0,
+      "off": 0.0,
+      "t0": 0.0,
+      "w": 18.84955592153876
+     },
+     "class": "sim.trajectories.RampedSine"
+    },
+    "scenario": "T5P-5ms",
+    "seed": 303,
+    "supervisor": {
+     "attrs": {
+      "C_th": 7.5,
+      "R0": 1.8,
+      "R_th": 4.0,
+      "T_amb": 25.0,
+      "T_derate": 90.0,
+      "T_full": 110.0,
+      "T_trip": 130.0,
+      "cmd_timeout": 0.01,
+      "damping": 0.05,
+      "i_der": 2.4,
+      "i_nom": 3.2,
+      "k_t": 0.14,
+      "lockout_trips": 3,
+      "lockout_window": 30.0,
+      "rearm_err": 0.03490658503988659,
+      "rearm_time": 0.05,
+      "thermal": true,
+      "v_max": 25.0,
+      "wd_action": "fallback",
+      "wd_persist": 0.04,
+      "wd_threshold": 0.20943951023931956
+     },
+     "class": "ctrl.supervisor.DriveSupervisor"
+    },
+    "t_window": [
+     0.0,
+     12.0
+    ],
+    "yaw_request": {
+     "attrs": {
+      "q": 0.0
+     },
+     "class": "sim.trajectories.Hold"
+    }
+   }
+  },
+  "bd4f314526022256": {
+   "metrics": {
+    "completion": null,
+    "errors": {
+     "geo_peak": 0.363817298865476,
+     "geo_peak_request": 0.363817298865476,
+     "geo_rms": 0.07167245520708986,
+     "geo_rms_request": 0.07167245520708986,
+     "gov_peak": 0.5064603550222677,
+     "gov_peak_request": 0.5064603550222677,
+     "gov_rms": 0.2057491154559568,
+     "gov_rms_request": 0.2057662633590958,
+     "orig_peak": 0.6033345799811629,
+     "orig_peak_request": 0.6033345799811629,
+     "orig_rms": 0.3324454232698395,
+     "orig_rms_request": 0.3324731305185662,
+     "path_peak": 0.5064603550222677,
+     "path_peak_request": 0.5064603550222677,
+     "path_rms": 0.20576626335909862,
+     "path_rms_request": 0.20576626335909862
+    },
+    "not_tracked_because": [],
+    "progress": {
+     "T_request": 12.0,
+     "clock_backsteps": 0,
+     "clock_jumps": 0,
+     "path_time": 11.992000000000676,
+     "progress": 0.9993333333333897,
+     "sigma_end": 11.995000000000676,
+     "sigma_start": 0.002
+    },
+    "summary": {
+     "clip_pct": 0.0,
+     "cmd_age_max": 6.000000000000227,
+     "cmd_age_p50": 3.0000000000001137,
+     "events": 0,
+     "fallback_pct": 0.03333333333333333,
+     "heat_J": 10.872777741138485,
+     "i_peak": 1.2275046876517857,
+     "i_rms": 0.7094852640242237,
+     "lag_end": 0.002999999999325098,
+     "mean": 0.00870668126290905,
+     "peak": 0.6033345799811629,
+     "peak_gov": 0.5064603550222677,
+     "rejected_pct": 0.0,
+     "rms": 0.3324454232698395,
+     "rms_gov": 0.2057491154559568,
+     "sat_entries": 0,
+     "speed": 0.9995,
+     "vlim_pct": 0.0,
+     "wd_trips": 0,
+     "yaw_scale": 1.0
+    },
+    "tracked": true
+   },
+   "run": {
+    "config": {
+     "drive": {
+      "cmd_timeout": 0.01,
+      "derate_schedule": [],
+      "fallback_damping": 0.05,
+      "i_limit": 3.2
+     },
+     "duration": 12.0,
+     "plant": {
+      "J": 0.004,
+      "L": 0.00045,
+      "R": 1.8,
+      "b": 0.012,
+      "d_amp": 0.0,
+      "d_bw_hz": 3.0,
+      "k_e": 0.14,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "m_payload": 0.0,
+      "s_lat": 0.035,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "tau_i": 0.0012,
+      "v_bus": 24.0,
+      "v_fric": 0.02,
+      "v_util": 0.5773502691896258,
+      "voltage_limit": true
+     },
+     "q0": 0.0,
+     "sensor": {
+      "enc_bits": 14,
+      "enc_offset": 0.0
+     },
+     "timing": {
+      "blackout": [],
+      "burst_len_s": [
+       0.02,
+       0.1
+      ],
+      "burst_rate_hz": 0.5,
+      "can_burst": 0.004,
+      "can_max": 0.0018,
+      "can_min": 0.0006,
+      "command_blackout": [],
+      "drop_prob": 0.0,
+      "dt_sim": 0.0001,
+      "f_ctrl": 500.0,
+      "f_drive": 1000.0,
+      "feedback_blackout": [],
+      "feedback_over_can": true,
+      "t_cmd_delay": 0.001,
+      "t_compute": 0.0005
+     }
+    },
+    "controller": {
+     "class": "ctrl.baseline.BaselineController",
+     "components": {
+      "gov": {
+       "class": "ctrl.governor.RollGovernor",
+       "options": {
+        "J": 0.004,
+        "_cache": null,
+        "a": 0.0,
+        "align_tol": 0.0005752427954571154,
+        "b": 0.012,
+        "blend": null,
+        "blend_max": 0.03490658503988659,
+        "blocked": false,
+        "braking_short": false,
+        "cpl_peak": 0.0,
+        "cpl_tau": 1.0,
+        "d_margin": 0.05,
+        "fresh": true,
+        "hold_iv": null,
+        "horizon": 0.4,
+        "incons": 0.0,
+        "infeasibility": "",
+        "jump_tol": 0.0001,
+        "k_t": 0.14,
+        "kappa": 1.0,
+        "kappa_drop": 3.0,
+        "kappa_min": 0.1,
+        "kappa_rise": 0.25,
+        "latched": false,
+        "limited": false,
+        "mode": "sync",
+        "n_look": 48,
+        "over_budget": false,
+        "pq": 0.0,
+        "pv": 0.0,
+        "q": 0.0,
+        "q_range": 1.5707963267948966,
+        "reason": "",
+        "rejected": false,
+        "reserve": 0.2,
+        "s": 1.0,
+        "s_free": false,
+        "s_rate": 2.0,
+        "seg": null,
+        "sig_seen": 0.0,
+        "sigma": 0.0,
+        "speed_capped": false,
+        "stall": 0.0,
+        "stall_time": 0.5,
+        "status": "accepted",
+        "suspended": "",
+        "t_drop": {
+         "$float": "-inf"
+        },
+        "t_int": 0.0,
+        "tau_c": 0.04,
+        "tau_g": 0.12,
+        "tau_prev": null,
+        "v": 0.0,
+        "v_max": 20.0
+       }
+      },
+      "mon": {
+       "class": "ctrl.governor.YawMonitor",
+       "options": {
+        "complete": 0.9,
+        "hold_off": 0.6,
+        "sat_frac": 0.05,
+        "shrink": 0.8,
+        "window": 0.5
+       }
+      },
+      "rest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      },
+      "yest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      }
+     },
+     "name": "baseline",
+     "options": {
+      "J": 0.004,
+      "K": 0.7553255135705494,
+      "T_act": 0.004,
+      "alpha": 16,
+      "anti_windup": true,
+      "b": 0.012,
+      "fb_stale": 0.015,
+      "i_max": 3.2,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "load_model": null,
+      "over_budget_escalate": 0.3,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "use_governor": true,
+      "use_yaw_ff": true,
+      "use_yaw_monitor": true,
+      "wc": 28.0,
+      "wi_ratio": 0.1,
+      "yaw_info": "estimate"
+     }
+    },
+    "governed_yaw": true,
+    "note": "roll sine 5.0 deg at 3.0 Hz, yaw still, d(t) off, current-command delay 1 ms",
+    "roll_request": {
+     "attrs": {
+      "A": 0.08726646259971647,
+      "Tr": 1.0,
+      "off": 0.0,
+      "t0": 0.0,
+      "w": 18.84955592153876
+     },
+     "class": "sim.trajectories.RampedSine"
+    },
+    "scenario": "T5P-1ms",
+    "seed": 302,
+    "supervisor": {
+     "attrs": {
+      "C_th": 7.5,
+      "R0": 1.8,
+      "R_th": 4.0,
+      "T_amb": 25.0,
+      "T_derate": 90.0,
+      "T_full": 110.0,
+      "T_trip": 130.0,
+      "cmd_timeout": 0.01,
+      "damping": 0.05,
+      "i_der": 2.4,
+      "i_nom": 3.2,
+      "k_t": 0.14,
+      "lockout_trips": 3,
+      "lockout_window": 30.0,
+      "rearm_err": 0.03490658503988659,
+      "rearm_time": 0.05,
+      "thermal": true,
+      "v_max": 25.0,
+      "wd_action": "fallback",
+      "wd_persist": 0.04,
+      "wd_threshold": 0.20943951023931956
+     },
+     "class": "ctrl.supervisor.DriveSupervisor"
+    },
+    "t_window": [
+     0.0,
+     12.0
+    ],
+    "yaw_request": {
+     "attrs": {
+      "q": 0.0
+     },
+     "class": "sim.trajectories.Hold"
+    }
+   }
+  },
+  "cd0c6915e8a3d28b": {
+   "metrics": {
+    "completion": null,
+    "errors": {
+     "geo_peak": 0.4159737371757441,
+     "geo_peak_request": 0.4159737371757441,
+     "geo_rms": 0.07338027849452235,
+     "geo_rms_request": 0.07338027849452235,
+     "gov_peak": 0.4899276098483629,
+     "gov_peak_request": 0.4899276098483629,
+     "gov_rms": 0.20427008540578565,
+     "gov_rms_request": 0.20428711004101177,
+     "orig_peak": 0.6360707323542754,
+     "orig_peak_request": 0.6360707323542754,
+     "orig_rms": 0.3323956835634028,
+     "orig_rms_request": 0.3324233866666358,
+     "path_peak": 0.4899276098483629,
+     "path_peak_request": 0.4899276098483629,
+     "path_rms": 0.2042871100410146,
+     "path_rms_request": 0.2042871100410146
+    },
+    "not_tracked_because": [],
+    "progress": {
+     "T_request": 12.0,
+     "clock_backsteps": 0,
+     "clock_jumps": 0,
+     "path_time": 11.992000000000676,
+     "progress": 0.9993333333333897,
+     "sigma_end": 11.995000000000676,
+     "sigma_start": 0.002
+    },
+    "summary": {
+     "clip_pct": 0.0,
+     "cmd_age_max": 6.000000000000227,
+     "cmd_age_p50": 3.0000000000001137,
+     "events": 0,
+     "fallback_pct": 0.03333333333333333,
+     "heat_J": 10.853194598742428,
+     "i_peak": 1.1895314168062083,
+     "i_rms": 0.7088460431608136,
+     "lag_end": 0.002999999999325098,
+     "mean": 0.009058851083527211,
+     "peak": 0.6360707323542754,
+     "peak_gov": 0.4899276098483629,
+     "rejected_pct": 0.0,
+     "rms": 0.3323956835634028,
+     "rms_gov": 0.20427008540578565,
+     "sat_entries": 0,
+     "speed": 0.9995,
+     "vlim_pct": 0.0,
+     "wd_trips": 0,
+     "yaw_scale": 1.0
+    },
+    "tracked": true
+   },
+   "run": {
+    "config": {
+     "drive": {
+      "cmd_timeout": 0.01,
+      "derate_schedule": [],
+      "fallback_damping": 0.05,
+      "i_limit": 3.2
+     },
+     "duration": 12.0,
+     "plant": {
+      "J": 0.004,
+      "L": 0.00045,
+      "R": 1.8,
+      "b": 0.012,
+      "d_amp": 0.0,
+      "d_bw_hz": 3.0,
+      "k_e": 0.14,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "m_payload": 0.0,
+      "s_lat": 0.035,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "tau_i": 0.0012,
+      "v_bus": 24.0,
+      "v_fric": 0.02,
+      "v_util": 0.5773502691896258,
+      "voltage_limit": true
+     },
+     "q0": 0.0,
+     "sensor": {
+      "enc_bits": 14,
+      "enc_offset": 0.0
+     },
+     "timing": {
+      "blackout": [],
+      "burst_len_s": [
+       0.02,
+       0.1
+      ],
+      "burst_rate_hz": 0.5,
+      "can_burst": 0.004,
+      "can_max": 0.0018,
+      "can_min": 0.0006,
+      "command_blackout": [],
+      "drop_prob": 0.0,
+      "dt_sim": 0.0001,
+      "f_ctrl": 500.0,
+      "f_drive": 1000.0,
+      "feedback_blackout": [],
+      "feedback_over_can": true,
+      "t_cmd_delay": 0.001,
+      "t_compute": 0.0005
+     }
+    },
+    "controller": {
+     "class": "ctrl.baseline.BaselineController",
+     "components": {
+      "gov": {
+       "class": "ctrl.governor.RollGovernor",
+       "options": {
+        "J": 0.004,
+        "_cache": null,
+        "a": 0.0,
+        "align_tol": 0.0005752427954571154,
+        "b": 0.012,
+        "blend": null,
+        "blend_max": 0.03490658503988659,
+        "blocked": false,
+        "braking_short": false,
+        "cpl_peak": 0.0,
+        "cpl_tau": 1.0,
+        "d_margin": 0.05,
+        "fresh": true,
+        "hold_iv": null,
+        "horizon": 0.4,
+        "incons": 0.0,
+        "infeasibility": "",
+        "jump_tol": 0.0001,
+        "k_t": 0.14,
+        "kappa": 1.0,
+        "kappa_drop": 3.0,
+        "kappa_min": 0.1,
+        "kappa_rise": 0.25,
+        "latched": false,
+        "limited": false,
+        "mode": "sync",
+        "n_look": 48,
+        "over_budget": false,
+        "pq": 0.0,
+        "pv": 0.0,
+        "q": 0.0,
+        "q_range": 1.5707963267948966,
+        "reason": "",
+        "rejected": false,
+        "reserve": 0.2,
+        "s": 1.0,
+        "s_free": false,
+        "s_rate": 2.0,
+        "seg": null,
+        "sig_seen": 0.0,
+        "sigma": 0.0,
+        "speed_capped": false,
+        "stall": 0.0,
+        "stall_time": 0.5,
+        "status": "accepted",
+        "suspended": "",
+        "t_drop": {
+         "$float": "-inf"
+        },
+        "t_int": 0.0,
+        "tau_c": 0.04,
+        "tau_g": 0.12,
+        "tau_prev": null,
+        "v": 0.0,
+        "v_max": 20.0
+       }
+      },
+      "mon": {
+       "class": "ctrl.governor.YawMonitor",
+       "options": {
+        "complete": 0.9,
+        "hold_off": 0.6,
+        "sat_frac": 0.05,
+        "shrink": 0.8,
+        "window": 0.5
+       }
+      },
+      "rest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      },
+      "yest": {
+       "class": "ctrl.yaw_estimator.KinematicEstimator",
+       "options": {
+        "P0": [
+         1.4706856610014078e-07,
+         900.0,
+         250000.0
+        ],
+        "gap_reset": 0.05,
+        "q_jerk": 100000.0,
+        "r": 1.2255713841678399e-08,
+        "t_init": null,
+        "t_last": null,
+        "warmup": 0.012,
+        "x": null
+       }
+      }
+     },
+     "name": "baseline",
+     "options": {
+      "J": 0.004,
+      "K": 0.7553255135705494,
+      "T_act": 0.004,
+      "alpha": 16,
+      "anti_windup": true,
+      "b": 0.012,
+      "fb_stale": 0.015,
+      "i_max": 3.2,
+      "k_t": 0.14,
+      "k_ya": 0.0008,
+      "k_yv": 0.008,
+      "load_model": null,
+      "over_budget_escalate": 0.3,
+      "tau_c": 0.04,
+      "tau_g": 0.12,
+      "use_governor": true,
+      "use_yaw_ff": true,
+      "use_yaw_monitor": true,
+      "wc": 28.0,
+      "wi_ratio": 0.1,
+      "yaw_info": "estimate"
+     }
+    },
+    "governed_yaw": true,
+    "note": "roll sine 5.0 deg at 3.0 Hz, yaw still, d(t) off, current-command delay 1 ms",
+    "roll_request": {
+     "attrs": {
+      "A": 0.08726646259971647,
+      "Tr": 1.0,
+      "off": 0.0,
+      "t0": 0.0,
+      "w": 18.84955592153876
+     },
+     "class": "sim.trajectories.RampedSine"
+    },
+    "scenario": "T5P-1ms",
+    "seed": 304,
+    "supervisor": {
+     "attrs": {
+      "C_th": 7.5,
+      "R0": 1.8,
+      "R_th": 4.0,
+      "T_amb": 25.0,
+      "T_derate": 90.0,
+      "T_full": 110.0,
+      "T_trip": 130.0,
+      "cmd_timeout": 0.01,
+      "damping": 0.05,
+      "i_der": 2.4,
+      "i_nom": 3.2,
+      "k_t": 0.14,
+      "lockout_trips": 3,
+      "lockout_window": 30.0,
+      "rearm_err": 0.03490658503988659,
+      "rearm_time": 0.05,
+      "thermal": true,
+      "v_max": 25.0,
+      "wd_action": "fallback",
+      "wd_persist": 0.04,
+      "wd_threshold": 0.20943951023931956
+     },
+     "class": "ctrl.supervisor.DriveSupervisor"
+    },
+    "t_window": [
+     0.0,
+     12.0
+    ],
+    "yaw_request": {
+     "attrs": {
+      "q": 0.0
+     },
+     "class": "sim.trajectories.Hold"
+    }
+   }
+  }
+ }
+}

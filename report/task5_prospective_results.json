@@ -1,0 +1,431 @@
+{
+ "outcome": {
+  "distance": 0.004986094593069659,
+  "grid": {
+   "complete": true,
+   "duplicate": [],
+   "missing": [],
+   "unregistered": []
+  },
+  "label": "supported",
+  "mean_dH": {
+   "im": -0.02377995389581773,
+   "mag": 0.07372447350743,
+   "phase_deg": -18.817310978602876,
+   "re": 0.06978403676099951
+  },
+  "pairs": [
+   {
+    "dH": {
+     "im": -0.023673040609324073,
+     "re": 0.06977910805815313
+    },
+    "seed": 301
+   },
+   {
+    "dH": {
+     "im": -0.023816455855128642,
+     "re": 0.06959847622286519
+    },
+    "seed": 302
+   },
+   {
+    "dH": {
+     "im": -0.023835717711678705,
+     "re": 0.06986454942055076
+    },
+    "seed": 303
+   },
+   {
+    "dH": {
+     "im": -0.023716210743472986,
+     "re": 0.06966344736516294
+    },
+    "seed": 304
+   },
+   {
+    "dH": {
+     "im": -0.023858344559484237,
+     "re": 0.07001460273826554
+    },
+    "seed": 305
+   }
+  ],
+  "problems": [],
+  "radius": 0.026448261786596643
+ },
+ "registration": {
+  "baseline_fingerprint": "7d857df507c389c95108c79cbccd6f215f5de0bdf39167bbff4b87c46211bf1e",
+  "prediction": {
+   "H_delayed": {
+    "im": -0.027639458396890405,
+    "mag": 1.1061416030774154,
+    "phase_deg": -1.4318141085985199,
+    "re": 1.105796231861097
+   },
+   "H_nominal": {
+    "im": -0.0077683578418125555,
+    "mag": 1.0391367141345602,
+    "phase_deg": -0.42833465316352465,
+    "re": 1.0391076764603426
+   },
+   "acceptance": {
+    "center": {
+     "im": -0.019871100555077847,
+     "mag": 0.06958609098598295,
+     "phase_deg": -16.592408211552424,
+     "re": 0.06668855540075436
+    },
+    "grid": {
+     "base_shift": [
+      -0.0005,
+      0.0,
+      0.0005
+     ],
+     "burst": [
+      true,
+      false
+     ],
+     "discrete": [
+      true,
+      false
+     ],
+     "fb_shift": [
+      -0.0005,
+      0.0,
+      0.0005
+     ],
+     "plant_fric_scale": [
+      0.5,
+      1.0,
+      1.5
+     ]
+    },
+    "includes_zero": false,
+    "kind": "disc in the complex plane",
+    "measurement_floor": 0.01,
+    "model_bound": 0.01644826178659664,
+    "radius": 0.026448261786596643
+   },
+   "dH": {
+    "im": -0.019871100555077847,
+    "mag": 0.06958609098598295,
+    "phase_deg": -16.592408211552424,
+    "re": 0.06668855540075436
+   },
+   "gain_change_db": 0.5427607512045427,
+   "phase_change_deg": -1.0034794554349953,
+   "rationale": "The extra 4 ms delays both the feed-forward and the feedback torque. The feed-forward alone would add about 4.3 deg of phase lag at 3 Hz, but the loop is closed with a 4.46 Hz crossover: the added delay removes about 6 deg of phase margin, which raises the closed-loop peaking near 3 Hz. The model therefore predicts mainly a gain increase (about +0.5 dB) with only about -1 deg of extra phase, i.e. dH points mostly along +Re. The region covers +-0.5 ms in the command-path and feedback-age accounting, CAN bursts on/off, a continuous versus discrete controller, and the plant's friction describing-function gain x0.5-1.5 (the controller's friction feed-forward is its own and exact), plus a fixed 0.01 floor for effects the linear model omits (friction harmonics, quantization, integrator transients).",
+   "timing_delayed": {
+    "t_fb_s": 0.001784,
+    "t_ff_s": 0.008284
+   },
+   "timing_nominal": {
+    "t_fb_s": 0.001784,
+    "t_ff_s": 0.004284
+   }
+  },
+  "protocol": {
+   "amp_deg": 5.0,
+   "cmd_delay_s": [
+    0.001,
+    0.005
+   ],
+   "controller": "BaselineController() defaults (estimate mode, governor and yaw monitor on)",
+   "d_amp": 0.0,
+   "duration_s": 12.0,
+   "freq_hz": 3.0,
+   "primary": "mean over the five seeds of H(5 ms) - H(1 ms); H = fundamental of actual roll q divided by fundamental of governed reference c_q_c, sin/cos/intercept fit over the window",
+   "ramp_s": 1.0,
+   "seeds": [
+    301,
+    302,
+    303,
+    304,
+    305
+   ],
+   "supervisor": "DriveSupervisor() defaults",
+   "window_s": [
+    4.0,
+    12.0
+   ],
+   "yaw": "Hold(0)"
+  },
+  "schema": 2,
+  "scorer_sha256": "a2e7f0e6a4fc01aff5657bfac101ed73d4fcf922e77089bc06730b95ce096714",
+  "statement": "Written and committed before any simulation of this condition. Outcome labels: supported (measured mean dH inside the disc), contradicted (outside), inconclusive (any pair invalid, faulted, suspended or rejected)."
+ },
+ "registration_sha256": "faaddb8a0f75c4322ccca4848cc7b1817a86d53bff413dcbf9b68ef0c52fa849",
+ "rows": [
+  {
+   "H": {
+    "gain": 1.0577417446944366,
+    "im": -0.008845949752176643,
+    "phase_deg": -0.4791731983548163,
+    "re": 1.0577047544765092
+   },
+   "H_vs_request": {
+    "gain": 1.057694767325512,
+    "im": -0.058658241230480426,
+    "phase_deg": -3.179173198587852,
+    "re": 1.0560669635792588
+   },
+   "clip_pct": 0.0,
+   "cmd_delay_s": 0.001,
+   "events": [],
+   "fallback_pct": 0.0,
+   "gov_limited_pct": 0.0,
+   "governed_rms_deg": 0.21679327432720435,
+   "i_peak_A": 1.2119394429198669,
+   "rejected": false,
+   "request_rms_deg": 0.29256669076974784,
+   "run_id": "2689b4a0aa801cce",
+   "seed": 301,
+   "suspended": false,
+   "valid": true
+  },
+  {
+   "H": {
+    "gain": 1.1279527228612964,
+    "im": -0.032518990361500716,
+    "phase_deg": -1.6520719956900822,
+    "re": 1.1274838625346624
+   },
+   "H_vs_request": {
+    "gain": 1.127902627219844,
+    "im": -0.08559085171105743,
+    "phase_deg": -4.352071995923118,
+    "re": 1.1246504090573222
+   },
+   "clip_pct": 0.0,
+   "cmd_delay_s": 0.005,
+   "events": [],
+   "fallback_pct": 0.0,
+   "gov_limited_pct": 0.0,
+   "governed_rms_deg": 0.4720469347049194,
+   "i_peak_A": 1.278488163566385,
+   "rejected": false,
+   "request_rms_deg": 0.5395932323178424,
+   "run_id": "331bf705d2721e1b",
+   "seed": 301,
+   "suspended": false,
+   "valid": true
+  },
+  {
+   "H": {
+    "gain": 1.0563771332678786,
+    "im": -0.009171577066609619,
+    "phase_deg": -0.4974542167919444,
+    "re": 1.0563373182205449
+   },
+   "H_vs_request": {
+    "gain": 1.0563302165052926,
+    "im": -0.07878779467808976,
+    "phase_deg": -4.277454217024503,
+    "re": 1.0533878723964318
+   },
+   "clip_pct": 0.0,
+   "cmd_delay_s": 0.001,
+   "events": [],
+   "fallback_pct": 0.0,
+   "gov_limited_pct": 0.0,
+   "governed_rms_deg": 0.20997598653708127,
+   "i_peak_A": 1.2275046876517857,
+   "rejected": false,
+   "request_rms_deg": 0.3398244066796328,
+   "run_id": "bd4f314526022256",
+   "seed": 302,
+   "suspended": false,
+   "valid": true
+  },
+  {
+   "H": {
+    "gain": 1.126418937840162,
+    "im": -0.03298803292173826,
+    "phase_deg": -1.6781903019689688,
+    "re": 1.12593579444341
+   },
+   "H_vs_request": {
+    "gain": 1.1263689103185364,
+    "im": -0.10713950074548693,
+    "phase_deg": -5.458190302201526,
+    "re": 1.1212618113144561
+   },
+   "clip_pct": 0.0,
+   "cmd_delay_s": 0.005,
+   "events": [],
+   "fallback_pct": 0.0,
+   "gov_limited_pct": 0.0,
+   "governed_rms_deg": 0.46587375184189217,
+   "i_peak_A": 1.303798137230177,
+   "rejected": false,
+   "request_rms_deg": 0.5756630217876483,
+   "run_id": "4ab8ca73521a7fcf",
+   "seed": 302,
+   "suspended": false,
+   "valid": true
+  },
+  {
+   "H": {
+    "gain": 1.0575449960255747,
+    "im": -0.009059792753634065,
+    "phase_deg": -0.49084837008846144,
+    "re": 1.0575061885275159
+   },
+   "H_vs_request": {
+    "gain": 1.0574980273948271,
+    "im": -0.09861616239704596,
+    "phase_deg": -5.35084837032198,
+    "re": 1.0528897997692017
+   },
+   "clip_pct": 0.0,
+   "cmd_delay_s": 0.001,
+   "events": [],
+   "fallback_pct": 0.0,
+   "gov_limited_pct": 0.0,
+   "governed_rms_deg": 0.2159225889960166,
+   "i_peak_A": 1.2288875742345022,
+   "rejected": false,
+   "request_rms_deg": 0.39960500163372076,
+   "run_id": "29373e03d1615f8a",
+   "seed": 303,
+   "suspended": false,
+   "valid": true
+  },
+  {
+   "H": {
+    "gain": 1.127850564299341,
+    "im": -0.03289551046531277,
+    "phase_deg": -1.6713572721976893,
+    "re": 1.1273707379480666
+   },
+   "H_vs_request": {
+    "gain": 1.1278004731950455,
+    "im": -0.12828388252096368,
+    "phase_deg": -6.531357272431208,
+    "re": 1.1204807686097589
+   },
+   "clip_pct": 0.0,
+   "cmd_delay_s": 0.005,
+   "events": [],
+   "fallback_pct": 0.0,
+   "gov_limited_pct": 0.0,
+   "governed_rms_deg": 0.4719378646770458,
+   "i_peak_A": 1.2892066323175704,
+   "rejected": false,
+   "request_rms_deg": 0.6264753586859276,
+   "run_id": "80fc88bb62fb9dbd",
+   "seed": 303,
+   "suspended": false,
+   "valid": true
+  },
+  {
+   "H": {
+    "gain": 1.0565968900780405,
+    "im": -0.009311770204858592,
+    "phase_deg": -0.5049532552573006,
+    "re": 1.0565558570460147
+   },
+   "H_vs_request": {
+    "gain": 1.0565499635554187,
+    "im": -0.07894208328201673,
+    "phase_deg": -4.284953255489858,
+    "re": 1.0535966842089302
+   },
+   "clip_pct": 0.0,
+   "cmd_delay_s": 0.001,
+   "events": [],
+   "fallback_pct": 0.0,
+   "gov_limited_pct": 0.0,
+   "governed_rms_deg": 0.21139095435983485,
+   "i_peak_A": 1.1895314168062083,
+   "rejected": false,
+   "request_rms_deg": 0.341056294357513,
+   "run_id": "cd0c6915e8a3d28b",
+   "seed": 304,
+   "suspended": false,
+   "valid": true
+  },
+  {
+   "H": {
+    "gain": 1.1267034965570668,
+    "im": -0.03302798094833158,
+    "phase_deg": -1.6797986718220763,
+    "re": 1.1262193044111777
+   },
+   "H_vs_request": {
+    "gain": 1.126653456397366,
+    "im": -0.10719804983050629,
+    "phase_deg": -5.459798672054634,
+    "re": 1.1215420584733626
+   },
+   "clip_pct": 0.0,
+   "cmd_delay_s": 0.005,
+   "events": [],
+   "fallback_pct": 0.0,
+   "gov_limited_pct": 0.0,
+   "governed_rms_deg": 0.46715689303020946,
+   "i_peak_A": 1.2518153346757002,
+   "rejected": false,
+   "request_rms_deg": 0.5767720396649452,
+   "run_id": "2c53e604123e1687",
+   "seed": 304,
+   "suspended": false,
+   "valid": true
+  },
+  {
+   "H": {
+    "gain": 1.0581312214087497,
+    "im": -0.007979572429010238,
+    "phase_deg": -0.4320826630816904,
+    "re": 1.058101133230573
+   },
+   "H_vs_request": {
+    "gain": 1.058084226742039,
+    "im": -0.1174311669634558,
+    "phase_deg": -6.372082663314724,
+    "re": 1.0515475033995847
+   },
+   "clip_pct": 0.0,
+   "cmd_delay_s": 0.001,
+   "events": [],
+   "fallback_pct": 0.0,
+   "gov_limited_pct": 0.0,
+   "governed_rms_deg": 0.22196984458092872,
+   "i_peak_A": 1.176552785955827,
+   "rejected": false,
+   "request_rms_deg": 0.4590872941921278,
+   "run_id": "11f9a9c2df27cdff",
+   "seed": 305,
+   "suspended": false,
+   "valid": true
+  },
+  {
+   "H": {
+    "gain": 1.1285649147030403,
+    "im": -0.031837916988494475,
+    "phase_deg": -1.6165843007163778,
+    "re": 1.1281157359688385
+   },
+   "H_vs_request": {
+    "gain": 1.1285147918723788,
+    "im": -0.1484056332193083,
+    "phase_deg": -7.556584300949413,
+    "re": 1.1187141741765565
+   },
+   "clip_pct": 0.0,
+   "cmd_delay_s": 0.005,
+   "events": [],
+   "fallback_pct": 0.0,
+   "gov_limited_pct": 0.0,
+   "governed_rms_deg": 0.4762970468447643,
+   "i_peak_A": 1.2411368624901513,
+   "rejected": false,
+   "request_rms_deg": 0.6777848350983388,
+   "run_id": "5ac135d95e5754df",
+   "seed": 305,
+   "suspended": false,
+   "valid": true
+  }
+ ]
+}

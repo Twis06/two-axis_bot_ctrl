@@ -52,7 +52,7 @@
     "report/html_assets/report.css": "8af17a359cc2ba7066b3c7815b9bc362f218e39841f599892b8eab0567e81aec",
     "report/html_assets/report.js": "47aac3cd589ccbf0b64da40dcadc4485f07d040142d0c266c3e523db29e4f89b",
     "report/html_assets/build_report.py": "d94a33bebee0bb7947837d996fcb33efb39d329fe7803583a12fb0914118c953",
-    "report/html_assets/holdability_figure.py": "7cb2935e0088979cd85268cce3db4e19fa682c088b1c12ee89052f9ed700972d",
+    "report/html_assets/holdability_figure.py": "889f803cc03e45846e9dc0a2c4ff1c1489aa5896dcf7f865f02b0a914164bf46",
     "sim/params.py": "4f9b323b29f5b3616e920e195920898a5f796ba846c135ed850ef56011198fe4"
   },
   "output_sha256": "d79bbee69da3a9e6c907dd31d6a21e5a90813947f0b2a721e7b6df4beac60e1b",

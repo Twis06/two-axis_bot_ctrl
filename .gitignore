@@ -13,3 +13,6 @@ venv/
 # Remove this line if you have permission to publish it.
 Robotics Controls Technical Assessment.pdf
 .stage-*/
+
+# Author's personal notes: kept locally, not part of the submission
+note.md

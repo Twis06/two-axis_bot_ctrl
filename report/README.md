@@ -29,7 +29,6 @@ Task 2 evidence is regenerated on the frozen baseline; see [current numbers](tas
 
 | Material | Location |
 |---|---|
-| Original personal notes | [note.md](../note.md) |
 | Development plan | [PLAN.md](../PLAN.md) |
 | Initial analytic investigation | [phase0_analysis.md](phase0_analysis.md), [generated calculations](phase0_numbers.md) |
 | Simulator assumptions and reconstruction | [phase1_sim.md](phase1_sim.md), [generated results](phase1_numbers.md) |

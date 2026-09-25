@@ -161,7 +161,7 @@ The simulator includes 10 kHz RK4 plant integration, 1.2 ms current lag, a fixed
 
 ### Evidence quality and reproduction status
 
-The frozen baseline fingerprint is `7d857df507c389c9`. Task 2 publishes 177 manifested runs, Packet 4B 397, L4 357 and the Task 3 challenges 96. These sets overlap in purpose and must not be presented as independent samples. `uv run python -m unittest discover -s tests` passes **262 tests** at the release commit (2026-09-24). This HTML build does not rerun the suite, and passing tests do not validate an experiment design.
+The frozen baseline fingerprint is `7d857df507c389c9`. Task 2 publishes 177 manifested runs, Packet 4B 397, L4 357 and the Task 3 challenges 96. These sets overlap in purpose and must not be presented as independent samples. `uv run python -m unittest discover -s tests` passes **264 tests** at the final commit (2026-09-24). This HTML build does not rerun the suite, and passing tests do not validate an experiment design.
 
 **Publication and reproduction:** `uv run python run_all.py` regenerates every current evidence packet (Task 1 calculations, Task 2, Packet 4B, the Task 3 audit, L4 and challenges, and Task 5) in the environment locked by `uv.lock`. A fresh `git archive` snapshot installed from the lock reproduced every value, run_id and figure exactly on macOS arm64. A second environment, Linux x86-64, gave identical outcomes with values within 3e-11: NumPy rounds random draws differently across CPUs, so the Monte Carlo run_ids differ there. See packet R4, and packet R6 for the independent review.
 

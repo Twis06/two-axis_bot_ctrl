@@ -1,0 +1,100 @@
+{
+ "baseline_fingerprint": "7d857df507c389c95108c79cbccd6f215f5de0bdf39167bbff4b87c46211bf1e",
+ "prediction": {
+  "H_delayed": {
+   "im": -0.027639458396890405,
+   "mag": 1.1061416030774154,
+   "phase_deg": -1.4318141085985199,
+   "re": 1.105796231861097
+  },
+  "H_nominal": {
+   "im": -0.0077683578418125555,
+   "mag": 1.0391367141345602,
+   "phase_deg": -0.42833465316352465,
+   "re": 1.0391076764603426
+  },
+  "acceptance": {
+   "center": {
+    "im": -0.019871100555077847,
+    "mag": 0.06958609098598295,
+    "phase_deg": -16.592408211552424,
+    "re": 0.06668855540075436
+   },
+   "grid": {
+    "base_shift": [
+     -0.0005,
+     0.0,
+     0.0005
+    ],
+    "burst": [
+     true,
+     false
+    ],
+    "discrete": [
+     true,
+     false
+    ],
+    "fb_shift": [
+     -0.0005,
+     0.0,
+     0.0005
+    ],
+    "fric_scale": [
+     0.5,
+     1.0,
+     1.5
+    ]
+   },
+   "includes_zero": false,
+   "kind": "disc in the complex plane",
+   "measurement_floor": 0.01,
+   "model_bound": 0.011719747436068883,
+   "radius": 0.021719747436068883
+  },
+  "dH": {
+   "im": -0.019871100555077847,
+   "mag": 0.06958609098598295,
+   "phase_deg": -16.592408211552424,
+   "re": 0.06668855540075436
+  },
+  "gain_change_db": 0.5427607512045427,
+  "phase_change_deg": -1.0034794554349953,
+  "rationale": "The extra 4 ms delays both the feed-forward and the feedback torque. The feed-forward alone would add about 4.3 deg of phase lag at 3 Hz, but the loop is closed with a 4.46 Hz crossover: the added delay removes about 6 deg of phase margin, which raises the closed-loop peaking near 3 Hz. The model therefore predicts mainly a gain increase (about +0.5 dB) with only about -1 deg of extra phase, i.e. dH points mostly along +Re. The region covers +-0.5 ms in the command-path and feedback-age accounting, CAN bursts on/off, a continuous versus discrete controller, and friction describing-function gain x0.5-1.5, plus a fixed 0.01 floor for effects the linear model omits (friction harmonics, quantization, integrator transients).",
+  "timing_delayed": {
+   "t_fb_s": 0.001784,
+   "t_ff_s": 0.008284
+  },
+  "timing_nominal": {
+   "t_fb_s": 0.001784,
+   "t_ff_s": 0.004284
+  }
+ },
+ "protocol": {
+  "amp_deg": 5.0,
+  "cmd_delay_s": [
+   0.001,
+   0.005
+  ],
+  "controller": "BaselineController() defaults (estimate mode, governor and yaw monitor on)",
+  "d_amp": 0.0,
+  "duration_s": 12.0,
+  "freq_hz": 3.0,
+  "primary": "mean over the five seeds of H(5 ms) - H(1 ms); H = fundamental of actual roll q divided by fundamental of governed reference c_q_c, sin/cos/intercept fit over the window",
+  "ramp_s": 1.0,
+  "seeds": [
+   301,
+   302,
+   303,
+   304,
+   305
+  ],
+  "supervisor": "DriveSupervisor() defaults",
+  "window_s": [
+   4.0,
+   12.0
+  ],
+  "yaw": "Hold(0)"
+ },
+ "schema": 1,
+ "statement": "Written and committed before any simulation of this condition. Outcome labels: supported (measured mean dH inside the disc), contradicted (outside), inconclusive (any pair invalid, faulted, suspended or rejected)."
+}

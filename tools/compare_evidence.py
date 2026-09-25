@@ -24,8 +24,8 @@ import sys
 from pathlib import Path
 
 RESULTS = ("task2_results", "task4b_results", "task3_ceiling_results", "task3_challenges_results",
-           "task3_estimator_audit", "task5_results")
-RUNS = ("task2_runs", "task4b_runs", "task3_ceiling_runs", "task3_challenges_runs")
+           "task3_estimator_audit", "task5_results", "task5_prospective_results")
+RUNS = ("task2_runs", "task4b_runs", "task3_ceiling_runs", "task3_challenges_runs", "task5_prospective_runs")
 MONTE_CARLO = ("task2_runs", "task4b_runs")
 # Exact provenance / wall-clock keys; everything else (including e.g. reshaping_pct,
 # first_usable_time_s, figure_checks) is compared.

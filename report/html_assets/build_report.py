@@ -29,6 +29,7 @@ FIGURES = {
               ('task4b_fault_timeline.png', 'Fault and recovery timeline', 'Packet 4B: fallback and catch do not imply completion of the request.'),
               ('task4b_generalization.png', 'Generalization across chosen stress cases', 'Selected stress ranges are not calibrated probability distributions.'),
               ('task4b_infeasible.png', 'Infeasible requests', 'Actual subsequent motion is reported alongside restriction or suspension.')],
+    'task5': [('task5_prospective.png', 'Prospective Task 5 test', 'Registered prediction and acceptance region (committed before the runs) against the five measured paired changes and their mean; right, per-run gain and phase. Simulated.')],
     'history': [('p0_payload_fit.png', 'Historical payload fit', 'Illustrative fit with assumed payload geometry; the A–E summaries do not identify mass or COM direction.'),
                 ('p0_bandwidth_vs_delay.png', 'Historical bandwidth versus delay', 'Earlier design study; use the current 4.46 Hz design and margins for the final controller.'),
                 ('p1_legacy_runs.png', 'Reconstructed legacy A–E runs', 'A fit to incomplete summaries; B/C/D current limiting is not reproduced.'),

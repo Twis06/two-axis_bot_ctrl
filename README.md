@@ -44,6 +44,6 @@ Start with [Task 1 — Understand the failure](report/task1.md). The [task index
 - ✅ Phase 1: simulator + consistency with the logs (a fit, not identification)
 - ✅ Task 2: deterministic baseline frozen (fingerprint `7d857df507c389c9`)
 - ✅ Task 3: the tested adaptive candidate fails its registered adoption gate (benefit, availability); baseline retained. The payload-change challenge was not executed.
-- ◐ Task 5: registered prediction tested in simulation and retrospectively corrected (R2); the closed-loop prediction is untested, and hardware confirmation is pending
+- ✅ Task 5: prospective closed-loop prediction committed before the runs and **supported** in simulation (command delay 1 → 5 ms); the earlier motor-strength study is kept as a qualified secondary result; hardware confirmation is proposed
 - ✅ Corrective packets R1–R5 done; independent review rounds in [R6](report/packets/R6.md): the findings of rounds 1–3 are resolved; the final round's verdict is recorded there.
 - ✅ Submission documents: [memo](report/memo.pdf), [hardware qualification plan](report/hardware_qualification_plan.pdf), [references and tools](report/references_and_tools.md)

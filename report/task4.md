@@ -73,6 +73,6 @@ Source: [baseline results](phase2_numbers.md).
 ## Still required
 
 - **Task 3:** the registered comparison is complete; the exact adaptive candidate failed the benefit and availability gates, so the deterministic baseline remains final. The supplementary payload-change challenge was not executed.
-- **Task 5:** its retrospective correction ([R2](packets/R2.md)) leaves the closed-loop tracking prediction untested.
+- **Task 5:** a prospective closed-loop prediction, committed before the runs, is supported in simulation ([task5.md](task5.md)); hardware confirmation is proposed.
 - **Reproduction and review:** clean-snapshot reproduction is reported in [R4](packets/R4.md). Independent review rounds in [R6](packets/R6.md): the findings of rounds 1–3 are resolved; the final round's verdict is recorded there.
 - **Reporting rule:** report original-request deviation alongside governed-reference error wherever motion changes.

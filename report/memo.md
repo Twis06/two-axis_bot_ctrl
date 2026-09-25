@@ -110,21 +110,24 @@
 
 ## 5. Testing the explanation
 
-**Registered prediction (Calculated; the registration and the results were first committed together, so git gives no ordering evidence).** In Run B, weaken the true K<sub>t</sub> and K<sub>e</sub> by 10% with the controller unchanged. Predicted: coupling peak 0.1356 N·m (0.969 A), extra ideal current +0.108 A (±0.15 A), and an uncancelled coupling residual of +0.0136 N·m (±0.01).
+**Prospective test, with the prediction committed before any run** ([task5](task5.md), [protocol](../docs/plans/task5-prospective-protocol.md)). The explanation under test is that tracking is governed by the loop's delay budget. The change: current-command delay 1 ms → 5 ms, with a 5° roll sine at 3 Hz, yaw still, the frozen baseline, and seeds 301–305 paired.
 
-**Result (Simulated: 3 seeds, feed-forward on/off pairs, 2–8 s).** A windowing and unit bug in our first analysis was found and corrected retrospectively ([R2](packets/R2.md)).
+- **Prediction (Calculated, from the linearized loop and configuration-derived timing only):** ΔH = H(5 ms) − H(1 ms) = +0.067 − 0.020j, where H is roll over the governed reference at 3 Hz. That is +0.54 dB of gain and −1.0° of phase: the delay mainly erodes phase margin and raises peaking.
+- **Acceptance:** a disc of radius 0.026, which excludes zero.
+- **Git order:** registration `1f4d982`, then v2 `35b9f96` after an independent pre-run review fixed a scorer defect (prediction unchanged), then results `9035089`.
 
-- **Consistency checks only:** the coupling and ideal-current matches re-check the model's own arithmetic.
-- **Not tested:** the extra current is not separable in the total current, and its tolerance includes 0.
-- **Not resolved by the selected peak metric:** the post hoc residual-peak increase was −0.0007 N·m. Causal yaw-estimate transients (about 0.03 N·m) obscure the predicted component in this Run B comparison. With exact feed-forward (a diagnostic), +0.0123 N·m appears.
-- **Supported:** feed-forward stays valuable, and removing it costs 3.5–3.9°.
-- **Not uniform:** the weaker motor raised error in only 2 of 3 pairs.
+**Result (Simulated, 10 valid runs, no faults):** measured ΔH = +0.070 − 0.024j, 0.005 from the prediction. **Supported.**
 
-**Revised explanation:** for this Run B peak metric and operating point, yaw-estimate transients exceed the measured motor-strength effect. This does not rank their importance across other motions.
+- **Tracking error:** governed RMS error more than doubles, from 0.22° to 0.47°.
+- **Absolute gain:** the model's absolute |H| is about 0.02 low in both arms, consistent with a little unmodelled delay.
 
-**Smallest justified design change: none to the frozen controller.** If hardware calibration finds that the effective K<sub>t</sub> differs from nominal, rescale the feed-forward current by K<sub>t,nom</sub>/K<sub>t,meas</sub>. That is one parameter, and it is proposed, not tested.
+**Revised explanation:** the delay-budget mechanism holds quantitatively. The frozen loop absorbs +4 ms without faults, at a clear cost in tracking.
 
-**Hardware confirmation:** blocked-axis torque/current identification, guarded moving back-EMF identification, then the roll-held yaw sweep ([qualification plan](hardware_qualification_plan.md)).
+**Smallest justified design change: none to the controller.** Qualification should measure the real command-path delay, and re-derive the margins if it exceeds the 7 ms design value.
+
+**Hardware confirmation:** synchronized command, drive-application and encoder timestamps during a guarded low-amplitude 3 Hz sine, at nominal and added delay.
+
+**Earlier study (secondary):** a motor-strength prediction (K<sub>t</sub> × 0.9, Run B). Its registration and results were committed together, and its analysis was corrected retrospectively ([R2](packets/R2.md)). Only its feed-forward-value result (3.5–3.9°) is clear.
 
 **Risks carried to hardware:** the drive voltage convention (V<sub>bus</sub> vs V<sub>bus</sub>/√3), the loaded fallback excursion, admission of unknown-load moves that later trip, and assumed thermal thresholds.
 
@@ -149,3 +152,5 @@
 <figure class="plot-page"><img src="figs/static_holdability.svg" alt="Calculated static holding demand and angle-specific torque bands" /><figcaption><strong>Figure 8. Static torque boundary (Calculated).</strong> Nominal and assumed INF-P demand include a 0.04 N·m friction allowance; horizontal lines show actuator capacities and the stricter 2.4 A governor budget. At 0°, INF-P gravity alone needs 0.412 N·m, above 0.336 N·m derated capacity, while the unaware nominal governor admits the pose. Colored bands show angle-specific static tests, not dynamically reachable paths. D/E payload masses are unknown.</figcaption></figure>
 
 <figure class="plot-page"><img src="figs/task4b_infeasible.png" alt="Infeasible-request response" /><figcaption><strong>Figure 9. Infeasible request.</strong> The unknown INF-P load exceeds derated static capacity at 0°. The nominal-model controller initially attempts it, then faults and suspends; the plot reports the resulting motion rather than a successful hold.</figcaption></figure>
+
+<figure class="plot-page"><img src="figs/task5_prospective.png" alt="Prospective Task 5 test: predicted versus measured change in tracking transfer" /><figcaption><strong>Figure 10. Prospective Task 5 test.</strong> Registered prediction and acceptance region (committed before the runs) against the five measured paired changes and their mean; right, per-run gain and phase with the predicted values. Simulated.</figcaption></figure>

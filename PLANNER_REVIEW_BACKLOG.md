@@ -17,7 +17,7 @@
 | 12–16 · annotated memo | Resolved: opening, portable PDF paths, failure hypothesis, static-holdability diagram and learning-redesign plan. The diagram is calculated for the explicit INF-P assumption, not a D/E payload estimate. |
 | R6 round-2 minors r2-1, r2-2, r2-6 (referred to in an earlier version of this file) | Resolved: gate fixes with regression tests and a full republication (`33786b9`, `55804ec`); comparison method committed as `tools/compare_evidence.py`. |
 
-Future research work (a prospective Task 5 test, the payload-change challenge and physical qualification) is outside this submission's simulated evidence and is declared as such in the memo.
+The prospective Task 5 test was carried out afterwards; see `docs/plans/task5-prospective-protocol.md`. The payload-change challenge and physical qualification remain outside this submission's simulated evidence, as declared in the memo.
 
 ## 1. Correct the hardware stop-state promise — high priority
 

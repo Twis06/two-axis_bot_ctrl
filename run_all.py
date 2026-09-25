@@ -31,6 +31,8 @@ FULL = [
      [PY, "-m", "exp.task3_l4", "--challenges", "report/task3_challenges_results.json"]),
     ("Task 4 Packet 4B: matched baseline validation", [PY, "-m", "exp.task4b_eval"]),
     ("Task 5: registered motor-strength test (analysis corrected in R2)", [PY, "-m", "exp.task5_prediction"]),
+    ("Task 5: prospective closed-loop prediction (registered before the runs)", [PY, "-m", "exp.task5_prospective"]),
+    ("Task 5: answer overview (prospective test + historical study)", [PY, "-m", "exp.task5_overview"]),
     ("Memo Figure 8: calculated static-holdability diagram", [PY, "report/html_assets/holdability_figure.py"]),
 ]
 HISTORICAL = [("historical: phase 2 baseline evaluation", [PY, "exp/phase2_eval.py"])]

@@ -172,6 +172,33 @@ The frozen baseline fingerprint is `7d857df507c389c9`. Task 2 publishes 177 mani
 
 ## Task 5 — Test the explanation {#task5}
 
+**Prospective test, with the prediction committed before any run.**
+
+**What was predicted.** The explanation under test is that tracking is governed by the loop's delay budget. For a current-command delay of 1 ms → 5 ms, the linearized loop was used with configuration-derived timing and no data from the runs. The condition was a 5° roll sine at 3 Hz, yaw still, the frozen baseline, and seeds 301–305 paired.
+
+- **Predicted change:** ΔH = H(5 ms) − H(1 ms) = +0.0667 − 0.0199j, where H is roll over the governed reference. That is +0.54 dB of gain and −1.0° of phase.
+- **Acceptance:** a disc of radius 0.0264, which excludes zero.
+
+**Order in git:**
+
+1. Registration `1f4d982`.
+2. Registration v2, `35b9f96`, after an independent pre-run review found a scorer defect. The central prediction was unchanged.
+3. Results, `9035089`.
+
+**What was measured (Simulated):** mean ΔH = +0.0698 − 0.0238j, a distance of 0.0050 from the prediction. **Supported.**
+
+- **Run quality:** all ten runs are valid, with no faults, fallback, clipping or governor limiting.
+- **Tracking error:** governed RMS error more than doubles, from 0.22° to 0.47°.
+- **Model bias:** the model's absolute |H| is about 0.02 low in both arms.
+
+**Revised explanation:** the delay-budget mechanism holds quantitatively. The frozen loop absorbs +4 ms without faults, at a tracking cost.
+
+**Smallest justified design change: none to the controller.** Qualification should measure the real command-path delay and re-derive the margins if it exceeds 7 ms. See the [protocol](../docs/plans/task5-prospective-protocol.md) and the [numbers](task5_prospective_numbers.md).
+
+<!-- FIGURES:task5 -->
+
+**Earlier study, secondary and qualified:**
+
 **Registered test, retrospectively corrected analysis:** weaken true Kt and Ke by 10% in nominal Run B, keep the controller unchanged, and pair feed-forward on/off across seeds 21–23. Score 2–8 s, with one window for every windowed quantity. The registration file is unchanged, but it and the original results were first committed together, so git gives no evidence of ordering. Packet R2 corrected mixed windows and a torque/current unit error in the original analysis.
 
 | Prediction | Basis | Predicted | Measured (Simulated) | Verdict |
@@ -190,9 +217,10 @@ Windowed governed RMS with feed-forward on is 0.328° median for the weakened mo
 
 **Interpretation:** yaw feed-forward is useful in this controlled simulation. The registered numerical predictions are either arithmetic on the prescribed model or were not measurable as registered. For this Run B operating point, the post hoc residual-peak metric does not resolve the predicted component because causal yaw-estimate transients dominate its peak; exact feed-forward reveals it diagnostically. No closed-loop tracking prediction was registered; that stronger test and the hardware residual test remain open.
 
-**Smallest justified design change: none.** Retain the frozen controller; this experiment does not justify retuning. Confirm effective torque/current calibration, the electrical convention and timestamped yaw-disturbance response before changing compensation on hardware.
+**Smallest justified design change from the earlier study: none.** It does not justify retuning. Confirm effective torque/current calibration, the electrical convention and timestamped yaw-disturbance response before changing compensation on hardware.
 
-<!-- DETAIL:task5.md|All 12 paired runs and prediction-versus-result discussion -->
+<!-- DETAIL:task5.md|Task 5 answer: prospective test and the earlier motor-strength study -->
+<!-- DETAIL:task5_prospective_numbers.md|Prospective test: every registered run -->
 
 ## Hardware qualification proposal {#hardware}
 

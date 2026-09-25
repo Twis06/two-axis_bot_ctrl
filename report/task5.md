@@ -1,4 +1,67 @@
-# Task 5 — motor-strength explanation test (R2 retrospective correction of the analysis)
+# Task 5 — Test your explanation
+
+## Prospective test: command delay and closed-loop tracking (prediction registered before the runs)
+
+**Explanation under test** (Task 1–2):
+
+- Tracking at these frequencies is governed by the loop's delay budget: the command path, CAN transport and feedback age against a controller designed for 7 ms.
+- The prediction: adding current-command delay should change the closed-loop response in a specific, calculable way.
+
+**Change:** current-command delay from 1 ms (nominal) to 5 ms, with everything else frozen:
+
+- a 5° roll sine at 3 Hz, yaw still, d(t) = 0;
+- the frozen baseline `7d857df507c389c9`;
+- seeds 301–305, paired.
+
+**Registered prediction** ([protocol](../docs/plans/task5-prospective-protocol.md), [registration](task5_prospective_registration.json), sha256 `faaddb8a0f75c432`): ΔH = H(5 ms) − H(1 ms) = **+0.0667 -0.0199j**. That is +0.54 dB of gain and -1.0° of phase, with an acceptance disc of radius 0.0264 that excludes zero.
+
+- **What H is:** actual roll divided by the governed reference, as the fundamental over [4, 12) s.
+- **Where the prediction comes from:** the linearized loop, the frozen discrete controller and feed-forward, the friction describing function, the current lag and configuration-derived timing. No data from these runs was used.
+
+**Chronology (git):**
+
+1. `1f4d982`: registration v1: prediction, scorer, tests; no results
+1. `35b9f96`: registration v2 after the independent pre-run review (scorer start-up fallback fix); central prediction unchanged
+1. `dc85377`: declare exp/evidence.py for manifests (the first attempt stopped before any simulation)
+1. `9035089`: results of the ten registered runs
+
+**Result (Simulated):** mean measured ΔH = **+0.0698 -0.0238j**, a distance of 0.0050 from the prediction, inside the radius 0.0264. **Outcome: supported.**
+
+- **Run quality:** all ten runs are valid, with no faults, fallback, clipping or governor limiting.
+- **Consistency:** the five paired changes agree within ±0.0003.
+- **Tracking error:** governed RMS error rises from 0.22° to 0.47°, and original-request RMS error from 0.37° to 0.60°. Full rows are in [task5_prospective_numbers.md](task5_prospective_numbers.md) and the plot is [figs/task5_prospective.png](figs/task5_prospective.png).
+
+**What matched and what did not:**
+
+- **Matched:** the direction and size of the change. The extra delay mainly raises closed-loop peaking (gain up) rather than adding phase lag, as the phase-margin argument predicted.
+- **Did not match:** the model's absolute gain is low. Measured |H(1 ms)| is 1.057 against the model's 1.039, and |H(5 ms)| is 1.127 against 1.106. The pre-run review expected this: about 0.5–1 ms of effective delay is not modelled. It shifts both arms alike, so ΔH is unaffected.
+
+**Revised explanation:**
+
+- The delay-budget mechanism is confirmed quantitatively for this condition.
+- The frozen loop tolerates +4 ms without faults or reshaping, but tracking error at 3 Hz more than doubles.
+- The absolute-gain offset is consistent with slightly more effective delay than the configuration-based estimate; it is not separately measured.
+
+**Smallest justified design change: none to the frozen controller.** At the nominal 1 ms delay it tracks this request to about 0.2° RMS, and even +4 ms stays well inside the 2° tracking threshold with no fault. The justified change is in qualification, not control:
+
+- measure the real command-path delay;
+- if it exceeds the 7 ms design assumption, re-derive the margins before widening the operating envelope.
+
+**Hardware confirmation:**
+
+- synchronized command-generation, drive-application and encoder timestamps;
+- a guarded low-amplitude 3 Hz roll sine at the nominal and at an added command delay;
+- measured gain and phase of roll against the governed reference, compared with this registered prediction.
+
+This is proposed, not performed (see the [qualification plan](hardware_qualification_plan.md)).
+## Historical study: motor strength (registered component prediction; analysis corrected retrospectively in R2)
+
+Kept as a secondary, qualified result:
+
+- **No ordering evidence:** its registration and results were first committed together, so git does not show the prediction came first.
+- **Metric chosen afterwards:** its closed-loop comparison was selected after the results.
+- **Not the primary evidence:** it does not satisfy the brief's prediction-before-test requirement; the prospective test above does.
+
 
 The prediction was registered for this experiment, but the registration and the original results were first committed together (f19fff2), so git gives no evidence that the registration came first (R2 audit). The exact nominal Run B, Kt×0.90 paired intervention was not present in the prior matched evidence; earlier Kt±15% random/corner cases remain prior context and are not relabeled.
 
@@ -6,13 +69,13 @@ Claim: With yaw feed-forward unchanged, a weaker true motor produces a predictab
 
 Frozen protocol: Run B nominal yaw trajectory, true Kt and Ke multiplied by 0.90, controller parameters unchanged; seeds [21, 22, 23]; window 2.0–8.0 s; controller uses nominal Kt and Ke.
 
-## Registered prediction
+### Registered prediction
 
 The requested 1.5 Hz yaw trajectory has a calculated peak coupling torque of **0.135622 N·m**, equivalent to **0.968730 A** at nominal Kt. With true Kt×0.90 and unchanged nominal feed-forward, the predicted extra ideal current is **0.107637 A** and the uncancelled coupling residual is **0.013562 N·m**. Registered tolerances are ±0.15 A for the component-current check and ±0.01 N·m for the residual calculation.
 
 These are component-level predictions. Measured total current and tracking error also include feedback, friction, transport, voltage, and governor effects.
 
-## Matched results
+### Matched results
 
 | Kt ratio | Yaw FF | Yaw info | Seed | Peak current A [2,8) s | RMS current A [2,8) s | Governed RMS ° [2,8) s | Original RMS ° [2,8) s | Yaw scale | Clipped % [2,8) s | Events (whole run) |
 |---:|:---:|---|---:|---:|---:|---:|---:|---:|---:|---|
@@ -35,7 +98,7 @@ These are component-level predictions. Measured total current and tracking error
 | 0.90 | off | estimate | 23 | 1.252 | 0.701 | 4.214 | 4.214 | 1.000 | 0.00 | none |
 | 0.90 | on | plan (diagnostic) | 23 | 1.155 | 0.700 | 0.314 | 0.314 | 1.000 | 0.00 | none |
 
-## Prediction versus measurement (R2 retrospective correction)
+### Prediction versus measurement (R2 retrospective correction)
 
 Rows above and below use one window, [2, 8) s, for every windowed quantity; whole-run safety events are in the JSON `whole_run` field. This is a **retrospective correction** of the original analysis (same frozen controller, conditions and seeds, replayed), not a new prospective experiment. The registration is unchanged.
 
@@ -61,12 +124,12 @@ What this does and does not show: yaw feed-forward matters (every pair). The reg
 
 The paired rows preserve the same scenario, seed, request, disturbance realization, transport draw, and initial state. The weakened-motor totals are reported separately from the registered component prediction; no controller retuning or design change was made.
 
-## Revised explanation and smallest justified design change
+### Revised explanation and smallest justified design change
 
 **Revised explanation.** For this Run B residual-peak metric and operating point, the causal yaw estimate's transient error (about 0.03 N m at the coupling extrema) exceeds the measured motor-strength effect: the 10 % weaker motor raised error in only 2 of 3 pairs, while removing yaw feed-forward cost 3.5-3.9 deg in every pair. This does not rank the two effects across other motions.
 
 **Smallest justified design change: none to the frozen controller.** This experiment does not justify retuning. *Proposed, not tested:* if hardware calibration finds effective Kt different from nominal, the smallest change is one parameter, rescaling the feed-forward current by Kt_nominal / Kt_measured.
 
-## Hardware follow-up
+### Hardware follow-up
 
 Hardware confirmation still requires calibrated torque-versus-current identification and a timestamped roll-held yaw experiment with the same stop limits. This simulated result does not certify the drive convention or hardware Kt.

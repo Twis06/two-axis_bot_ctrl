@@ -208,7 +208,7 @@ The simulated 25 rad/s overspeed trip and 130°C thermal trip are not initial be
 
 ## Sources, artifacts and remaining work {#sources}
 
-The assessment PDF supplies the plant constants, task questions and the only hardware observations. Project Markdown reports, generated JSON manifests, code and review packets supply the calculations and simulated evidence. No outside measurements or external technical references are used; see the references note.
+The assessment brief (an outside document, not redistributed in this repository) supplies the plant constants, task questions and the only hardware observations. Project Markdown reports, generated JSON manifests, code and review packets supply the calculations and simulated evidence. No outside measurements or external technical references are used; see the references note.
 
 The implementation uses Python, NumPy, SciPy, Matplotlib and standard-library unittest. Automated coding agents contributed implementation, experiments, review and documentation, as recorded in the packet histories and Task 3 execution log. This HTML report was assembled by Codex from those artifacts; its charts reorganize stored rows and do not create new experimental evidence. The offline report builder uses Python-Markdown; HTML/CSS/JavaScript provide presentation. A repository-wide third-party reused-code/license audit has not been established by the available notes.
 

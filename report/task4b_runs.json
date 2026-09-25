@@ -3,7 +3,7 @@
   "code_hash": "0f0aaaced1155e33e2530160ac052c4f89e730b7575602c19709d666bc7ea3c0",
   "entry": "exp.task4b_eval",
   "git": {
-   "commit": "bd9d35e83c2be8d9d69214387a2f27c1db90bba6",
+   "commit": "727c7f9819d3cd5fbe46630b513556b521cae5b1",
    "dirty": true,
    "dirty_sources": []
   },
@@ -43,10 +43,10 @@
  },
  "entry": "exp.task4b_eval",
  "env": {
-  "executable": "/usr/local/bin/python3",
+  "executable": "<repo>/.venv/bin/python3",
   "numpy": "2.0.2",
   "platform": "macOS-26.5.2-arm64-arm-64bit",
-  "python": "3.9.12",
+  "python": "3.9.24",
   "scipy": "1.13.1"
  },
  "manifest_version": "4A.2",

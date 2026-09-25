@@ -24,6 +24,25 @@ from sim.engine import Log  # noqa: E402
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+def _assert_same_draw(tc, a, b, where, rel=1e-12):
+    """Same structure and the same draws. Floats are compared to 1e-12 relative, not bit for
+    bit: NumPy's uniform() rounds differently across CPUs (it uses a fused multiply-add on
+    arm64 but not on x86-64), so a regenerated draw can differ from a published one in the
+    last binary digit (R4 cross-platform reproduction)."""
+    if isinstance(a, dict):
+        tc.assertEqual(sorted(a), sorted(b), where)
+        for k in a:
+            _assert_same_draw(tc, a[k], b[k], where + (k,), rel)
+    elif isinstance(a, list):
+        tc.assertEqual(len(a), len(b), where)
+        for i, (x, y) in enumerate(zip(a, b)):
+            _assert_same_draw(tc, x, y, where + (i,), rel)
+    elif isinstance(a, float) and isinstance(b, float):
+        tc.assertTrue(math.isclose(a, b, rel_tol=rel, abs_tol=1e-15), (where, a, b))
+    else:
+        tc.assertEqual(a, b, where)
+
+
 class TestScenarios(unittest.TestCase):
     def test_a_finite_keeps_task2_request_and_config(self):
         base = SimConfig()
@@ -54,7 +73,7 @@ class TestScenarios(unittest.TestCase):
         pub = {(v["run"]["scenario"], v["run"]["seed"]): v["run"]["config"] for v in runs.values()
                if v["run"]["scenario"] in ("D", "E") and v["run"]["seed"] >= 100}
         for name, k, sc in mc:
-            self.assertEqual(MF.jsonable(sc.cfg), pub[(name, 100 + k)], (name, k))
+            _assert_same_draw(self, MF.jsonable(sc.cfg), pub[(name, 100 + k)], (name, k))
 
     def test_freq_amplitude_stays_inside_budget(self):
         from sim import params as P

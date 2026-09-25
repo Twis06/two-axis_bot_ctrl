@@ -81,7 +81,9 @@ def main():
     body = re.sub(r'<!-- DETAIL:([^|]+)\|([^>]+) -->', detail, body)
     body = re.sub(r'<!-- INTERACTIVE:(\w+) -->', lambda m: interactive(m[1]), body)
     sources = sorted(p for p in REPORT.glob('*.json'))
-    sources += [ROOT / 'Robotics Controls Technical Assessment.pdf', ROOT / 'EXECUTION_PLAN.md', ROOT / 'docs/plans/task3-learning.md', ROOT / 'docs/plans/task3-execution-log.md']
+    # The assessment brief is an outside source and is not redistributed (gitignored), so it is
+    # neither linked nor hashed: the report must build from a clean checkout.
+    sources += [ROOT / 'EXECUTION_PLAN.md', ROOT / 'docs/plans/task3-learning.md', ROOT / 'docs/plans/task3-execution-log.md']
     links = ['<ul class="source-list">']
     for p in sources:
         rel = str(p.relative_to(ROOT))

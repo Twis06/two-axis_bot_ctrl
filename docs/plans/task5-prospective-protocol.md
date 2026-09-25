@@ -1,6 +1,6 @@
 # Task 5 — prospective closed-loop prediction: protocol (frozen before execution)
 
-**Status:** registered (version 2) before any run; **executed 2026-09-25**, results in commit `9035089` (outcome: supported; see `report/task5_prospective_numbers.md`). Everything below this line is the registered protocol, unchanged. The numbers below are copied from `report/task5_prospective_registration.json`, which `python -m exp.task5_prospective --register` wrote and which is committed together with the predictor, scorer and tests, **before any simulation of this condition**. The first run happens in a later commit.
+**Status:** registered (version 2) before any run; **executed 2026-09-25**, results in commit `1101240` (outcome: supported; see `report/task5_prospective_numbers.md`). Everything below this line is the registered protocol, unchanged. The numbers below are copied from `report/task5_prospective_registration.json`, which `python -m exp.task5_prospective --register` wrote and which is committed together with the predictor, scorer and tests, **before any simulation of this condition**. The first run happens in a later commit.
 
 ## Why this test
 
@@ -73,7 +73,7 @@ Every run is published whatever the outcome. No seeds, conditions, windows or me
 
 ## Revision before any run: version 1 → version 2
 
-An independent pre-run review of version 1 (commit `1f4d982`) found one blocking defect.
+An independent pre-run review of version 1 (commit `c0b065f`) found one blocking defect.
 
 - **The defect:** the scorer counted drive fallback over the whole log. The drive is always in fallback for 2–3 ticks before the first valid command, so every run would have been scored inconclusive.
 - **Also adopted (non-blocking suggestions):**

@@ -10,3 +10,5 @@ republication. SHA-256 of every file is in `SHA256SUMS`.
 - `task2_*`, `task3_estimator_audit.*` carry metrics version 4A.3 run_ids.
 
 Do not cite these as current results; see the regenerated files in `report/`.
+
+**2026-09-25:** an absolute local path in `task3_ceiling_runs.json` (a recorded interpreter path) was replaced by a placeholder during the history sanitization (see `docs/COMMIT_MAP.md`), so its `SHA256SUMS` entry was refreshed. No value changed.

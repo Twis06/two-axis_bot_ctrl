@@ -20,10 +20,10 @@
 
 **Chronology (git):**
 
-1. `1f4d982`: registration v1: prediction, scorer, tests; no results
-1. `35b9f96`: registration v2 after the independent pre-run review (scorer start-up fallback fix); central prediction unchanged
-1. `dc85377`: declare exp/evidence.py for manifests (the first attempt stopped before any simulation)
-1. `9035089`: results of the ten registered runs
+1. `c0b065f`: registration v1: prediction, scorer, tests; no results
+1. `7452ea8`: registration v2 after the independent pre-run review (scorer start-up fallback fix); central prediction unchanged
+1. `62a9ac6`: declare exp/evidence.py for manifests (the first attempt stopped before any simulation)
+1. `1101240`: results of the ten registered runs
 
 **Result (Simulated):** mean measured ΔH = **+0.0698 -0.0238j**, a distance of 0.0050 from the prediction, inside the radius 0.0264. **Outcome: supported.**
 

@@ -114,7 +114,7 @@
 
 - **Prediction (Calculated, from the linearized loop and configuration-derived timing only):** ΔH = H(5 ms) − H(1 ms) = +0.067 − 0.020j, where H is roll over the governed reference at 3 Hz. That is +0.54 dB of gain and −1.0° of phase: the delay mainly erodes phase margin and raises peaking.
 - **Acceptance:** a disc of radius 0.026, which excludes zero.
-- **Git order:** registration `1f4d982`, then v2 `35b9f96` after an independent pre-run review fixed a scorer defect (prediction unchanged), then results `9035089`.
+- **Git order:** registration `c0b065f`, then v2 `7452ea8` after an independent pre-run review fixed a scorer defect (prediction unchanged), then results `1101240`.
 
 **Result (Simulated, 10 valid runs, no fault events):** measured ΔH = +0.070 − 0.024j, 0.005 from the prediction. **Supported.**
 

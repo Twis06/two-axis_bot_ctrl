@@ -15,11 +15,11 @@ ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "report"
 
 # Git chronology of the prospective test (commit IDs after the note.md history rewrite).
-CHRONOLOGY = [("1f4d982", "registration v1: prediction, scorer, tests; no results"),
-              ("35b9f96", "registration v2 after the independent pre-run review (scorer start-up fallback fix); "
+CHRONOLOGY = [("c0b065f", "registration v1: prediction, scorer, tests; no results"),
+              ("7452ea8", "registration v2 after the independent pre-run review (scorer start-up fallback fix); "
                           "central prediction unchanged"),
-              ("dc85377", "declare exp/evidence.py for manifests (the first attempt stopped before any simulation)"),
-              ("9035089", "results of the ten registered runs")]
+              ("62a9ac6", "declare exp/evidence.py for manifests (the first attempt stopped before any simulation)"),
+              ("1101240", "results of the ten registered runs")]
 
 
 def _c(z):

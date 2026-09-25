@@ -181,9 +181,9 @@ The frozen baseline fingerprint is `7d857df507c389c9`. Task 2 publishes 177 mani
 
 **Order in git:**
 
-1. Registration `1f4d982`.
-2. Registration v2, `35b9f96`, after an independent pre-run review found a scorer defect. The central prediction was unchanged.
-3. Results, `9035089`.
+1. Registration `c0b065f`.
+2. Registration v2, `7452ea8`, after an independent pre-run review found a scorer defect. The central prediction was unchanged.
+3. Results, `1101240`.
 
 **What was measured (Simulated):** mean ΔH = +0.0698 − 0.0238j, a distance of 0.0050 from the prediction. **Supported.**
 

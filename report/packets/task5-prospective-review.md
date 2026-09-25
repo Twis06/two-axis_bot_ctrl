@@ -6,19 +6,19 @@
 
 | Commit | Time | Content |
 |---|---|---|
-| `1f4d982` | 10:20 | Registration v1: predictor, scorer, synthetic tests, `task5_prospective_registration.json`; no results |
-| `35b9f96` | 10:28 | Registration v2 after the pre-run review (below); central prediction unchanged |
-| `dc85377` | 10:29 | Declare `exp/evidence.py` for manifests. The first execution attempt at `35b9f96` stopped in `make_manifest` before any simulation |
-| `9035089` | 10:30 | Results of the ten registered runs, executed 10:29:49–10:30:09 from `dc85377` |
-| `29da983` → release | — | Integration (overview, memo, HTML, status), republication, rebuilds and review fixes |
+| `c0b065f` | 10:20 | Registration v1: predictor, scorer, synthetic tests, `task5_prospective_registration.json`; no results |
+| `7452ea8` | 10:28 | Registration v2 after the pre-run review (below); central prediction unchanged |
+| `62a9ac6` | 10:29 | Declare `exp/evidence.py` for manifests. The first execution attempt at `7452ea8` stopped in `make_manifest` before any simulation |
+| `1101240` | 10:30 | Results of the ten registered runs, executed 10:29:49–10:30:09 from `62a9ac6` |
+| `82ceda0` → release | — | Integration (overview, memo, HTML, status), republication, rebuilds and review fixes |
 
-- **No early results:** `git log --all` shows no result artifact for this condition before `9035089`.
-- **Execution commit:** the runs were executed from `dc85377`, as recorded in `9035089`'s run manifests. Later republications record the current commit instead. The results JSON does not carry start/end times; the times above come from the execution log of this session and the commit timestamps.
+- **No early results:** `git log --all` shows no result artifact for this condition before `1101240`.
+- **Execution commit:** the runs were executed from `62a9ac6`, as recorded in `1101240`'s run manifests. Later republications record the current commit instead. The results JSON does not carry start/end times; the times above come from the execution log of this session and the commit timestamps.
 
 ## Pre-run independent review (before any run)
 
-- **Verdict on v1 (`1f4d982`): DO NOT RUN.** One blocking defect: the scorer counted drive fallback over the whole log. The drive's normal start-up ticks would have made every run inconclusive.
-- **Fixed in v2 (`35b9f96`):**
+- **Verdict on v1 (`c0b065f`): DO NOT RUN.** One blocking defect: the scorer counted drive fallback over the whole log. The drive's normal start-up ticks would have made every run inconclusive.
+- **Fixed in v2 (`7452ea8`):**
   - fallback is counted inside the scoring window, with a test;
   - friction uncertainty is plant-only;
   - the registration binds `scorer_sha256`.
@@ -42,7 +42,7 @@ The measured mean ΔH is +0.0698 − 0.0238j against the predicted +0.0667 − 0
 - **Consistency:** the pairs agree within about 0.0002.
 - **Robustness to the pre-run revision:** the outcome would be the same under v1's radius (0.0217), and even under the 0.010 floor alone.
 
-## Final independent review (release candidate `23395d9`): PASS WITH ISSUES
+## Final independent review (release candidate `a377d89`): PASS WITH ISSUES
 
 **No Critical or Important findings.**
 
@@ -72,7 +72,7 @@ The measured mean ΔH is +0.0698 − 0.0238j against the predicted +0.0667 − 0
 | 12 | Execution commit and times not in the result packet | Disclosed above (chronology table) |
 | 13 | Configuration timing (4.28/1.78 ms) is close to 4B's log-measured values, which were available | Disclosed in the protocol's prior knowledge. ΔH depends on the exact 4 ms FIFO change |
 
-## Reproduction of `23395d9`
+## Reproduction of `a377d89`
 
 Both checks used `tools/compare_evidence.py`.
 
@@ -83,7 +83,7 @@ Both checks used `tools/compare_evidence.py`.
 
 ## Release scope
 
-The release commit differs from the reviewed candidate `23395d9` only in the documentation and generator-text fixes listed above:
+The release commit differs from the reviewed candidate `a377d89` only in the documentation and generator-text fixes listed above:
 
 - `exp/task5_overview.py` (text and the outcome guard);
 - the memo, HTML source, plan, indexes and protocol pointer.

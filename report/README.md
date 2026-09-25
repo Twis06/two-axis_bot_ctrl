@@ -48,4 +48,4 @@ Task 2 evidence is regenerated on the frozen baseline; see [current numbers](tas
 | References, reused code and automated tools | [references_and_tools.md](references_and_tools.md) |
 | Runnable code, README, one-command reproduction | [../README.md](../README.md), `uv run python run_all.py` |
 
-PDFs are rendered with `python report/html_assets/render_pdf.py <file>.md <file>.pdf` (Python-Markdown and headless Chrome). Independent final review: [R6](packets/R6.md), round 1 findings resolved; round 2 PASS WITH ISSUES on commit `961b6f2`. Later editorial changes require separate verification.
+PDFs are rendered with `python report/html_assets/render_pdf.py <file>.md <file>.pdf` (Python-Markdown and headless Chrome). Final review: independent review rounds in [R6](packets/R6.md): the findings of rounds 1–3 are resolved; the final round's verdict is recorded there.

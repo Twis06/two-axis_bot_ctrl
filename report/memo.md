@@ -106,7 +106,7 @@
 - **Loaded M2:** trips and stays suspended rather than cycling.
 - **Fallback:** local damping does not hold against gravity; a loaded 100 ms outage moves the axis up to 42°.
 
-**Reproducibility.** A fresh `git archive` snapshot installed from `uv.lock` reproduced every result value, run_id and figure exactly on the Mac. On Linux x86-64, all outcomes were identical and values agreed to 3e-11 (NumPy rounds random draws differently across CPUs) ([R4](packets/R4.md)). 264 unit tests pass.
+**Reproducibility.** A fresh `git archive` snapshot installed from `uv.lock` reproduced every result value, run_id and figure exactly on the Mac. On Linux x86-64, all outcomes were identical and values agreed to 3e-11 (NumPy rounds random draws differently across CPUs) ([R4](packets/R4.md)). 266 unit tests pass.
 
 ## 5. Testing the explanation
 

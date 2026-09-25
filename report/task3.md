@@ -100,7 +100,7 @@ The L3 adapter is in [`ctrl/adaptive.py`](../ctrl/adaptive.py) with focused cont
 
 ## Verification and provenance
 
-- **Test counts:** the final suite has **264 tests** (262 at the reviewed commit `961b6f2`). An earlier snapshot at `039f83b` passed 255 tests; that count is historical. The focused suites cover the estimator, adapter contract, phase-aware scorer and adoption gate. Passing tests show the code does what the tests check; they do not validate the experiment design.
+- **Test counts:** the final suite has **266 tests**. An earlier snapshot at `039f83b` passed 255 tests; that count is historical. The focused suites cover the estimator, adapter contract, phase-aware scorer and adoption gate. Passing tests show the code does what the tests check; they do not validate the experiment design.
 - **Evidence:** the L4 packet contains **357 manifested runs** and the challenge packet **96**, both regenerated from committed sources by [R4](packets/R4.md). The published L2 packet contains 60 rows and zero structural violations.
 - **Corrections:** these are recorded in packets [R1](packets/R1.md) (scoring) and [R3](packets/R3.md) (gate and challenges).
 

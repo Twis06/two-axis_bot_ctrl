@@ -15,7 +15,7 @@
 | 8–9 · progress and release status | Resolved: B/C path-clock progress is qualified; test counts and review status are current (266 tests at the final commit). |
 | 10–11 · appendix and historical plot | Resolved: the memo body is four pages with one plot per appendix page; the early torque budget is labelled as an assumed historical fit. |
 | 12–16 · annotated memo | Resolved: opening, portable PDF paths, failure hypothesis, static-holdability diagram and learning-redesign plan. The diagram is calculated for the explicit INF-P assumption, not a D/E payload estimate. |
-| R6 round-2 minors r2-1, r2-2, r2-6 (referred to in an earlier version of this file) | Resolved: gate fixes with regression tests and a full republication (`ced6c5b`, `20a0a5d`); comparison method committed as `tools/compare_evidence.py`. |
+| R6 round-2 minors r2-1, r2-2, r2-6 (referred to in an earlier version of this file) | Resolved: gate fixes with regression tests and a full republication (`33786b9`, `55804ec`); comparison method committed as `tools/compare_evidence.py`. |
 
 Future research work (a prospective Task 5 test, the payload-change challenge and physical qualification) is outside this submission's simulated evidence and is declared as such in the memo.
 
@@ -71,13 +71,13 @@ Future research work (a prospective Task 5 test, the payload-change challenge an
 
 The R1/R3 evidence supports retaining the deterministic baseline **over the tested adaptive configuration**: the registered median benefit is 0.0% and availability is 37/50, below its gate. Twenty pairs improve and the zero median is explained by late or absent correction. Keep the rejection limited to this candidate and the tested conditions; the incomplete payload-change challenge remains disclosed. Do not restore the earlier blanket claim that learning is generally ineffective.
 
-## Additional overview findings — 2026-09-24, committed snapshot `72c6d56`
+## Additional overview findings — 2026-09-24, committed snapshot `01abda0`
 
 The items below came from an independent read-only arithmetic, figure, PDF and HTML audit while R6's clean-snapshot run and other workspace edits were active. Recheck them against the eventual release commit. The central torque arithmetic, A–E medians, Task 3 gate counts and Task 5 paired values agreed with the generated JSON; these items concern delivery and interpretation.
 
 ### 7. Make the HTML report rebuildable without the ignored brief PDF — high priority
 
-**Finding.** [`report/html_assets/build_report.py`](report/html_assets/build_report.py) includes `Robotics Controls Technical Assessment.pdf` in the source index and hashes it. [`.gitignore`](.gitignore) excludes that PDF. In a disposable `git archive 72c6d56` snapshot, the PDF is absent; with the report's Markdown dependency stubbed, the builder fails with `FileNotFoundError` for that PDF. The published HTML also links to it, so that link is broken in the delivered checkout even though it works in the author's local workspace. R6's clean `run_all.py` check does not exercise the HTML builder.
+**Finding.** [`report/html_assets/build_report.py`](report/html_assets/build_report.py) includes `Robotics Controls Technical Assessment.pdf` in the source index and hashes it. [`.gitignore`](.gitignore) excludes that PDF. In a disposable `git archive 01abda0` snapshot, the PDF is absent; with the report's Markdown dependency stubbed, the builder fails with `FileNotFoundError` for that PDF. The published HTML also links to it, so that link is broken in the delivered checkout even though it works in the author's local workspace. R6's clean `run_all.py` check does not exercise the HTML builder.
 
 **Requested change.** Describe the brief as an outside source without requiring or linking the ignored file. Keep the generated HTML source index and build manifest consistent. Rebuild the HTML and test its documented `uv run --with markdown python report/html_assets/build_report.py` command from a clean committed snapshot; check links against tracked files, not only the local workspace.
 
@@ -89,7 +89,7 @@ The items below came from an independent read-only arithmetic, figure, PDF and H
 
 ### 9. Reconcile release-status numbers after R6 — medium priority
 
-**Finding.** [`report/memo.md`](report/memo.md) and its PDF say 257 tests pass, while [`report/packets/R6.md`](report/packets/R6.md) records 262 after the R6 fixes. The report index and HTML still say R6 is open, appropriately while the clean check is underway. Task 3 and HTML also cite 255 tests at the earlier `039f83b` commit; those historical counts are properly scoped by commit.
+**Finding.** [`report/memo.md`](report/memo.md) and its PDF say 257 tests pass, while [`report/packets/R6.md`](report/packets/R6.md) records 262 after the R6 fixes. The report index and HTML still say R6 is open, appropriately while the clean check is underway. Task 3 and HTML also cite 255 tests at the earlier `dff8efd` commit; those historical counts are properly scoped by commit.
 
 **Requested change.** After the final clean run and verdict, update the *current* test count and review status in the memo/PDF, README and HTML. Keep explicitly commit-scoped historical counts if useful. Do not claim R6 passed before its clean comparison completes.
 
@@ -105,7 +105,7 @@ The items below came from an independent read-only arithmetic, figure, PDF and H
 
 **Requested change.** Move it to the historical group or state the assumed fit and exclusion of sweep inertia directly in the figure title/caption. Do not treat the 1.79 kg value as hardware identification.
 
-### Audit checks that passed on snapshot `72c6d56`
+### Audit checks that passed on snapshot `01abda0`
 
 - Independent arithmetic from the brief matched the reported 0.448/0.336 N·m torque ceilings, 0.136/0.247 N·m B/C coupling peaks, D bias decomposition and E's 38% RMS increase.
 - Recomputed five-seed Task 2 medians, Task 3's 30 exact zero/20 improved pairs and 37/50 availability, the 23/48 active challenge count, and Task 5's paired residual values from the published JSON.

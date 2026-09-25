@@ -23,7 +23,7 @@
 | 1. Understand the failure | A complete working diagnosis distinguishes evidence from hypotheses | Ready for a focused consistency review; do not reopen model fitting without new evidence |
 | 2. Build a baseline | Packets 2A–2C complete; baseline fingerprint `7d857df507c389c9`; important review findings resolved | **Frozen comparator.** D/E and loaded M2 remain explicitly reshaped/suspended limitations |
 | 3. Decide whether learning belongs | 357 L4 runs rescored under phase-aware completion (R1); machine-audited gate and 96 registered challenge runs (R3) | **Non-adoption supported:** gate FAIL on benefit (0.0%) and availability (74%). Payload-change challenge not executed (`incomplete`) |
-| 4. Make evidence | All current evidence, including Packet 4B round 2, republished from committed sources (`039f83b`) | **R4:** clean-snapshot reproduction and comparison, see [R4](report/packets/R4.md) |
+| 4. Make evidence | All current evidence, including Packet 4B round 2, republished from committed sources (`dff8efd`) | **R4:** clean-snapshot reproduction and comparison, see [R4](report/packets/R4.md) |
 | 5. Test the explanation | 12 conditions replayed with one window and correct units (R2), plus 6 plan-mode diagnostic rows | **Retrospectively corrected.** Two checks are consistency-only, one is not tested, the residual fails and FF value is supported. The closed-loop prediction and hardware confirmation remain open |
 
 The current accepted baseline evidence is in [task2_numbers.md](report/task2_numbers.md), [Packet 2C](report/packets/2C.md), and the matched [Packet 4B tables](report/task4b_numbers.md). The older blocker description below is retained as planning history; Packet 2C supersedes it.

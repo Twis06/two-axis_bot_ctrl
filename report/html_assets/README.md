@@ -18,4 +18,4 @@ The Print button prints the current expanded/collapsed evidence state. Use Expan
 
 The current 19-image build was checked in headless Chrome at true device-emulated widths 320, 390, 768 and 1440 px: the document fits each viewport, while wide evidence tables scroll within their containers. The learning filter, prediction metric selector, figure enlargement and evidence expansion respond. All 19 embedded PNGs decode, 106 links resolve to existing local paths or internal anchors, and every manifest input hash matches. Control experiments are not rerun by this documentation builder.
 
-A clean `git archive` of commit `0073726` rebuilt the HTML, calculated diagram and manifest byte-identically. The submission PDFs also rendered from that archive at 13 pages (four-page memo body and nine figure pages) and one page, respectively.
+A clean `git archive` of commit `13fb3f1` rebuilt the HTML, calculated diagram and manifest byte-identically. The submission PDFs also rendered from that archive at 13 pages (four-page memo body and nine figure pages) and one page, respectively.

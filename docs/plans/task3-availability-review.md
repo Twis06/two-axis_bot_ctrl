@@ -1,6 +1,6 @@
 # Task 3 estimator availability — planner diagnostic
 
-**Status:** Read-only analysis replay of the frozen candidate, 2026-09-24. This is not a new registered comparison, a redesigned estimator result, or hardware evidence. It does not alter the published Task 3 verdict. **Provenance limit:** the in-memory wrapper used for the replay was not committed, so the per-gate timings below are not reproducible from the repository or by `run_all.py`. The first-usable counts (4 before, 20 during, 13 after the test phase, 13 never) do reproduce from `report/task3_ceiling_results.json`. R6 round 2 reviewed the earlier release commit `961b6f2`; this later diagnostic and its editorial use were outside that independent review.
+**Status:** Read-only analysis replay of the frozen candidate, 2026-09-24. This is not a new registered comparison, a redesigned estimator result, or hardware evidence. It does not alter the published Task 3 verdict. **Provenance limit:** the in-memory wrapper used for the replay was not committed, so the per-gate timings below are not reproducible from the repository or by `run_all.py`. The first-usable counts (4 before, 20 during, 13 after the test phase, 13 never) do reproduce from `report/task3_ceiling_results.json`. R6 round 2 reviewed the earlier release commit `156823d`; this later diagnostic and its editorial use were outside that independent review.
 
 ## What the existing runs reveal
 

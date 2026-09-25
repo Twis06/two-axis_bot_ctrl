@@ -48,6 +48,7 @@ from sim.trajectories import Hold, RampedSine
 ROOT = Path(__file__).resolve().parents[1]
 REG_PATH = ROOT / "report" / "task5_prospective_registration.json"
 ENTRY = "exp.task5_prospective"
+PROVENANCE_SOURCES = ("exp/evidence.py",)     # declared for run manifests (as in exp/task3_l4.py)
 
 PROTOCOL = dict(
     freq_hz=3.0, amp_deg=5.0, ramp_s=1.0, duration_s=12.0, window_s=[4.0, 12.0],

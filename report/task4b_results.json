@@ -182,13 +182,13 @@
   "baseline": "7d857df507c389c95108c79cbccd6f215f5de0bdf39167bbff4b87c46211bf1e",
   "code_hash": "0f0aaaced1155e33e2530160ac052c4f89e730b7575602c19709d666bc7ea3c0",
   "git": {
-   "commit": "727c7f9819d3cd5fbe46630b513556b521cae5b1",
+   "commit": "ced6c5bd2092f173835697761f05a79b75b378a3",
    "dirty": true,
    "dirty_sources": []
   },
   "metrics_version": "4A.4",
   "run_set_git": {
-   "commit": "727c7f9819d3cd5fbe46630b513556b521cae5b1",
+   "commit": "ced6c5bd2092f173835697761f05a79b75b378a3",
    "dirty": true,
    "dirty_sources": []
   }

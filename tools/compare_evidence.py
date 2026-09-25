@@ -10,8 +10,8 @@ What is compared (the method used for the R4 reproduction numbers):
     timestamps) and the L2 wall-clock field actual_calculation_wall_ms are skipped.
     Strings and booleans must be equal. Floats are counted as bit-identical or not,
     and must agree within |a - b| <= 1e-12 + 1e-9 * max(|a|, |b|).
-  * run_ids: per *_runs.json, the sets are compared; differing ids are classified as
-    Monte Carlo (seed >= 100) or not.
+  * run_ids: per *_runs.json, the sets are compared; in task2/task4b, differing ids are
+    classified as Monte Carlo (seed >= 100, the sampled plants) or not.
   * Figures: report/figs/*.png byte equality, and if bytes differ the share of
     pixels that differ (needs Pillow, which Matplotlib already installs).
 Exit status 0 when no string/boolean differs and every float is within tolerance.
@@ -26,6 +26,7 @@ from pathlib import Path
 RESULTS = ("task2_results", "task4b_results", "task3_ceiling_results", "task3_challenges_results",
            "task3_estimator_audit", "task5_results")
 RUNS = ("task2_runs", "task4b_runs", "task3_ceiling_runs", "task3_challenges_runs")
+MONTE_CARLO = ("task2_runs", "task4b_runs")
 SKIP = ("run_id", "run_ids", "code", "git", "env", "hash", "sha", "manifest", "time", "date",
         "source_hashes", "figure_checks", "stage", "wall_ms")
 RTOL, ATOL = 1e-9, 1e-12
@@ -78,8 +79,10 @@ def compare_runs(pub, rep):
         a = json.loads((pub / f"{name}.json").read_text())["runs"]
         b = json.loads((rep / f"{name}.json").read_text())["runs"]
         only = set(a) - set(b)
-        mc = sum(1 for r in only if (a[r]["run"].get("seed") or 0) >= 100)
-        print(f"{name}: {len(a)} runs; run_ids differing: {len(only)} (Monte Carlo: {mc})")
+        line = f"{name}: {len(a)} runs; run_ids differing: {len(only)}"
+        if name in MONTE_CARLO:            # seeds >= 100 are the sampled plants only in these packets
+            line += f" (Monte Carlo: {sum(1 for r in only if (a[r]['run'].get('seed') or 0) >= 100)})"
+        print(line)
 
 
 def compare_figures(pub, rep):

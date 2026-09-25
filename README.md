@@ -19,6 +19,7 @@ python3 run_all.py
 
 - **Locked versions:** Python 3.9, NumPy 2.0.2, SciPy 1.13.1, Matplotlib 3.9.4 (`pyproject.toml`, `uv.lock`). The published evidence was produced with these, and other versions may change the last floating-point digits.
 - **Log:** `run_all.py` logs each step, its exit code and the environment to `report/reproduction_log.txt`.
+- **Checking a reproduction:** `uv run python tools/compare_evidence.py <your report dir>` compares your outputs with the published ones. On macOS arm64 expect exact agreement; on x86-64, values within about 1e-11 and different Monte Carlo run_ids, because NumPy rounds random draws differently across CPUs (see `report/packets/R4.md`).
 - **Parallelism:** experiments run in a process pool sized to the machine; results do not depend on the pool size.
 - **`--quick`:** runs the tests and calculations only, and does not reproduce the evidence.
 - **Report documents:** `uv run --group report python report/html_assets/build_report.py` rebuilds the HTML report. `report/html_assets/render_pdf.py` renders the memo PDFs and also needs Google Chrome.
@@ -31,6 +32,7 @@ python3 run_all.py
 | `analysis/phase0.py` | closed-form torque, delay, bandwidth, voltage and thermal budgets |
 | `exp/` | scenarios for Runs A–E; experiment scripts |
 | `tests/` | simulator validation and controller safety/regression tests |
+| `tools/` | `compare_evidence.py`: compare a reproduced `report/` with the published evidence |
 | `report/` | analyses (`phase*_*.md`), generated numbers, figures |
 
 ## Assessment answers

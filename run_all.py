@@ -46,7 +46,9 @@ def snapshot():
     libs = subprocess.run([PY, "-c", "import numpy, scipy, matplotlib; print(numpy.__version__, "
                            "scipy.__version__, matplotlib.__version__)"], cwd=ROOT, capture_output=True,
                           text=True).stdout.strip()
-    return [f"git commit: {git('rev-parse', 'HEAD')}", f"git status: {git('status', '--porcelain') or 'clean'}",
+    snap = os.path.join(ROOT, "SNAPSHOT_COMMIT")        # written when a delivery archive is exported
+    snap = open(snap).read().strip() if os.path.exists(snap) else "none"
+    return [f"git commit: {git('rev-parse', 'HEAD')}", f"snapshot commit file: {snap}", f"git status: {git('status', '--porcelain') or 'clean'}",
             f"baseline fingerprint: {fp}", f"python: {platform.python_version()} ({PY})",
             f"numpy scipy matplotlib: {libs}", f"platform: {platform.platform()}"]
 

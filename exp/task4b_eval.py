@@ -1426,11 +1426,11 @@ def main(argv=None):
             "observation. Thresholds (4A tracked/completed rules, fault-cause rule) are project assumptions."
             + (" **QUICK MODE: one seed per case — not evidence.**" if args.quick else ""), "",
             f"**Frozen baseline fingerprint:** `{fp['baseline'][:16]}` (required `{FROZEN}`; exp/evidence.py "
-            f"BASELINE_SOURCES), git `{(git.get('commit') or '?')[:12]}`, baseline sources "
-            f"{'clean' if not git.get('dirty_sources') else 'MODIFIED: ' + ', '.join(git['dirty_sources'])}. "
+            f"BASELINE_SOURCES), git `{MF.git_commit_text(git)}`, baseline sources "
+            f"{MF.git_sources_text(git)}. "
             f"Run manifests: declared-set code hash `{fp['code_hash'][:16]}` (per-file sha256 in "
             f"[task4b_runs.json](task4b_runs.json); uncommitted files in the set: "
-            f"{', '.join(fp['run_set_git'].get('dirty_sources') or []) or 'none'}); metrics version "
+            f"{MF.git_dirty_text(fp['run_set_git'])}); metrics version "
             f"{fp['metrics_version']}. {len(book.runs)} runs; every row cites a run_id or a run-set id "
             "(member run_ids per sample in [task4b_results.json](task4b_results.json)).", "",
             "**Run-id caveat (review 4B I5):** run_ids hash the declared source set, which includes every file under "

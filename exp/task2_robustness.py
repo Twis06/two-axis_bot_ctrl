@@ -500,8 +500,7 @@ def fingerprint():
     h, files = baseline_fingerprint()
     g = MF.git_state(MF.ROOT, list(files))
     return (f"baseline fingerprint `{h[:16]}` (exp/evidence.py BASELINE_SOURCES); "
-            f"git `{(g or {}).get('commit', '?')[:12]}`, baseline sources "
-            f"{'clean' if not (g or {}).get('dirty_sources') else 'MODIFIED: ' + ', '.join(g['dirty_sources'])}")
+            f"git `{MF.git_commit_text(g)}`, baseline sources {MF.git_sources_text(g)}")
 
 
 def _unchanged(hashes):

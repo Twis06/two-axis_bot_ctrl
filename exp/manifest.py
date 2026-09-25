@@ -308,6 +308,28 @@ def git_state(root=ROOT, rel_paths=()):
     return dict(commit=commit, dirty=dirty_all, dirty_sources=dirty_src)
 
 
+def git_commit_text(g, n=12):
+    """Commit prefix for report headers; says so when the tree is not a git checkout."""
+    c = (g or {}).get("commit")
+    return c[:n] if c else "unavailable (not a git checkout)"
+
+
+def git_sources_text(g):
+    """Baseline-source status for report headers. Without git the status is unknown, never 'clean'."""
+    g = g or {}
+    if g.get("commit") is None:
+        return "not checked against git (the fingerprint is the authority)"
+    return "MODIFIED: " + ", ".join(g["dirty_sources"]) if g.get("dirty_sources") else "clean"
+
+
+def git_dirty_text(g):
+    """Uncommitted files among a declared set; unknown without git."""
+    g = g or {}
+    if g.get("commit") is None:
+        return "unknown (not a git checkout)"
+    return ", ".join(g.get("dirty_sources") or []) or "none"
+
+
 def environment():
     import scipy
     return dict(python=platform.python_version(), numpy=np.__version__, scipy=scipy.__version__,

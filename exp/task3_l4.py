@@ -390,7 +390,7 @@ def main(argv=None):
             "metric and the 10 % gate are those pre-registered in `docs/plans/task3-learning.md` §8; the adaptive "
             "candidate uses the exact frozen L1 estimator configuration through the L3 adapter. Oracle "
             "rows use the true load and are **not deployable**.", "",
-            f"Frozen baseline fingerprint `{fp_full[:16]}`; git `{(g or {}).get('commit', '?')[:12]}`; "
+            f"Frozen baseline fingerprint `{fp_full[:16]}`; git `{MF.git_commit_text(g)}`; "
             f"{len(book.runs)} runs, rows cite run-set ids in [task3_ceiling_runs.json](task3_ceiling_runs.json).", "",
             "## Integral-rate selection (tuning loads and seeds only)", "",
             table(["Variant", "Median primary ° (tuning)", "PM / GM design 7 ms", "PM / GM 11 ms corner",

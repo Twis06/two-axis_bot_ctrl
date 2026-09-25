@@ -176,7 +176,7 @@ def main(argv=None):
         g = first["code"]["git"]
         lines = ["# Packet 4A demo (Simulated, pre-freeze working controller; not final evidence)", "",
                  f"Command: `python -m exp.metrics4a --out {out}`. Metrics version {SM.METRICS_VERSION}; "
-                 f"code hash `{first['code']['code_hash'][:16]}`; git {g['commit'] and g['commit'][:10]} "
+                 f"code hash `{first['code']['code_hash'][:16]}`; git {MF.git_commit_text(g, 10)} "
                  f"dirty={g['dirty']} (dirty sources: {', '.join(g['dirty_sources'] or []) or 'none'}).", "",
                  *([args.note, ""] if args.note else []),
                  "| " + " | ".join(HEADERS) + " |", "|" + "---|" * len(HEADERS)]

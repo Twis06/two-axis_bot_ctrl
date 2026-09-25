@@ -45,7 +45,7 @@ Rows above and below use one window, [2, 8) s, for every windowed quantity; whol
 | peak ideal coupling current at nominal Kt (registered primary component metric) | registered | 0.968730 | A | ideal true-plant coupling current peak, nominal motor (median) | 0.968730 | +/-0.15 A | **consistency check only** |
 | DIAGNOSTIC (post hoc): commanded coupling FF current of the frozen baseline | post hoc | 0.968730 | A | controller's commanded coupling FF current peak, nominal motor (median) | 1.159736 | +/-0.15 A applied for reference only | **diagnostic (peak outside tolerance)** |
 | extra ideal coupling current at Kt x 0.90 | registered | 0.107637 | A | ideal true-plant coupling current, weak minus nominal (median, paired) | 0.107637 | +/-0.15 A registered; it includes 0 A, so it cannot discriminate the predicted change from no change | **not tested** |
-| coupling residual left by unchanged nominal FF | post hoc operationalization | 0.013562 | N m | increase of the measured coupling-residual PEAK, weak minus nominal, FF on (median, paired); metric chosen after the results | -0.000736 | +/-0.01 N m (registered) | **failed** |
+| coupling residual left by unchanged nominal FF | post hoc operationalization | 0.013562 | N m | increase of the measured coupling-residual PEAK, weak minus nominal, FF on (median, paired); metric chosen after the results | -0.000736 | +/-0.01 N m (registered) | **not resolved by this post hoc peak metric** |
 | qualitative: yaw feed-forward remains valuable with the weaker motor | post hoc criterion | — | deg | governed RMS, FF off minus FF on, weak motor (median, paired) | 3.678444 | sign in every pair (criterion chosen afterwards) | **supported** |
 | qualitative: a weaker motor leaves more tracking error for feedback | post hoc criterion | — | deg | governed RMS, weak minus nominal motor, FF on (median, paired) | 0.053977 | sign in every pair (criterion chosen afterwards) | **not uniform** |
 
@@ -63,7 +63,7 @@ The paired rows preserve the same scenario, seed, request, disturbance realizati
 
 ## Revised explanation and smallest justified design change
 
-**Revised explanation.** At this operating point, the residual tracking error is dominated by the causal yaw estimate's transient error (about 0.03 N m at the coupling extrema), not by motor-strength mismatch. The 10 % weaker motor is a second-order effect: it raised error in only 2 of 3 pairs, while removing yaw feed-forward cost 3.5-3.9 deg in every pair.
+**Revised explanation.** For this Run B residual-peak metric and operating point, the causal yaw estimate's transient error (about 0.03 N m at the coupling extrema) exceeds the measured motor-strength effect: the 10 % weaker motor raised error in only 2 of 3 pairs, while removing yaw feed-forward cost 3.5-3.9 deg in every pair. This does not rank the two effects across other motions.
 
 **Smallest justified design change: none to the frozen controller.** This experiment does not justify retuning. *Proposed, not tested:* if hardware calibration finds effective Kt different from nominal, the smallest change is one parameter, rescaling the feed-forward current by Kt_nominal / Kt_measured.
 

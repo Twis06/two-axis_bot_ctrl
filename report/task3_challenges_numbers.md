@@ -6,21 +6,21 @@ Baseline fingerprint `7d857df507c389c9`; 96 runs.
 
 | Challenge | Variant | Median primary ° | Completed | WD trips | Suspended | Usable at onset | Usable share after onset | Max applied correction N·m | Applied while unusable | Max host command over limit A (pre-clamp) | Run set |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| yaw_B | int1 | 2.224 | 6/6 | 0 | 0 | 0/6 | — | — | — | 0 | `b9bac6d061` |
-| yaw_B | adaptive | 2.224 | 6/6 | 0 | 0 | 0/6 | 0.00 | 0.000 | 0 | 0 | `bfa629387e` |
-| yaw_C | int1 | 1.450 | 3/6 | 0 | 0 | 0/6 | — | — | — | 0 | `f936fedac6` |
-| yaw_C | adaptive | 1.450 | 3/6 | 0 | 0 | 0/6 | 0.00 | 0.000 | 0 | 0 | `79ffe084c9` |
-| feedback_outage | int1 | 2.271 | 6/6 | 0 | 0 | 0/6 | — | — | — | -0.76 | `6af72b2851` |
-| feedback_outage | adaptive | 2.164 | 6/6 | 0 | 0 | 2/6 | 0.13 | 0.186 | 0 | -0.76 | `a5abcf0484` |
-| derate | int1 | 2.240 | 5/6 | 0 | 0 | 0/6 | — | — | — | -0.0176 | `168dcae43a` |
-| derate | adaptive | 2.065 | 5/6 | 0 | 0 | 2/6 | 0.15 | 0.185 | 0 | -0.0176 | `9e387847b2` |
-| yaw_B@late | int1 | 2.235 | 5/6 | 0 | 0 | 0/6 | — | — | — | -0.533 | `46921951a0` |
-| yaw_B@late | adaptive | 2.041 | 5/6 | 0 | 0 | 3/6 | 0.50 | 0.162 | 0 | -0.526 | `4eae655929` |
-| yaw_C@late | int1 | 2.127 | 5/6 | 0 | 0 | 0/6 | — | — | — | 0 | `a150c41ad0` |
-| yaw_C@late | adaptive | 1.903 | 5/6 | 0 | 0 | 3/6 | 0.09 | 0.162 | 0 | 0 | `56633a5b13` |
-| feedback_outage@late | int1 | 2.541 | 5/6 | 0 | 0 | 0/6 | — | — | — | -0.528 | `41e840f492` |
-| feedback_outage@late | adaptive | 2.480 | 5/6 | 0 | 0 | 3/6 | 0.13 | 0.162 | 0 | -0.286 | `55215c57c3` |
-| derate@late | int1 | 2.238 | 5/6 | 0 | 0 | 0/6 | — | — | — | -0.76 | `067d49d72c` |
-| derate@late | adaptive | 2.061 | 5/6 | 0 | 0 | 3/6 | 0.71 | 0.185 | 0 | -0.76 | `e81c2b05ac` |
+| yaw_B | int1 | 2.224 | 6/6 | 0 | 0 | 0/6 | — | — | — | 0 | `8b255a1a2a` |
+| yaw_B | adaptive | 2.224 | 6/6 | 0 | 0 | 0/6 | 0.00 | 0.000 | 0 | 0 | `7bc5b6fc3f` |
+| yaw_C | int1 | 1.450 | 3/6 | 0 | 0 | 0/6 | — | — | — | 0 | `51a27c0972` |
+| yaw_C | adaptive | 1.450 | 3/6 | 0 | 0 | 0/6 | 0.00 | 0.000 | 0 | 0 | `fb2337875b` |
+| feedback_outage | int1 | 2.271 | 6/6 | 0 | 0 | 0/6 | — | — | — | -0.76 | `5bbf81a524` |
+| feedback_outage | adaptive | 2.164 | 6/6 | 0 | 0 | 2/6 | 0.13 | 0.186 | 0 | -0.76 | `1ef6cd8d92` |
+| derate | int1 | 2.240 | 5/6 | 0 | 0 | 0/6 | — | — | — | -0.0176 | `c0322876fb` |
+| derate | adaptive | 2.065 | 5/6 | 0 | 0 | 2/6 | 0.15 | 0.185 | 0 | -0.0176 | `0b47ab4518` |
+| yaw_B@late | int1 | 2.235 | 5/6 | 0 | 0 | 0/6 | — | — | — | -0.533 | `7ffaacbee3` |
+| yaw_B@late | adaptive | 2.041 | 5/6 | 0 | 0 | 3/6 | 0.50 | 0.162 | 0 | -0.526 | `0b9e6b827c` |
+| yaw_C@late | int1 | 2.127 | 5/6 | 0 | 0 | 0/6 | — | — | — | 0 | `bca7248a25` |
+| yaw_C@late | adaptive | 1.903 | 5/6 | 0 | 0 | 3/6 | 0.09 | 0.162 | 0 | 0 | `70f081e0a0` |
+| feedback_outage@late | int1 | 2.541 | 5/6 | 0 | 0 | 0/6 | — | — | — | -0.528 | `538b167143` |
+| feedback_outage@late | adaptive | 2.480 | 5/6 | 0 | 0 | 3/6 | 0.13 | 0.162 | 0 | -0.286 | `b67dc9e424` |
+| derate@late | int1 | 2.238 | 5/6 | 0 | 0 | 0/6 | — | — | — | -0.76 | `625465052a` |
+| derate@late | adaptive | 2.061 | 5/6 | 0 | 0 | 3/6 | 0.71 | 0.185 | 0 | -0.76 | `65101646f1` |
 
 Payload change: registered as not executable in the frozen simulator; no rows. The adoption gate therefore stays `incomplete` for challenges regardless of these results.

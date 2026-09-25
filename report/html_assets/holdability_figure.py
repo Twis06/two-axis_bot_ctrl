@@ -35,34 +35,35 @@ def render(path=None):
 
     plt.rcParams.update({"font.size": 11.5, "axes.spines.top": False,
                          "axes.spines.right": False, "savefig.facecolor": "white"})
-    fig, (ax, band) = plt.subplots(2, 1, figsize=(9.4, 6.2), dpi=170,
+    fig, (ax, band) = plt.subplots(2, 1, figsize=(9.4, 6.4), dpi=170,
                                    gridspec_kw={"height_ratios": [3.2, 1.15], "hspace": 0.16},
                                    sharex=True)
     fig.suptitle("Static holdability depends on load and current limit", x=0.10,
                  y=0.98, ha="left", fontsize=16, fontweight="bold")
 
     ax.plot(angle_deg, nominal, color="#24699a", linewidth=2.4,
-            label="Nominal model + friction allowance")
+            label="Nominal model + friction")
     ax.plot(angle_deg, inf_p, color="#b54b2b", linewidth=2.4,
-            label="INF-P: assumed 1.2 kg at +35 mm + friction allowance")
+            label="INF-P assumption + friction")
     ax.axhline(nominal_capacity, color="#777777", linewidth=1.5, linestyle="--",
-               label="3.2 A capacity  ·  0.448 N·m")
+               label="3.2 A capacity · 0.448 N·m")
     ax.axhline(derated_capacity, color="#222222", linewidth=1.7, linestyle="--",
-               label="2.4 A capacity  ·  0.336 N·m")
+               label="2.4 A capacity · 0.336 N·m")
     ax.axhline(admission_budget, color="#41836b", linewidth=1.7, linestyle=":",
-               label="2.4 A governor budget  ·  0.219 N·m")
+               label="2.4 A governor budget · 0.219 N·m")
     ax.scatter([0], [lateral_moment + P.TAU_C], color="#b54b2b", zorder=5, s=36)
-    ax.annotate("At 0°: INF-P gravity alone = 0.412 N·m\nexceeds derated capacity 0.336 N·m",
+    ax.annotate("At 0°: gravity = 0.412 N·m; with friction\nallowance = 0.452 N·m > 0.336 N·m limit",
                 xy=(0, lateral_moment + P.TAU_C), xytext=(-84, 0.58),
                 arrowprops={"arrowstyle": "->", "color": "#8a3d26", "lw": 1.1},
                 color="#713421", fontsize=10.5, va="top")
-    ax.set_ylabel("Conservative holding demand / capacity (N·m)")
+    ax.set_ylabel("Holding torque (N·m)")
     ax.set_ylim(0, 0.67)
     ax.set_xlim(-90, 90)
     ax.set_xticks(np.arange(-90, 91, 30))
     ax.grid(alpha=0.18)
-    ax.legend(loc="upper right", frameon=True, facecolor="white", framealpha=0.96,
-              fontsize=9.6, ncol=1)
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.64, 0.94),
+               frameon=False, fontsize=9.5, ncol=2, columnspacing=1.2)
 
     bands = [
         ("Nominal model: governor admits", nominal <= admission_budget, "#24699a"),
@@ -80,12 +81,11 @@ def render(path=None):
     band.axvline(0, color="#555555", linestyle=":", linewidth=1)
     band.grid(axis="x", alpha=0.18)
     band.tick_params(axis="y", length=0, labelsize=10.5)
-    fig.text(0.10, 0.025,
-             "Colored bands satisfy the stated static torque test; pale regions do not. "
-             "Motion also needs acceleration, braking and voltage headroom.\n"
-             "INF-P is an assumed challenge case, not an identified D/E payload.",
-             fontsize=9.4, color="#454545")
-    fig.subplots_adjust(left=0.30, right=0.98, top=0.91, bottom=0.17)
+    fig.text(0.30, 0.035,
+             "Colored bands pass the static torque test; pale regions fail. Motion also needs\n"
+             "acceleration, braking and voltage headroom. INF-P is assumed, not D/E data.",
+             fontsize=9.4, color="#454545", va="bottom")
+    fig.subplots_adjust(left=0.30, right=0.98, top=0.79, bottom=0.18)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=170)
     plt.close(fig)
@@ -93,4 +93,5 @@ def render(path=None):
 
 
 if __name__ == "__main__":
-    print(render())
+    for suffix in ("png", "svg", "pdf"):
+        print(render(ROOT / f"report/figs/static_holdability.{suffix}"))

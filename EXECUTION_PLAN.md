@@ -313,14 +313,14 @@ Before edits, record the working-tree source snapshot, original report hashes an
 
 **Owner:** synthesis/documentation agent; planner reviews scope of claims. **Starts after:** corrected results are published. **Files:** `report/task1.md` through `task5.md`, `report/README.md`, root README, this plan, `report/html_assets/report.md`, HTML builder outputs and relevant execution-log status notes.
 
-- [ ] Complete Task 1's observation/calculation consistency check against the assessment. Retain uncertainty rather than promoting simulation fit to hardware diagnosis.
-- [ ] Correct Task 2's contradictory statement that the 2° RMS target is not used for success: it is a project tracking-classifier threshold, while 5° peak is not the same classifier's criterion and neither is prescribed by the brief.
-- [ ] Make the frozen design's 32.1° corner margin the current claim. Label the old 24° result and earlier Phase 2 performance explicitly historical at the point of use.
-- [ ] Replace Task 3 completion counts only with R1 results. Scope “no safety regressions” to evaluated conditions; state missing/unexercised cases and exact configuration. Do not generalize this candidate's non-adoption to all learning designs.
-- [ ] Replace Task 5 and HTML mixed-window descriptions/numbers with R2 results. State exactly which predictions were tested; leave the stronger closed-loop-prediction gate open if it was not completed.
-- [ ] Update Packet 4B publication and reproduction status from actual R4 output. Qualify test counts by command, snapshot and date; passing tests alone do not validate an experiment design.
-- [ ] Rebuild `report/assessment_report.html` and its manifest with the report builder. Verify all 18 existing figures plus any new published figures, interactive data, local links, mobile layout and source labels. Preserve historical figures without presenting them as current results.
-- [ ] Keep final four-page memo, page-verified hardware qualification plan and final review checkboxes open until those separate deliverables actually exist. The full HTML report does not automatically satisfy a four-page limit.
+- [x] Complete Task 1's observation/calculation consistency check against the assessment. Retain uncertainty rather than promoting simulation fit to hardware diagnosis.
+- [x] Correct Task 2's contradictory statement that the 2° RMS target is not used for success: it is a project tracking-classifier threshold, while 5° peak is not the same classifier's criterion and neither is prescribed by the brief.
+- [x] Make the frozen design's 32.1° corner margin the current claim. Label the old 24° result and earlier Phase 2 performance explicitly historical at the point of use.
+- [x] Replace Task 3 completion counts only with R1 results. Scope “no safety regressions” to evaluated conditions; state missing/unexercised cases and exact configuration. Do not generalize this candidate's non-adoption to all learning designs.
+- [x] Replace Task 5 and HTML mixed-window descriptions/numbers with R2 results. State exactly which predictions were tested; leave the stronger closed-loop-prediction gate open if it was not completed.
+- [x] Update Packet 4B publication and reproduction status from actual R4 output. Qualify test counts by command, snapshot and date; passing tests alone do not validate an experiment design.
+- [x] Rebuild `report/assessment_report.html` and its manifest with the report builder. Verify all 18 existing figures plus any new published figures, interactive data, local links, mobile layout and source labels. Preserve historical figures without presenting them as current results.
+- [x] Keep final four-page memo, page-verified hardware qualification plan and final review checkboxes open until those separate deliverables actually exist. The full HTML report does not automatically satisfy a four-page limit.
 
 **Gate:** one consistent current account across plan, task answers, generated evidence and HTML; each acceptance claim points to its corrected evidence; unresolved items are visible, not hidden by a “complete” headline.
 
@@ -328,10 +328,10 @@ Before edits, record the working-tree source snapshot, original report hashes an
 
 **Owner:** reviewer who did not implement the corrective packets. **Starts after:** R4/R5 completion.
 
-- [ ] Independently challenge R1's calibration/test boundary, test waypoint order and failure behavior.
-- [ ] Check R2's units, windows and prediction-to-measurement mapping against the source and corrected rows.
-- [ ] Check R3's gate completeness, exact candidate configuration and supplementary challenge coverage; verify why non-adoption remains supported.
-- [ ] Sample manifest-to-source-to-table-to-plot traces; inspect the clean reproduction log and current report claims.
-- [ ] Deliver prioritized findings with reproduction/evidence and an explicit verdict. Keep any unresolved important issue open; planner self-review does not count as independent review.
+- [x] Independently challenge R1's calibration/test boundary, test waypoint order and failure behavior.
+- [x] Check R2's units, windows and prediction-to-measurement mapping against the source and corrected rows.
+- [x] Check R3's gate completeness, exact candidate configuration and supplementary challenge coverage; verify why non-adoption remains supported.
+- [x] Sample manifest-to-source-to-table-to-plot traces; inspect the clean reproduction log and current report claims.
+- [x] Deliver prioritized findings with reproduction/evidence and an explicit verdict. Keep any unresolved important issue open; planner self-review does not count as independent review.
 
-**Final release gate:** no unresolved important scoring, provenance or misleading-claim findings. Retain declared physical limitations, untested hardware behavior and any deferred prospective-prediction work in the final status.
+**Final release gate** (met: R6 round 4 PASS WITH ISSUES, see report/packets/R6.md): no unresolved important scoring, provenance or misleading-claim findings. Retain declared physical limitations, untested hardware behavior and any deferred prospective-prediction work in the final status.

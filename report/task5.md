@@ -27,18 +27,18 @@
 
 **Result (Simulated):** mean measured ΔH = **+0.0698 -0.0238j**, a distance of 0.0050 from the prediction, inside the radius 0.0264. **Outcome: supported.**
 
-- **Run quality:** all ten runs are valid, with no faults, fallback, clipping or governor limiting.
+- **Run quality:** all ten runs are valid: no fault events, suspension or rejection, and no fallback, clipping or governor limiting inside the scoring window.
 - **Consistency:** the five paired changes agree within ±0.0003.
 - **Tracking error:** governed RMS error rises from 0.22° to 0.47°, and original-request RMS error from 0.37° to 0.60°. Full rows are in [task5_prospective_numbers.md](task5_prospective_numbers.md) and the plot is [figs/task5_prospective.png](figs/task5_prospective.png).
 
 **What matched and what did not:**
 
 - **Matched:** the direction and size of the change. The extra delay mainly raises closed-loop peaking (gain up) rather than adding phase lag, as the phase-margin argument predicted.
-- **Did not match:** the model's absolute gain is low. Measured |H(1 ms)| is 1.057 against the model's 1.039, and |H(5 ms)| is 1.127 against 1.106. The pre-run review expected this: about 0.5–1 ms of effective delay is not modelled. It shifts both arms alike, so ΔH is unaffected.
+- **Did not match:** the model's absolute gain is low. Measured |H(1 ms)| is 1.057 against the model's 1.039, and |H(5 ms)| is 1.127 against 1.106. The pre-run review expected this: about 0.5–1 ms of effective delay is not modelled. It shifts both arms similarly, and it moves ΔH only by about 0.002 per ms, well below the registered radius.
 
 **Revised explanation:**
 
-- The delay-budget mechanism is confirmed quantitatively for this condition.
+- The delay-budget mechanism is supported quantitatively at this one condition (3 Hz, +4 ms, simulation). Other frequencies, amplitudes and delays are untested.
 - The frozen loop tolerates +4 ms without faults or reshaping, but tracking error at 3 Hz more than doubles.
 - The absolute-gain offset is consistent with slightly more effective delay than the configuration-based estimate; it is not separately measured.
 

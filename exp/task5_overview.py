@@ -28,6 +28,11 @@ def _c(z):
 
 def prospective_section(res):
     reg, out = res["registration"]["prediction"], res["outcome"]
+    # The prose below describes the published outcome. A reproduction with a different outcome
+    # must not publish it: stop instead of writing contradictory text.
+    if out["label"] != "supported" or out["problems"]:
+        raise SystemExit(f"prospective outcome is {out['label']} ({out['problems']}): the Task 5 overview text "
+                         "is written for the published 'supported' outcome and must be revised first")
     rows = res["rows"]
     mean = lambda d, k: sum(r[k] for r in rows if r["cmd_delay_s"] == d) / sum(1 for r in rows if r["cmd_delay_s"] == d)
     g0, g1 = mean(1e-3, "governed_rms_deg"), mean(5e-3, "governed_rms_deg")
@@ -67,7 +72,8 @@ def prospective_section(res):
           f"{out['distance']:.4f} from the prediction, inside the radius {out['radius']:.4f}. "
           f"**Outcome: {out['label']}.**",
           "",
-          "- **Run quality:** all ten runs are valid, with no faults, fallback, clipping or governor limiting.",
+          "- **Run quality:** all ten runs are valid: no fault events, suspension or rejection, and no fallback, "
+          "clipping or governor limiting inside the scoring window.",
           "- **Consistency:** the five paired changes agree within ±0.0003.",
           f"- **Tracking error:** governed RMS error rises from {g0:.2f}° to {g1:.2f}°, and original-request "
           f"RMS error from {q0:.2f}° to {q1:.2f}°. Full rows are in "
@@ -81,11 +87,13 @@ def prospective_section(res):
           f"- **Did not match:** the model's absolute gain is low. Measured |H(1 ms)| is {h0:.3f} against the "
           f"model's {reg['H_nominal']['mag']:.3f}, and |H(5 ms)| is {h1:.3f} against "
           f"{reg['H_delayed']['mag']:.3f}. The pre-run review expected this: about 0.5–1 ms of effective delay "
-          "is not modelled. It shifts both arms alike, so ΔH is unaffected.",
+          "is not modelled. It shifts both arms similarly, and it moves ΔH only by about 0.002 per ms, well "
+          "below the registered radius.",
           "",
           "**Revised explanation:**",
           "",
-          "- The delay-budget mechanism is confirmed quantitatively for this condition.",
+          "- The delay-budget mechanism is supported quantitatively at this one condition (3 Hz, +4 ms, "
+          "simulation). Other frequencies, amplitudes and delays are untested.",
           "- The frozen loop tolerates +4 ms without faults or reshaping, but tracking error at 3 Hz more than "
           "doubles.",
           "- The absolute-gain offset is consistent with slightly more effective delay than the "

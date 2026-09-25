@@ -161,7 +161,7 @@ The simulator includes 10 kHz RK4 plant integration, 1.2 ms current lag, a fixed
 
 ### Evidence quality and reproduction status
 
-The frozen baseline fingerprint is `7d857df507c389c9`. Task 2 publishes 177 manifested runs, Packet 4B 397, L4 357 and the Task 3 challenges 96. These sets overlap in purpose and must not be presented as independent samples. `uv run python -m unittest discover -s tests` passes **266 tests** at the final commit (2026-09-24). This HTML build does not rerun the suite, and passing tests do not validate an experiment design.
+The frozen baseline fingerprint is `7d857df507c389c9`. Task 2 publishes 177 manifested runs, Packet 4B 397, L4 357 and the Task 3 challenges 96. These sets overlap in purpose and must not be presented as independent samples. `uv run python -m unittest discover -s tests` passes **278 tests** at the final commit (2026-09-25). This HTML build does not rerun the suite, and passing tests do not validate an experiment design.
 
 **Publication and reproduction:** `uv run python run_all.py` regenerates every current evidence packet (Task 1 calculations, Task 2, Packet 4B, the Task 3 audit, L4 and challenges, and Task 5) in the environment locked by `uv.lock`. A fresh `git archive` snapshot installed from the lock reproduced every value, run_id and figure exactly on macOS arm64. A second environment, Linux x86-64, gave identical outcomes with values within 3e-11: NumPy rounds random draws differently across CPUs, so the Monte Carlo run_ids differ there. See packet R4, and packet R6 for the independent review.
 
@@ -187,11 +187,11 @@ The frozen baseline fingerprint is `7d857df507c389c9`. Task 2 publishes 177 mani
 
 **What was measured (Simulated):** mean ΔH = +0.0698 − 0.0238j, a distance of 0.0050 from the prediction. **Supported.**
 
-- **Run quality:** all ten runs are valid, with no faults, fallback, clipping or governor limiting.
+- **Run quality:** all ten runs are valid: no fault events, and no fallback, clipping or governor limiting inside the scoring window.
 - **Tracking error:** governed RMS error more than doubles, from 0.22° to 0.47°.
 - **Model bias:** the model's absolute |H| is about 0.02 low in both arms.
 
-**Revised explanation:** the delay-budget mechanism holds quantitatively. The frozen loop absorbs +4 ms without faults, at a tracking cost.
+**Revised explanation:** the delay-budget mechanism is supported quantitatively at this one condition (3 Hz, +4 ms, simulated). The frozen loop absorbs +4 ms without faults, at a tracking cost.
 
 **Smallest justified design change: none to the controller.** Qualification should measure the real command-path delay and re-derive the margins if it exceeds 7 ms. See the [protocol](../docs/plans/task5-prospective-protocol.md) and the [numbers](task5_prospective_numbers.md).
 
@@ -215,7 +215,7 @@ Windowed governed RMS with feed-forward on is 0.328° median for the weakened mo
 
 <!-- INTERACTIVE:prediction -->
 
-**Interpretation:** yaw feed-forward is useful in this controlled simulation. The registered numerical predictions are either arithmetic on the prescribed model or were not measurable as registered. For this Run B operating point, the post hoc residual-peak metric does not resolve the predicted component because causal yaw-estimate transients dominate its peak; exact feed-forward reveals it diagnostically. No closed-loop tracking prediction was registered; that stronger test and the hardware residual test remain open.
+**Interpretation:** yaw feed-forward is useful in this controlled simulation. The registered numerical predictions are either arithmetic on the prescribed model or were not measurable as registered. For this Run B operating point, the post hoc residual-peak metric does not resolve the predicted component because causal yaw-estimate transients dominate its peak; exact feed-forward reveals it diagnostically. This earlier study registered no closed-loop tracking prediction; the prospective test above supplies one. Its hardware residual test remains open.
 
 **Smallest justified design change from the earlier study: none.** It does not justify retuning. Confirm effective torque/current calibration, the electrical convention and timestamped yaw-disturbance response before changing compensation on hardware.
 
@@ -231,7 +231,7 @@ This is a proposed test sequence, not completed qualification. Use the existing 
 | 1 · Blocked-axis identification | Synchronized ≥1 kHz sensing; calibrated torque fixture and independent e-stop. Check sign, current offset, Kt from torque/current, stationary electrical response and latency. | A blocked axis cannot identify Ke. Stop for wrong sign, invalid feedback, unexplained current/voltage, Kt outside ±15% of the model, or latency bursts above 4 ms. Verify support, clearance and stop path before rotation. |
 | 2 · Guarded low-speed rotation | Supported axis initially within ±5° at 2.4 A. Measure Ke primarily as open-circuit EMF while the unpowered axis is back-driven, cross-check from voltage/current/speed, and resolve the bus-to-phase/PWM convention. | Stop for unexpected motion/voltage. Re-run model and margins if Ke or available voltage differs before broader moves. |
 | 3 · Static holds | Supported nominal payload, then identified loads, 0° and ±15° at 2.4 A. | Stop if holding torque (Kt·measured current) exceeds 0.8 Kt I_limit − 0.05 N·m. Accept at hold error ≤ 0.5°. Screen loads by measured holding demand: the nominal governor cannot infer an unknown load. |
-| 4 · Limited sweeps | Slow ±15° moves, then ±45° after each case passes; log original and governed requests. | Stop on >5° error, sustained ≥95% current use for 100 ms, or clearance/temperature boundary. Require ≤2° RMS, ≤5° peak and ≥95% admitted-path progress. |
+| 4 · Limited sweeps | Slow ±15° moves, then ±45° after each case passes; log original and governed requests. Then a small 3 Hz sine at nominal and at an added command delay, with synchronized timestamps (Task 5 confirmation: measured delay and gain/phase change against the prediction). | Stop on >5° error, sustained ≥95% current use for 100 ms, or clearance/temperature boundary. Require ≤2° RMS, ≤5° peak and ≥95% admitted-path progress. |
 | 5 · Yaw disturbance | Roll-held low-amplitude sweeps, then B/C frequencies only if the fitted coupling predicts ≥ 20% current reserve; validate coupling at a held-out frequency. | Validate the coupling fit at a held-out frequency (predicted residual within ±20%); require ≤2° RMS in the admitted envelope; record yaw reduction. Stop if coupling exceeds reserve. |
 | 6 · Fault / derating tests | Protected fixture: command-only, feedback-only and bidirectional outages; 3.2→2.4 A derating; verify catch, re-arm and suspension. | No target-current limit bypass; 50 ms fresh aligned dwell before re-arm; tracking-fault request stays suspended. Measured passive fallback travel ≤ 50% of verified clearance in every outage; re-arm within 0.2 s of fresh commands. |
 | 7 · Payload and envelope | D-like shifted load at reduced speed, then the loaded finite move. | Completed requests ≤2° RMS / ≤5° peak; reshaped requests governed-reference peak ≤5° with original-request error reported; rejected requests with the reason logged; no current-limit bypass; no unexplained fault. |

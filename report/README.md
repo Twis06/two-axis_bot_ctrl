@@ -37,7 +37,7 @@ Task 2 evidence is regenerated on the frozen baseline; see [current numbers](tas
 | Historical baseline design and evaluation | [phase2_baseline.md](phase2_baseline.md), [generated results](phase2_numbers.md) |
 | Generated plots | [figs/](figs/) |
 | Task 3 estimator audit, L4 and challenges | [audit report](task3_estimator_audit.md), [audit rows](task3_estimator_audit.json), [L4 numbers](task3_ceiling_numbers.md), [challenges](task3_challenges_numbers.md) |
-| Task 5 prediction record | [registration](task5_registration.json), [results](task5_results.json) |
+| Task 5 prediction records | Prospective test: [protocol](../docs/plans/task5-prospective-protocol.md), [registration](task5_prospective_registration.json), [results](task5_prospective_results.json), [runs](task5_prospective_runs.json), [numbers](task5_prospective_numbers.md), [review](packets/task5-prospective-review.md). Earlier study: [registration](task5_registration.json), [results](task5_results.json) |
 
 ## Submission documents
 

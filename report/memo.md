@@ -106,7 +106,7 @@
 - **Loaded M2:** trips and stays suspended rather than cycling.
 - **Fallback:** local damping does not hold against gravity; a loaded 100 ms outage moves the axis up to 42°.
 
-**Reproducibility.** A fresh `git archive` snapshot installed from `uv.lock` reproduced every result value, run_id and figure exactly on the Mac. On Linux x86-64, all outcomes were identical and values agreed to 3e-11 (NumPy rounds random draws differently across CPUs) ([R4](packets/R4.md)). 266 unit tests pass.
+**Reproducibility.** A fresh `git archive` snapshot installed from `uv.lock` reproduced every result value, run_id and figure exactly on the Mac. On Linux x86-64, all outcomes were identical and values agreed to 3e-11 (NumPy rounds random draws differently across CPUs) ([R4](packets/R4.md)). 278 unit tests pass.
 
 ## 5. Testing the explanation
 
@@ -116,12 +116,12 @@
 - **Acceptance:** a disc of radius 0.026, which excludes zero.
 - **Git order:** registration `1f4d982`, then v2 `35b9f96` after an independent pre-run review fixed a scorer defect (prediction unchanged), then results `9035089`.
 
-**Result (Simulated, 10 valid runs, no faults):** measured ΔH = +0.070 − 0.024j, 0.005 from the prediction. **Supported.**
+**Result (Simulated, 10 valid runs, no fault events):** measured ΔH = +0.070 − 0.024j, 0.005 from the prediction. **Supported.**
 
 - **Tracking error:** governed RMS error more than doubles, from 0.22° to 0.47°.
 - **Absolute gain:** the model's absolute |H| is about 0.02 low in both arms, consistent with a little unmodelled delay.
 
-**Revised explanation:** the delay-budget mechanism holds quantitatively. The frozen loop absorbs +4 ms without faults, at a clear cost in tracking.
+**Revised explanation:** the delay-budget mechanism is supported quantitatively at this one condition (3 Hz, +4 ms, simulated). The frozen loop absorbs +4 ms without faults, at a clear cost in tracking.
 
 **Smallest justified design change: none to the controller.** Qualification should measure the real command-path delay, and re-derive the margins if it exceeds the 7 ms design value.
 
@@ -153,4 +153,4 @@
 
 <figure class="plot-page"><img src="figs/task4b_infeasible.png" alt="Infeasible-request response" /><figcaption><strong>Figure 9. Infeasible request.</strong> The unknown INF-P load exceeds derated static capacity at 0°. The nominal-model controller initially attempts it, then faults and suspends; the plot reports the resulting motion rather than a successful hold.</figcaption></figure>
 
-<figure class="plot-page"><img src="figs/task5_prospective.png" alt="Prospective Task 5 test: predicted versus measured change in tracking transfer" /><figcaption><strong>Figure 10. Prospective Task 5 test.</strong> Registered prediction and acceptance region (committed before the runs) against the five measured paired changes and their mean; right, per-run gain and phase with the predicted values. Simulated.</figcaption></figure>
+<figure class="plot-page"><img src="figs/task5_prospective.png" alt="Prospective Task 5 test: predicted versus measured change in tracking transfer" /><figcaption><strong>Figure 10. Prospective Task 5 test.</strong> Registered prediction and acceptance region (committed before the runs) against the five measured paired changes and their mean (the five pairs agree within 0.0003 and are hidden under the mean marker); right, per-run gain and phase with the predicted values. Simulated.</figcaption></figure>

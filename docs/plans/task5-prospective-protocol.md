@@ -1,6 +1,6 @@
 # Task 5 — prospective closed-loop prediction: protocol (frozen before execution)
 
-**Status:** registered (version 2), not yet run. The numbers below are copied from `report/task5_prospective_registration.json`, which `python -m exp.task5_prospective --register` wrote and which is committed together with the predictor, scorer and tests, **before any simulation of this condition**. The first run happens in a later commit.
+**Status:** registered (version 2) before any run; **executed 2026-09-25**, results in commit `9035089` (outcome: supported; see `report/task5_prospective_numbers.md`). Everything below this line is the registered protocol, unchanged. The numbers below are copied from `report/task5_prospective_registration.json`, which `python -m exp.task5_prospective --register` wrote and which is committed together with the predictor, scorer and tests, **before any simulation of this condition**. The first run happens in a later commit.
 
 ## Why this test
 
@@ -11,6 +11,7 @@
 ## Prior knowledge (disclosed)
 
 - **Frequency response at the nominal command delay:** Packet 4B measured it at 0.5, 1, 2, 4 and 6 Hz, with bench points at 2.2, 8 and 10 Hz. So the nominal 3 Hz condition is interpolable from published data. It was not used to fit anything below.
+- **Measured timing:** Packet 4B's log-measured timing (command-path about 4.3 ms, feedback age about 1.7 ms) was available when the configuration-based timing formula was written (4.28 / 1.78 ms). The scored ΔH depends on the change in command delay, which is exactly the FIFO change (4 ms), so it is insensitive to this.
 - **CAN-latency study:** Packet 4B's delay-only bench varied CAN latency with a stationary reference. No run has changed the **current-command delay**, and no run has used a 3 Hz sine.
 
 ## Condition

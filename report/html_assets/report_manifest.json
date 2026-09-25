@@ -13,7 +13,7 @@
     "report/task4b_runs.json": "dadd6508f615c70247d7e880de87e89ede502e69cb1fcf07daf3b4e8356f56e7",
     "report/task5_registration.json": "b4d2459ae10fd5da4e63afa9a564ad5daddee65fc830fe03ee7a950e90182640",
     "report/task5_results.json": "4678bc9f4cce44cd5971d9d9b711a3ec347c1f0adcb933dff7bf11ec15856e4f",
-    "EXECUTION_PLAN.md": "397b233762d5e58cdcbffffc01da51a686fb6f7eb089513376150ce15581a4af",
+    "EXECUTION_PLAN.md": "a1f2f8fd02baaa144452ac50573db3e524d431a6c621bd806342f3eb05acc18b",
     "docs/plans/task3-learning.md": "dc0de46011c279f1ddd43cb55a91fafcebe43cbee471acd34031d47e5d5a61e1",
     "docs/plans/task3-execution-log.md": "0ee40f4d8f642ffc0f57de3de343e018bd46f3454f5c4f20c90a914d2bc11745",
     "docs/plans/task3-availability-review.md": "f2815974d556df9b921453cba1e552ef1d0fafcd24d3140af485edd14e523a03",
@@ -55,7 +55,7 @@
     "report/html_assets/holdability_figure.py": "8d27664ef3cafff2f5f3a6a162a8084bd87dbad1115734d1eef0d8e271bc7fd9",
     "sim/params.py": "4f9b323b29f5b3616e920e195920898a5f796ba846c135ed850ef56011198fe4"
   },
-  "output_sha256": "8e72205352e4ff6a29a646d805957160b9edc44925f44dcb7f05598a5a6811dd",
+  "output_sha256": "230d345d8b7493495db627be37f50d1517518f417f983e45808f3d6c3d03b191",
   "figure_count": 19,
   "learning_rows": 357,
   "prediction_rows": 18,

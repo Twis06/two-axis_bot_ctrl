@@ -3,6 +3,7 @@
 From repository root: uv run --with markdown python report/html_assets/build_report.py
 """
 from pathlib import Path
+import math
 import base64
 import hashlib
 import html
@@ -20,9 +21,9 @@ FIGURES = {
               ('task2_saturation.png', 'Saturation and anti-windup', 'Distinguish shaped-request behavior from the diagnostic governor-disabled case.')],
     'task4': [('task2_tracking.png', 'Tracking the admitted and original requests', 'Frozen-baseline A–E simulations; payload and trajectory reconstruction assumptions apply.'),
               ('task2_feedback_loss.png', 'Feedback loss and recovery', 'Local fallback, host state and subsequent delivered motion must be read together.'),
-              ('task4b_saturation.png', 'Saturation duration and entries', 'Published Packet 4B figure; round-2 republication remains outstanding.'),
-              ('task4b_frequency.png', 'Frequency response and phase', 'Published Packet 4B frequency evidence; separate local frequency behavior from nonlinear guarantees.'),
-              ('task4b_fault_timeline.png', 'Fault and recovery timeline', 'Published Packet 4B: fallback and catch do not imply completion of the request.'),
+              ('task4b_saturation.png', 'Saturation duration and entries', 'Packet 4B (reviewed round 2, republished in R4).'),
+              ('task4b_frequency.png', 'Frequency response and phase', 'Packet 4B frequency evidence; separate local frequency behavior from nonlinear guarantees.'),
+              ('task4b_fault_timeline.png', 'Fault and recovery timeline', 'Packet 4B: fallback and catch do not imply completion of the request.'),
               ('task4b_generalization.png', 'Generalization across chosen stress cases', 'Selected stress ranges are not calibrated probability distributions.'),
               ('task4b_infeasible.png', 'Infeasible requests', 'Actual subsequent motion is reported alongside restriction or suspension.')],
     'history': [('p0_payload_fit.png', 'Historical payload fit', 'Illustrative fit with assumed payload geometry; the A–E summaries do not identify mass or COM direction.'),
@@ -93,8 +94,14 @@ def main():
     # Wrap task sections for predictable navigation and print layout.
     content = re.sub(r'<h2 id="([^"]+)"', r'</section><section aria-labelledby="\1"><h2 id="\1"', content)
     content = '<section class="intro">' + content + '</section>'
+    def clean(x):   # NaN/inf (e.g. never-usable first-usable time) -> null; the charts treat null as missing
+        if isinstance(x, float) and not math.isfinite(x): return None
+        if isinstance(x, dict): return {k: clean(v) for k, v in x.items()}
+        if isinstance(x, list): return [clean(v) for v in x]
+        return x
     data = { 'learning': json.loads((REPORT/'task3_ceiling_results.json').read_text())['rows'],
              'prediction': json.loads((REPORT/'task5_results.json').read_text())['rows'] }
+    data = clean(data)
     nav = [('task1','1 · Failure diagnosis'),('task2','2 · Baseline controller'),('task3','3 · Learning decision'),('task4','4 · Evidence'),('task5','5 · Prediction test'),('hardware','Hardware proposal'),('sources','Sources & status'),('history','Historical figures')]
     page = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Coupled-axis control — Tasks 1–5</title><style>' + (HERE/'report.css').read_text() + '</style></head><body>'
     page += '<a class="skip" href="#main">Skip to report</a><aside><a class="brand" href="#main">Controls assessment</a><p>Evidence & engineering decisions</p><nav aria-label="Report sections">' + ''.join(f'<a href="#{k}">{v}</a>' for k,v in nav) + '</nav><div class="actions"><button id="expand" type="button">Expand all evidence</button><button id="print" type="button">Print report</button></div><p class="side-note">Snapshot · 24 Sep 2026<br>Baseline 7d857df507c389c9<br>Simulation-backed proposal</p></aside>'

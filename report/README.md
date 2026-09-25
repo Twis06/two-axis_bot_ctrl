@@ -40,6 +40,13 @@ Task 2 evidence is regenerated on the frozen baseline; see [current numbers](tas
 | Task 3 estimator audit, L4 and challenges | [audit report](task3_estimator_audit.md), [audit rows](task3_estimator_audit.json), [L4 numbers](task3_ceiling_numbers.md), [challenges](task3_challenges_numbers.md) |
 | Task 5 prediction record | [registration](task5_registration.json), [results](task5_results.json) |
 
-## Remaining submission work
+## Submission documents
 
-These working answers are not yet the final four-page memo. Condense the answers into the memo. Also prepare the one-page hardware qualification plan and the references/reused-code/automated-tools note. The final comparison must report delivered motion as well as tracking error when a request is reshaped.
+| Deliverable | File |
+|---|---|
+| Technical memo (4 pages + plot appendix) | [memo.pdf](memo.pdf) · source [memo.md](memo.md) |
+| One-page hardware qualification plan | [hardware_qualification_plan.pdf](hardware_qualification_plan.pdf) · source [hardware_qualification_plan.md](hardware_qualification_plan.md) |
+| References, reused code and automated tools | [references_and_tools.md](references_and_tools.md) |
+| Runnable code, README, one-command reproduction | [../README.md](../README.md), `python3 run_all.py` |
+
+PDFs are rendered with `python report/html_assets/render_pdf.py <file>.md <file>.pdf` (Python-Markdown and headless Chrome). The independent final review (R6) is still open.

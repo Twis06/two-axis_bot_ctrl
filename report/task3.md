@@ -68,6 +68,20 @@ The registered adoption gate ([`exp/task3_gate.py`](../exp/task3_gate.py)) retur
 
 The candidate therefore fails on availability rather than on the value of the correction.
 
+**Why the median is exactly 0.0%, not "about zero".** The candidate *is* the frozen `int1` controller plus the learned feed-forward term (`AdaptiveController` subclasses `BaselineController` at the same integral rate), run on the same seed, load and noise draw. When the learned correction is zero, the two runs are the same computation, so the primary metric is bit-identical and the paired reduction is exactly 0.
+
+| Adaptive vs `int1`, 50 held-out pairs | Pairs |
+|---|---:|
+| Bit-identical: no correction reached the scored samples | **30** |
+| — estimate never usable | 13 |
+| — first usable only at 18.3–21.6 s, after or at the end of the scored test dwells | 17 |
+| Improved | 20: twelve by 0.1–5.4%, eight by 42–79% |
+| Worse | **0** |
+
+- **Median:** with 30 of 50 values exactly zero, the median is exactly 0.0%.
+- **Mean (secondary, not registered):** the mean paired reduction is 9.5%.
+- **Takeaway:** the candidate never hurt, and helped substantially when it was on in time. It was simply off in most runs. The gate uses the median by registration, and the change that would matter is earlier or more reliable availability, not a larger correction.
+
 **Completion.** Both `int1` and the candidate complete 40/50 held-out test sequences. The 10 incomplete runs of each are all at load (−0.06, +0.14). They reach every waypoint but overshoot the ±65° range by 5.65–6.89° (by seed), against the 5° allowed; the peak is on the +65° test move. They are not failures to reach a target.
 
 **Safety scope.** No safety criterion failed. That holds only in the evaluated conditions:

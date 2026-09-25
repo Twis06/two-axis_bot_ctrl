@@ -114,7 +114,7 @@ All variants receive the same calibration trajectory and time budget. The held-o
 | Oracle feed-forward only | 0.499° | +76.9% | 50/50 | Uses true load; diagnostic and unavailable to a deployed controller. |
 | Oracle with governor load access | 0.400° | +78.6% | 35/50 | Loses 15 comparator completions; a low error score alone is insufficient. |
 
-The median of paired percentage reductions differs from the percentage change between two aggregate medians. The machine-audited gate (`exp/task3_gate.py`) returns **fail**. The candidate loses no comparator waypoint or completion. It has no pre-clamp command above the limit and no watchdog trip, suspension, rejection or lockout in the 50 held-out cases, but it fails the ≥10% benefit and ≥80% availability criteria. The 10 incomplete int1 and adaptive runs are all at load (−0.06, +0.14): they reach every waypoint but overshoot the ±65° range by 5.65–6.89°, beyond the 5° allowance.
+**Why exactly 0.0%:** the candidate is `int1` plus the learned term on the same seed. In 30 of 50 pairs no correction reached the scored samples (never usable in 13; first usable at 18.3–21.6 s in 17), so those runs are bit-identical to `int1`. Twenty pairs improve and none gets worse. The median of paired percentage reductions also differs from the percentage change between two aggregate medians. The machine-audited gate (`exp/task3_gate.py`) returns **fail**. The candidate loses no comparator waypoint or completion. It has no pre-clamp command above the limit and no watchdog trip, suspension, rejection or lockout in the 50 held-out cases, but it fails the ≥10% benefit and ≥80% availability criteria. The 10 incomplete int1 and adaptive runs are all at load (−0.06, +0.14): they reach every waypoint but overshoot the ±65° range by 5.65–6.89°, beyond the 5° allowance.
 
 <!-- INTERACTIVE:learning -->
 
@@ -208,11 +208,11 @@ The simulated 25 rad/s overspeed trip and 130°C thermal trip are not initial be
 
 ## Sources, artifacts and remaining work {#sources}
 
-The assessment PDF supplies the plant constants, task questions and the only hardware observations. Project Markdown reports, generated JSON manifests, code and review packets supply the calculations and simulated evidence. No outside measurements or new external technical references were introduced for this HTML synthesis.
+The assessment PDF supplies the plant constants, task questions and the only hardware observations. Project Markdown reports, generated JSON manifests, code and review packets supply the calculations and simulated evidence. No outside measurements or external technical references are used; see the references note.
 
 The implementation uses Python, NumPy, SciPy, Matplotlib and standard-library unittest. Automated coding agents contributed implementation, experiments, review and documentation, as recorded in the packet histories and Task 3 execution log. This HTML report was assembled by Codex from those artifacts; its charts reorganize stored rows and do not create new experimental evidence. The offline report builder uses Python-Markdown; HTML/CSS/JavaScript provide presentation. A repository-wide third-party reused-code/license audit has not been established by the available notes.
 
-The HTML is a comprehensive report with appendices; it is **not the separately page-verified four-page submission memo**. Remaining delivery work is the final independent review, the page-limited four-page memo, the one-page hardware qualification plan and the references/reused-code note. Hardware experiments above remain proposed.
+The HTML is a comprehensive report with appendices. The page-limited submission documents are separate: the [four-page memo](memo.pdf), the [one-page hardware qualification plan](hardware_qualification_plan.pdf) and the [references, reused-code and tools note](references_and_tools.md). The final independent review (R6) remains open. Hardware experiments above remain proposed.
 
 <!-- SOURCES -->
 

@@ -29,5 +29,5 @@ Start with [Task 1 — Understand the failure](report/task1.md). The [task index
 - ✅ Task 2: deterministic baseline frozen (fingerprint `7d857df507c389c9`)
 - ✅ Task 3: the tested adaptive candidate fails its registered adoption gate (benefit, availability); baseline retained. The payload-change challenge was not executed.
 - ◐ Task 5: registered prediction tested in simulation and retrospectively corrected (R2); the closed-loop prediction is untested, and hardware confirmation is pending
-- ◐ Corrective packets R1–R4 done ([report/packets](report/packets)); final review (R6) pending
-- ☐ Four-page memo, one-page hardware qualification plan, references note
+- ◐ Corrective packets R1–R5 done ([report/packets](report/packets)); independent final review (R6) pending
+- ✅ Submission documents: [memo](report/memo.pdf), [hardware qualification plan](report/hardware_qualification_plan.pdf), [references and tools](report/references_and_tools.md)

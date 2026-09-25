@@ -1,8 +1,10 @@
 # Assessment answers
 
-Read the [interactive HTML report](assessment_report.html) for a consolidated answer to Tasks 1–5, 19 figures, expandable evidence, and learning / prediction charts. It records the remaining gaps explicitly. Open directly in a browser; no server or network is required. Build instructions: [HTML report README](html_assets/README.md).
+**Submission deliverables** (memo, code, plots, qualification plan, references note) are listed with their locations in the [repository README](../README.md#submission-deliverables). This page indexes the task answers and their supporting evidence.
 
-Current execution priorities and agent handoffs: [EXECUTION_PLAN.md](../EXECUTION_PLAN.md).
+Read the [interactive HTML report](assessment_report.html) for a consolidated answer to Tasks 1–5, 20 figures, expandable evidence, and learning / prediction charts. It records the remaining gaps explicitly. Open directly in a browser; no server or network is required. Build instructions: [HTML report README](html_assets/README.md).
+
+Process history (plans, execution gates and agent handoffs, not deliverables): [EXECUTION_PLAN.md](../docs/process/EXECUTION_PLAN.md).
 
 Read the answers in the order of the five tasks in the assessment brief (not redistributed in this repository).
 
@@ -29,13 +31,13 @@ Task 2 evidence is regenerated on the frozen baseline; see [current numbers](tas
 
 | Material | Location |
 |---|---|
-| Development plan | [PLAN.md](../PLAN.md) |
+| Development plan | [PLAN.md](../docs/process/PLAN.md) |
 | Initial analytic investigation | [phase0_analysis.md](phase0_analysis.md), [generated calculations](phase0_numbers.md) |
 | Simulator assumptions and reconstruction | [phase1_sim.md](phase1_sim.md), [generated results](phase1_numbers.md) |
 | Frozen baseline evidence | [Task 2 numbers](task2_numbers.md), [robustness](task2_robustness.md), [trial data](task2_results.json), [run manifests](task2_runs.json) |
-| Execution packets (changes, reviews, gates) | [2A](packets/2A.md), [2B](packets/2B.md), [2C](packets/2C.md), [4A](packets/4A.md), [4B](packets/4B.md); corrective [R1](packets/R1.md), [R2](packets/R2.md), [R3](packets/R3.md), [R4](packets/R4.md) |
+| Execution packets (changes, reviews, gates) | [2A](packets/2A.md), [2B](packets/2B.md), [2C](packets/2C.md), [4A](packets/4A.md), [4B](packets/4B.md); corrective [R1](packets/R1.md), [R2](packets/R2.md), [R3](packets/R3.md), [R4](packets/R4.md); final reviews [R6](packets/R6.md) and [Task 5 prospective](packets/task5-prospective-review.md) |
 | Historical baseline design and evaluation | [phase2_baseline.md](phase2_baseline.md), [generated results](phase2_numbers.md) |
-| Generated plots | [figs/](figs/) |
+| Generated plots | [figs/](figs) |
 | Task 3 estimator audit, L4 and challenges | [audit report](task3_estimator_audit.md), [audit rows](task3_estimator_audit.json), [L4 numbers](task3_ceiling_numbers.md), [challenges](task3_challenges_numbers.md) |
 | Task 5 prediction records | Prospective test: [protocol](../docs/plans/task5-prospective-protocol.md), [registration](task5_prospective_registration.json), [results](task5_prospective_results.json), [runs](task5_prospective_runs.json), [numbers](task5_prospective_numbers.md), [review](packets/task5-prospective-review.md). Earlier study: [registration](task5_registration.json), [results](task5_results.json) |
 

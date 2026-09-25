@@ -6,7 +6,7 @@
 
 **Architecture:** Learn two gravity-like residual coefficients from settled, unsaturated, yaw-stationary observations. Apply only bounded feed-forward correction initially. Keep the governor's admitted envelope and drive safety independent of the learned estimate. Do not implement neural networks, reinforcement learning, or online gain tuning.
 
-**Requirements:** assessment Task 3, [current answer](../../report/task3.md), and [execution gates](../../EXECUTION_PLAN.md). This focused plan allows estimator development while the baseline is unfinished; it does not waive Task 2 acceptance before comparative claims.
+**Requirements:** assessment Task 3, [current answer](../../report/task3.md), and [execution gates](../process/EXECUTION_PLAN.md). This focused plan allows estimator development while the baseline is unfinished; it does not waive Task 2 acceptance before comparative claims.
 
 ## 1. Current evidence and the question being tested
 

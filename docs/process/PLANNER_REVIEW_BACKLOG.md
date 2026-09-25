@@ -3,7 +3,7 @@
 **Status: closed.** This is a record of a planner agent's change requests during the final editing pass, kept for transparency. **Every numbered item below is resolved in the final commit**; no item is an open defect.
 
 - **Findings below:** each describes the state when it was written.
-- **Final status of the submission:** see [`report/packets/R6.md`](report/packets/R6.md) (independent review rounds 1–4) and [`report/packets/R4.md`](report/packets/R4.md) (reproduction).
+- **Final status of the submission:** see [`report/packets/R6.md`](../../report/packets/R6.md) (independent review rounds 1–4) and [`report/packets/R4.md`](../../report/packets/R4.md) (reproduction).
 - **Frozen evidence:** the declared control experiments, and their results, are unchanged by these edits.
 
 | Item | Final disposition |
@@ -21,7 +21,7 @@ The prospective Task 5 test was carried out afterwards; see `docs/plans/task5-pr
 
 ## 1. Correct the hardware stop-state promise — high priority
 
-**Finding.** [`report/hardware_qualification_plan.md`](report/hardware_qualification_plan.md) says every global stop leads to a “safe hold.” The frozen controller uses drive-local damping after communication loss, and the simulated loaded fallback can move up to 42°; [`report/memo.md`](report/memo.md) reports that excursion. Without an independently verified brake or support, a safe position hold is not established.
+**Finding.** [`report/hardware_qualification_plan.md`](../../report/hardware_qualification_plan.md) says every global stop leads to a “safe hold.” The frozen controller uses drive-local damping after communication loss, and the simulated loaded fallback can move up to 42°; [`report/memo.md`](../../report/memo.md) reports that excursion. Without an independently verified brake or support, a safe position hold is not established.
 
 **Requested change.** State the actual stop state for each fault class. Require an independently protected fixture, verified clearance/end stops or brake, and a measured excursion limit before fault-injection tests. Avoid promising a hold when feedback or actuation needed for it is unavailable. Keep the hardware plan's acceptance criteria consistent with this limitation.
 
@@ -29,7 +29,7 @@ The prospective Task 5 test was carried out afterwards; see `docs/plans/task5-pr
 
 ## 2. Split blocked-axis and moving electrical identification — high priority
 
-**Finding.** Stage 1 of [`report/hardware_qualification_plan.md`](report/hardware_qualification_plan.md) proposes identifying both torque constant `Kt` and back-EMF/voltage convention with the axis blocked. In the stated electrical model, `V = Ri + L di/dt + Ke qdot`; blocked-axis speed is zero, so the `Ke qdot` term cannot identify `Ke` or available voltage at speed.
+**Finding.** Stage 1 of [`report/hardware_qualification_plan.md`](../../report/hardware_qualification_plan.md) proposes identifying both torque constant `Kt` and back-EMF/voltage convention with the axis blocked. In the stated electrical model, `V = Ri + L di/dt + Ke qdot`; blocked-axis speed is zero, so the `Ke qdot` term cannot identify `Ke` or available voltage at speed.
 
 **Requested change.** Use the blocked fixture for sign, current offset, `Kt`, and stationary electrical checks. Add a separate, guarded low-speed rotation or equivalent electrical test for `Ke` and drive-voltage convention before advancing to higher-speed motion. Keep the test order and stop rules explicit.
 
@@ -37,15 +37,15 @@ The prospective Task 5 test was carried out afterwards; see `docs/plans/task5-pr
 
 ## 3. Keep Task 5's prediction status precise — high priority
 
-**Finding.** [`report/task5.md`](report/task5.md) records that registration and original results first entered git together; ordering is therefore not independently established. The exact numerical matches mostly recheck simulator equations. The extra-current prediction is not separable from total current, and the residual-peak metric was chosen after the results. The brief's “prediction before a new test” requirement is not fully demonstrated by this record. The memo's “failed” shorthand and revised causal explanation can read more strongly than the post hoc metric supports.
+**Finding.** [`report/task5.md`](../../report/task5.md) records that registration and original results first entered git together; ordering is therefore not independently established. The exact numerical matches mostly recheck simulator equations. The extra-current prediction is not separable from total current, and the residual-peak metric was chosen after the results. The brief's “prediction before a new test” requirement is not fully demonstrated by this record. The memo's “failed” shorthand and revised causal explanation can read more strongly than the post hoc metric supports.
 
-**Requested change.** In [`report/memo.md`](report/memo.md), [`report/task5.md`](report/task5.md), and the HTML report, describe the residual result as *the predicted effect was not resolved by this selected peak metric*, while retaining the actual measured value and the diagnostic exact-feed-forward result. Restrict the “estimator transients dominate” inference to this Run B metric and operating point. Mark Task 5 as partially evidenced until a new, separately recorded prospective prediction tests an independently measurable closed-loop response; do not relabel the retrospective correction as prospective.
+**Requested change.** In [`report/memo.md`](../../report/memo.md), [`report/task5.md`](../../report/task5.md), and the HTML report, describe the residual result as *the predicted effect was not resolved by this selected peak metric*, while retaining the actual measured value and the diagnostic exact-feed-forward result. Restrict the “estimator transients dominate” inference to this Run B metric and operating point. Mark Task 5 as partially evidenced until a new, separately recorded prospective prediction tests an independently measurable closed-loop response; do not relabel the retrospective correction as prospective.
 
 **Verify.** Every Task 5 summary distinguishes registered arithmetic checks, post hoc diagnostics, untested quantities, and any genuinely prospective test.
 
 ## 4. Explain the deterministic `int2` tuning tradeoff — medium priority
 
-**Finding.** [`report/task3_ceiling_numbers.md`](report/task3_ceiling_numbers.md) reports that `int2` improves the held-out median primary error by 42.6% against `int1` and completes 50/50 sequences versus 40/50. It misses the declared phase/gain margin criteria slightly (43.7° nominal PM versus 45° required; 28.1° corner PM versus 30°; 5.7 dB corner GM versus 6 dB). This exclusion is a chosen design rule, not evidence that `int2` is unsafe on hardware.
+**Finding.** [`report/task3_ceiling_numbers.md`](../../report/task3_ceiling_numbers.md) reports that `int2` improves the held-out median primary error by 42.6% against `int1` and completes 50/50 sequences versus 40/50. It misses the declared phase/gain margin criteria slightly (43.7° nominal PM versus 45° required; 28.1° corner PM versus 30°; 5.7 dB corner GM versus 6 dB). This exclusion is a chosen design rule, not evidence that `int2` is unsafe on hardware.
 
 **Requested change.** Explain in the final recommendation why the frozen `int1` margin reserve is preferred despite `int2`'s simulated tracking/completion gain. Present `int2` as ineligible under the declared margins, not proven unsafe. Carry this tradeoff into hardware qualification or future tuning work; it does not change the narrow rejection of the tested adaptive candidate.
 
@@ -53,7 +53,7 @@ The prospective Task 5 test was carried out afterwards; see `docs/plans/task5-pr
 
 ## 5. Soften Run A's causal shorthand — low priority
 
-**Finding.** [`report/memo.md`](report/memo.md) says Run A's error “points to response, not current capacity.” Its measured 2.1 A peak is below the nominal 3.2 A limit, but the shaped trajectory, voltage utilization, current-command trace, and timing are unknown. [`report/task1.md`](report/task1.md) already states the narrower conclusion well.
+**Finding.** [`report/memo.md`](../../report/memo.md) says Run A's error “points to response, not current capacity.” Its measured 2.1 A peak is below the nominal 3.2 A limit, but the shaped trajectory, voltage utilization, current-command trace, and timing are unknown. [`report/task1.md`](../../report/task1.md) already states the narrower conclusion well.
 
 **Requested change.** Say that Run A does not show exhaustion of the *nominal current limit* and motivates examining response, compensation, and timing. Retain the caveat that full motion feasibility and electrical limits are unverified.
 
@@ -61,7 +61,7 @@ The prospective Task 5 test was carried out afterwards; see `docs/plans/task5-pr
 
 ## 6. Clarify the B/C tracking figure without changing its data — low priority
 
-**Finding.** In [`exp/scenarios.py`](exp/scenarios.py), Runs B and C command roll `Hold(0.0)` while yaw follows a ±75° sine at 1.5 and 2.2 Hz. [`exp/task2_eval.py`](exp/task2_eval.py) plots original and governed *roll* references, so their flat zero-degree lines overlap. Actual roll moves slightly because yaw exerts coupling torque. A reduction of the yaw request in C would not make the roll reference oscillate. The current figure is mathematically correct but easy to misread without the yaw stimulus visible or named.
+**Finding.** In [`exp/scenarios.py`](../../exp/scenarios.py), Runs B and C command roll `Hold(0.0)` while yaw follows a ±75° sine at 1.5 and 2.2 Hz. [`exp/task2_eval.py`](../../exp/task2_eval.py) plots original and governed *roll* references, so their flat zero-degree lines overlap. Actual roll moves slightly because yaw exerts coupling torque. A reduction of the yaw request in C would not make the roll reference oscillate. The current figure is mathematically correct but easy to misread without the yaw stimulus visible or named.
 
 **Requested change.** Add a concise caption or panel annotation: “B/C: roll held at 0°; yaw oscillates at 1.5/2.2 Hz; original and governed roll traces overlap.” Consider a yaw trace only if a caption is insufficient. Update the generated HTML caption and memo figure label to match. **Do not** turn B/C's roll command into a sine wave. A plotting-source change requires republishing the Task 2 figure and rechecking provenance after the active evidence run finishes.
 
@@ -77,31 +77,31 @@ The items below came from an independent read-only arithmetic, figure, PDF and H
 
 ### 7. Make the HTML report rebuildable without the ignored brief PDF — high priority
 
-**Finding.** [`report/html_assets/build_report.py`](report/html_assets/build_report.py) includes `Robotics Controls Technical Assessment.pdf` in the source index and hashes it. [`.gitignore`](.gitignore) excludes that PDF. In a disposable `git archive 01abda0` snapshot, the PDF is absent; with the report's Markdown dependency stubbed, the builder fails with `FileNotFoundError` for that PDF. The published HTML also links to it, so that link is broken in the delivered checkout even though it works in the author's local workspace. R6's clean `run_all.py` check does not exercise the HTML builder.
+**Finding.** [`report/html_assets/build_report.py`](../../report/html_assets/build_report.py) includes `Robotics Controls Technical Assessment.pdf` in the source index and hashes it. [`.gitignore`](../../.gitignore) excludes that PDF. In a disposable `git archive 01abda0` snapshot, the PDF is absent; with the report's Markdown dependency stubbed, the builder fails with `FileNotFoundError` for that PDF. The published HTML also links to it, so that link is broken in the delivered checkout even though it works in the author's local workspace. R6's clean `run_all.py` check does not exercise the HTML builder.
 
 **Requested change.** Describe the brief as an outside source without requiring or linking the ignored file. Keep the generated HTML source index and build manifest consistent. Rebuild the HTML and test its documented `uv run --with markdown python report/html_assets/build_report.py` command from a clean committed snapshot; check links against tracked files, not only the local workspace.
 
 ### 8. Qualify B/C “net progress” as a clock metric during roll hold — medium priority
 
-**Finding.** [`sim/metrics.py`](sim/metrics.py) defines progress as governor path-clock time divided by request time. Runs B/C command a constant 0° roll hold, so their 100%/97% values do not measure roll distance or speed delivered. Run C separately reduces yaw amplitude to 0.88×. [`report/task2_numbers.md`](report/task2_numbers.md) and the HTML do define the clock metric, but the summary tables still invite a physical-progress reading.
+**Finding.** [`sim/metrics.py`](../../sim/metrics.py) defines progress as governor path-clock time divided by request time. Runs B/C command a constant 0° roll hold, so their 100%/97% values do not measure roll distance or speed delivered. Run C separately reduces yaw amplitude to 0.88×. [`report/task2_numbers.md`](../../report/task2_numbers.md) and the HTML do define the clock metric, but the summary tables still invite a physical-progress reading.
 
 **Requested change.** In Task 2, the memo and HTML, identify B/C progress as a clock/accounting value for a stationary roll request and report yaw delivery beside it. Retain the registered metric and scoring; do not silently replace its values.
 
 ### 9. Reconcile release-status numbers after R6 — medium priority
 
-**Finding.** [`report/memo.md`](report/memo.md) and its PDF say 257 tests pass, while [`report/packets/R6.md`](report/packets/R6.md) records 262 after the R6 fixes. The report index and HTML still say R6 is open, appropriately while the clean check is underway. Task 3 and HTML also cite 255 tests at the earlier `dff8efd` commit; those historical counts are properly scoped by commit.
+**Finding.** [`report/memo.md`](../../report/memo.md) and its PDF say 257 tests pass, while [`report/packets/R6.md`](../../report/packets/R6.md) records 262 after the R6 fixes. The report index and HTML still say R6 is open, appropriately while the clean check is underway. Task 3 and HTML also cite 255 tests at the earlier `dff8efd` commit; those historical counts are properly scoped by commit.
 
 **Requested change.** After the final clean run and verdict, update the *current* test count and review status in the memo/PDF, README and HTML. Keep explicitly commit-scoped historical counts if useful. Do not claim R6 passed before its clean comparison completes.
 
 ### 10. Enlarge the PDF plot appendix — medium priority
 
-**Finding.** [`report/memo.pdf`](report/memo.pdf) has four text pages plus four appendix pages, satisfying the page limit. The appendix places eight complex PNG figures in table cells; at normal page size several axes, legends and annotations are too small to read. The full-size PNGs and HTML enlargement are readable.
+**Finding.** [`report/memo.pdf`](../../report/memo.pdf) has four text pages plus four appendix pages, satisfying the page limit. The appendix places eight complex PNG figures in table cells; at normal page size several axes, legends and annotations are too small to read. The full-size PNGs and HTML enlargement are readable.
 
 **Requested change.** Re-layout the appendix with one large figure per page, or use landscape pages where needed. Replace the two-column “What it shows | Figure” table with numbered figures and short, paper-style captions. Each caption should identify the scenario/axes, plotted quantities and units, the specific conclusion, and any condition needed to interpret it (for example, B/C's stationary roll command and moving yaw). Keep the technical memo body at four pages; plots and appendices are excluded from the limit. Visually verify the PDF at ordinary page size after rendering.
 
 ### 11. Mark the early torque-budget plot as assumed/historical at point of display — low priority
 
-**Finding.** [`report/figs/p0_torque_budget.png`](report/figs/p0_torque_budget.png) plots D/E load bars from an early quasi-static ~1.79 kg fit, although the assessment does not give payload mass and the current Task 1 answer says it is not identifiable. The HTML caption calls it an early analytic budget, but the figure is placed with current Task 1 figures, where the large D/E bars may appear to be measured demand.
+**Finding.** [`report/figs/p0_torque_budget.png`](../../report/figs/p0_torque_budget.png) plots D/E load bars from an early quasi-static ~1.79 kg fit, although the assessment does not give payload mass and the current Task 1 answer says it is not identifiable. The HTML caption calls it an early analytic budget, but the figure is placed with current Task 1 figures, where the large D/E bars may appear to be measured demand.
 
 **Requested change.** Move it to the historical group or state the assumed fit and exclusion of sweep inertia directly in the figure title/caption. Do not treat the 1.79 kg value as hardware identification.
 
@@ -163,7 +163,7 @@ Source: an annotated review copy of the memo (not part of the submission), pages
 
 **Assessment.** Good. The current one-sentence “more reliably usable” condition is too vague to direct a next experiment. The available evidence points to *late or absent eligibility* as the immediate obstacle: 30/50 pairs are bit-identical, 13 never become usable, and 17 first become usable only at 18.3–21.6 s. The modeled estimator worker delay is only 2–8 ms, so it cannot by itself explain a many-second availability problem. This does **not** prove that communication/control delay is unimportant for tracking, nor does it quantify which estimator gate is the dominant cause; that attribution needs a measured breakdown.
 
-**Read-only diagnosis completed.** [`docs/plans/task3-availability-review.md`](docs/plans/task3-availability-review.md) contains a 50-run per-case gate-timing table and an execution brief. An in-memory replay matched every published first-usable time within one 500 Hz host tick. Only **4/50** runs had a usable model before the 9 s test phase; 20 first became usable during it, 13 after it, and 13 never did. Across the grid, 45 reached the 30-aggregate gate, 42 the 60° roll-span gate, 42 the 0.25 cosine-span gate, and all 50 the two Gram gates; only 37 met all gates simultaneously. Five never-usable runs lacked 30 aggregates, while eight had enough aggregates but insufficient angle/feature coverage. Every run that satisfied coverage submitted a fit immediately and published in **4–8 ms**. Representative calibration-hold probes found 250 ms measured roll spans commonly above the frozen **two-encoder-count** stationarity window. This supports an acquisition/coverage bottleneck; loosening the window without measuring bias is not yet justified.
+**Read-only diagnosis completed.** [`docs/plans/task3-availability-review.md`](../plans/task3-availability-review.md) contains a 50-run per-case gate-timing table and an execution brief. An in-memory replay matched every published first-usable time within one 500 Hz host tick. Only **4/50** runs had a usable model before the 9 s test phase; 20 first became usable during it, 13 after it, and 13 never did. Across the grid, 45 reached the 30-aggregate gate, 42 the 60° roll-span gate, 42 the 0.25 cosine-span gate, and all 50 the two Gram gates; only 37 met all gates simultaneously. Five never-usable runs lacked 30 aggregates, while eight had enough aggregates but insufficient angle/feature coverage. Every run that satisfied coverage submitted a fit immediately and published in **4–8 ms**. Representative calibration-hold probes found 250 ms measured roll spans commonly above the frozen **two-encoder-count** stationarity window. This supports an acquisition/coverage bottleneck; loosening the window without measuring bias is not yet justified.
 
 **Plan.** Give an execution agent the linked review brief. On *tuning cases only*, compare longer/explicit diverse-angle calibration dwells with a sensor-aware stationarity detector, measuring accepted-window supply and residual-motion bias before selecting either or a bounded combination. Freeze one candidate and calibration-time budget before a newly registered held-out comparison; charge added time to both candidate and comparator. Keep feed-forward-only correction and the governor/safety bounds unchanged until revalidated. Add a prospective *ready by scoring onset* availability criterion (proposed ≥80%) alongside the original ever-usable and ≥10% paired-benefit gates. Measure coefficient-ramp time and actual command effect, since first usability alone can be functionally too late. Execute the missing payload-change, yaw, feedback-loss and derating challenges with the learned correction actually active. Preserve the frozen candidate's failure as a historical result.
 

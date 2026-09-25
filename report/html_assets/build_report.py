@@ -88,7 +88,7 @@ def main():
     sources = sorted(p for p in REPORT.glob('*.json'))
     # The assessment brief is an outside source and is not redistributed (gitignored), so it is
     # neither linked nor hashed: the report must build from a clean checkout.
-    sources += [ROOT / 'EXECUTION_PLAN.md', ROOT / 'docs/plans/task3-learning.md',
+    sources += [ROOT / 'docs/process/EXECUTION_PLAN.md', ROOT / 'docs/plans/task3-learning.md',
                 ROOT / 'docs/plans/task3-execution-log.md',
                 ROOT / 'docs/plans/task3-availability-review.md']
     links = ['<ul class="source-list">']

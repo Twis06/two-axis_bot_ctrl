@@ -3,11 +3,25 @@
 A roll-axis simulator, diagnosis, and controller design for the Robotics Controls take-home.
 
 ## Reproduce
+
+With [uv](https://docs.astral.sh/uv/) (recommended; installs the exact locked versions and Python 3.9):
+
 ```bash
-python3 -m pip install -r requirements.txt   # numpy, scipy, matplotlib
-python3 run_all.py                            # tests + all analyses
+uv run python run_all.py            # tests + every current evidence packet (~15 min on 12 cores)
 ```
-Tested with Python 3.9, numpy 2.0, scipy 1.13, matplotlib 3.9. There are no other dependencies. The tests use the standard-library `unittest`.
+
+Without uv, in a Python 3.9 virtual environment:
+
+```bash
+python3 -m pip install -r requirements.txt   # exact pins exported from uv.lock
+python3 run_all.py
+```
+
+- **Locked versions:** Python 3.9, NumPy 2.0.2, SciPy 1.13.1, Matplotlib 3.9.4 (`pyproject.toml`, `uv.lock`). The published evidence was produced with these, and other versions may change the last floating-point digits.
+- **Log:** `run_all.py` logs each step, its exit code and the environment to `report/reproduction_log.txt`.
+- **Parallelism:** experiments run in a process pool sized to the machine; results do not depend on the pool size.
+- **`--quick`:** runs the tests and calculations only, and does not reproduce the evidence.
+- **Report documents:** `uv run --group report python report/html_assets/build_report.py` rebuilds the HTML report. `report/html_assets/render_pdf.py` renders the memo PDFs and also needs Google Chrome.
 
 ## Layout
 | Path | Contents |

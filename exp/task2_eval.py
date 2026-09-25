@@ -5,9 +5,18 @@ report/task2_results.json, report/task2_runs.json (one manifest entry per
 run_id, Packet 4A) and report/figs/task2_*.png, published together through
 exp.manifest.staged_publish only after the whole evaluation succeeded and no
 source file changed meanwhile (Packet 2C).
+
+Runs are independent, so they execute in a process pool (--jobs N; --jobs 1 runs
+serially in-process). The main process keeps the original loops and random
+stream; each evaluate() call computes its run_id from the manifest and takes the
+precomputed result for exactly that run_id, so the output does not depend on the
+pool, and a spec mismatch raises instead of silently using another run's result.
 """
+import argparse
 import json
 import math
+import os
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import replace
 from pathlib import Path
 
@@ -18,7 +27,7 @@ from ctrl import loopshape as LS
 from exp import manifest as MF
 from exp import motions as M
 from exp import scenarios as S
-from exp.evidence import RunBook, run_set_id
+from exp.evidence import RunBook, _supervisor, run_set_id
 from exp.phase2_eval import legacy, sample_cfg, table
 from sim.config import SimConfig
 from sim.trajectories import Hold, RampedSine
@@ -29,7 +38,24 @@ PROVENANCE_SOURCES = ("exp/phase2_eval.py", "exp/evidence.py")
 BOOK = RunBook("exp.task2_eval")
 
 
+_PRE = None            # run_id -> (log or None, stats, manifest record), filled by prefetch()
+_USED = set()
+
+
 def evaluate(sc, seed=7, coordinated=True, make_ctrl=BaselineController, supervisor="design"):
+    if _PRE is not None:
+        man = MF.make_manifest(sc, make_ctrl(), seed, supervisor=_supervisor(supervisor),
+                               governed_yaw=coordinated, entry=BOOK.entry, require_declared=True)
+        if man["code"]["code_hash"] != BOOK.code["code_hash"]:
+            raise RuntimeError("code hash changed during the evaluation")
+        log, stats, rec = _PRE[man["run_id"]]              # KeyError = this run was not prefetched
+        _USED.add(man["run_id"])
+        BOOK.runs[man["run_id"]] = rec
+        return log, stats
+    return _evaluate(sc, seed, coordinated, make_ctrl, supervisor)
+
+
+def _evaluate(sc, seed, coordinated, make_ctrl, supervisor):
     log, stats, rid, ev = BOOK.run(sc, make_ctrl, seed=seed, supervisor=supervisor,
                                    governed_yaw=coordinated)
     stats.update(reject_pct=100*float(np.nanmean(log.c_request_rejected)) if "c_request_rejected" in log else 0.0,
@@ -78,7 +104,64 @@ def med(samples, key):
     return float(np.median([x[key] for x in samples]))
 
 
-def main():
+def montecarlo_cases():
+    """The 5 x 20 sampled plants, drawn from one seeded stream in a fixed order."""
+    rng = np.random.default_rng(2024); out = []
+    for mk in (S.run_a, S.run_b, S.run_c, S.run_d, S.run_e):
+        cases = []
+        for k in range(20):
+            b, _ = sample_cfg(rng, SimConfig())
+            b = b.with_(plant=dict(k_e=b.plant.k_t))
+            sc = mk(b)
+            # D/E constructors set payload to 0.7 kg; deliberately perturb around it.
+            if sc.name in ('D', 'E'):
+                sc = replace(sc, cfg=sc.cfg.with_(plant=dict(m_payload=float(rng.uniform(.3, 1.0)))))
+            cases.append((replace(sc, cfg=replace(sc.cfg, duration=6)), 100 + k))
+        out.append(cases)
+    return out
+
+
+def jobs():
+    """Every run main() makes, as (scenario, seed, coordinated, make_ctrl, supervisor, keep_log)."""
+    base = SimConfig(); out = []
+    for sc in S.all_runs():
+        for seed in (1, 2, 3, 4, 5):
+            out.append((sc, seed, True, BaselineController, "design", seed == 1))
+            out.append((sc, seed, False, legacy, "legacy", False))
+    for mo in M.all_motions(base):
+        out += [(mo, seed, True, BaselineController, "design", False) for seed in (1, 2, 3, 4, 5)]
+    out += [(sc, 7, coordinated, BaselineController, "design", True) for _, sc, coordinated in fault_cases()]
+    for cases in montecarlo_cases():
+        out += [(sc, seed, True, BaselineController, "design", False) for sc, seed in cases]
+    return out
+
+
+def _job(job):
+    sc, seed, coordinated, make_ctrl, supervisor, keep = job
+    log, stats = _evaluate(sc, seed, coordinated, make_ctrl, supervisor)
+    rid = stats["run_id"]
+    return rid, (log if keep else None), stats, BOOK.runs[rid], BOOK.code, BOOK.env, BOOK.defs
+
+
+def prefetch(n_jobs):
+    global _PRE
+    _PRE = {}
+    with ProcessPoolExecutor(max_workers=n_jobs) as ex:
+        for rid, log, stats, rec, code, env, defs in ex.map(_job, jobs(), chunksize=1):
+            if BOOK.code is None:
+                BOOK.code, BOOK.env, BOOK.defs = code, env, defs
+            elif code["code_hash"] != BOOK.code["code_hash"]:
+                raise RuntimeError("workers saw different code hashes")
+            _PRE[rid] = (log, stats, rec)
+    print(f"Prefetched {len(_PRE)} runs with {n_jobs} workers", flush=True)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2) - 1))
+    args = ap.parse_args(argv)
+    if args.jobs > 1:
+        prefetch(args.jobs)
     base = SimConfig()
     records = {}; keep = {}
     rows = []
@@ -141,18 +224,10 @@ def main():
             'request is suspended with a coordinated-stop request (Packet 2B). Small governed error during '
             'fallback or suspension is not successful tracking.', '']
 
-    rng = np.random.default_rng(2024); records['montecarlo'] = {}; rows = []
-    for mk in (S.run_a, S.run_b, S.run_c, S.run_d, S.run_e):
-        samples = []
-        for k in range(20):
-            b, _ = sample_cfg(rng, SimConfig())
-            b = b.with_(plant=dict(k_e=b.plant.k_t))
-            sc = mk(b)
-            # D/E constructors set payload to 0.7 kg; deliberately perturb around it.
-            if sc.name in ('D', 'E'):
-                sc = replace(sc, cfg=sc.cfg.with_(plant=dict(m_payload=float(rng.uniform(.3, 1.0)))))
-            sc = replace(sc, cfg=replace(sc.cfg, duration=6))
-            _, s = evaluate(sc, seed=100 + k); samples.append(s)
+    records['montecarlo'] = {}; rows = []
+    for cases in montecarlo_cases():
+        samples = [evaluate(sc, seed=seed)[1] for sc, seed in cases]
+        sc = cases[-1][0]
         records['montecarlo'][sc.name] = samples
         pct = lambda key, p: float(np.percentile([x[key] for x in samples], p))
         rows.append([sc.name, f"{pct('rms', 95):.2f}", f"{pct('rms_gov', 95):.2f}", f"{pct('peak_gov', 95):.2f}",
@@ -179,6 +254,8 @@ def main():
             f'alpha = {c.alpha}; integral zero = {c.wi_ratio*c.wc:.2f} rad/s. '
             'Continuous-time approximation at nominal roll equilibrium; nonlinear sweeps are evaluated separately.', '',
             table(['Condition', 'PM degrees', 'GM dB', 'Crossover Hz'], rows), '']
+    if _PRE is not None and set(_PRE) != _USED:
+        raise RuntimeError(f"prefetched runs not used by the report: {sorted(set(_PRE) - _USED)}")
     allstats = [s for key in 'ABCDE' for s in records[key]] + list(records['faults'].values())
     allstats += [s for samples in records['montecarlo'].values() for s in samples]
     allstats += [s for samples in records['motions'].values() for s in samples]

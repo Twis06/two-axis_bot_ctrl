@@ -1,0 +1,19 @@
+[project]
+name = "coupled-axis-control"
+version = "1.0.0"
+description = "Roll-axis simulator, frozen deterministic baseline and evidence for the Robotics Controls take-home"
+readme = "README.md"
+# Pinned to the environment that produced the published evidence (report/reproduction_log.txt).
+requires-python = "==3.9.*"
+dependencies = [
+    "numpy==2.0.2",
+    "scipy==1.13.1",
+    "matplotlib==3.9.4",
+]
+
+[dependency-groups]
+# Only for rebuilding report/assessment_report.html and the memo PDFs; not needed for the evidence.
+report = ["markdown>=3.5"]
+
+[tool.uv]
+package = false

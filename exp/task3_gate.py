@@ -137,25 +137,27 @@ def current_limit(rows):
 def safety(pairs):
     """Every latched fault and re-arm is compared per pair from the untruncated event
     counts (any event type the candidate has more often is new), plus suspension,
-    rejection and lockout. Missing counts are incomplete, never pass."""
-    new = []
+    rejection and lockout. Every pair is scanned: any new fault is a fail even if other
+    pairs lack evidence; otherwise missing evidence is incomplete, never pass."""
+    new, missing = [], []
     for k, b, c in pairs:
         if not isinstance(c.get("event_counts"), dict) or not isinstance(b.get("event_counts"), dict):
-            return _crit("no new fault, suspension, rejection or lockout", "incomplete",
-                         evidence=[dict(pair=list(k), missing="event_counts")])
-        for ev in sorted(set(c["event_counts"]) | set(b["event_counts"])):
-            nc, nb = c["event_counts"].get(ev, 0), b["event_counts"].get(ev, 0)
-            if nc > nb:
-                new.append(dict(pair=list(k), field=ev, comparator=nb, candidate=nc))
+            missing.append(dict(pair=list(k), missing="event_counts"))
+        else:
+            for ev in sorted(set(c["event_counts"]) | set(b["event_counts"])):
+                nc, nb = c["event_counts"].get(ev, 0), b["event_counts"].get(ev, 0)
+                if nc > nb:
+                    new.append(dict(pair=list(k), field=ev, comparator=nb, candidate=nc))
         for f in ("wd_trips", "suspended", "rejected"):
             if c.get(f) is None or b.get(f) is None:
-                return _crit("no new fault, suspension, rejection or lockout", "incomplete", evidence=[list(k)])
-            if float(c[f]) > float(b[f]):
+                missing.append(dict(pair=list(k), missing=f))
+            elif float(c[f]) > float(b[f]):
                 new.append(dict(pair=list(k), field=f, comparator=b[f], candidate=c[f]))
         lock = lambda r: bool(r.get("lockout")) or "lockout" in (r.get("events") or [])
         if lock(c) and not lock(b):
             new.append(dict(pair=list(k), field="lockout"))
-    return _crit("no new fault, suspension, rejection or lockout", "fail" if new else "pass", len(new), 0, new)
+    status = "fail" if new else ("incomplete" if missing else "pass")
+    return _crit("no new fault, suspension, rejection or lockout", status, len(new), 0, new + missing)
 
 
 def stale_application(rows):
@@ -245,6 +247,7 @@ def adoption_gate(heldout_rows, comparator, candidate, challenge_rows=None, expe
                         if r["variant"] == v]
                 exp = {(g, tuple(l), lim, sd) for g, l, lim, sd in expected_challenge_keys}
                 grid += [f"{v}: missing challenge cell {list(k)}" for k in sorted(exp - set(seen))]
+                grid += [f"{v}: unregistered challenge cell {list(k)}" for k in sorted(set(seen) - exp)]
                 grid += [f"{v}: duplicate challenge cell {list(k)}" for k in sorted({x for x in seen if seen.count(x) > 1})]
     grid += [f"unpaired held-out cell {list(k)}" for k in unpaired]
     grid += [f"duplicate held-out cell {list(k)}" for k in dup]

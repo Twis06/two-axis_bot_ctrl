@@ -31,6 +31,7 @@ FULL = [
      [PY, "-m", "exp.task3_l4", "--challenges", "report/task3_challenges_results.json"]),
     ("Task 4 Packet 4B: matched baseline validation", [PY, "-m", "exp.task4b_eval"]),
     ("Task 5: registered motor-strength test (analysis corrected in R2)", [PY, "-m", "exp.task5_prediction"]),
+    ("Memo Figure 8: calculated static-holdability diagram", [PY, "report/html_assets/holdability_figure.py"]),
 ]
 HISTORICAL = [("historical: phase 2 baseline evaluation", [PY, "exp/phase2_eval.py"])]
 QUICK = FULL[:2]

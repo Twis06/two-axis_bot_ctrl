@@ -81,7 +81,7 @@
 
 `int2` improves held-out tracking and completion but misses the declared nominal/corner margin thresholds (43.7°/28.1° phase, 5.7 dB corner gain); this is a design-rule exclusion, not proof of hardware danger. The frozen `int1` retains margin reserve.
 
-**What would change the learning choice:** the oracle shows about 77% potential, but only 4/50 adaptive runs were usable before testing. A read-only replay traced the delay to insufficient eligible, diverse calibration dwells; once coverage passed, worker publication took 4–8 ms. Compare bounded calibration and stationarity changes on tuning cases, then pre-register a new held-out test including payload change.
+**What would change the learning choice:** the oracle shows about 77% potential, but only 4/50 adaptive runs were usable before testing (published first-usable times). An unscripted diagnostic replay suggests too few eligible, diverse calibration dwells rather than worker latency, a hypothesis to test, not a result. Compare bounded calibration and stationarity changes on tuning cases, then pre-register a new held-out test including payload change.
 
 ## 4. Evidence
 

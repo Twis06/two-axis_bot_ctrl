@@ -206,6 +206,23 @@ class TestReviewR6(unittest.TestCase):
         self.assertEqual((exer["yaw_B"], exer["yaw_B@late"]), (0, 2))
 
 
+class TestReviewR6Round2(unittest.TestCase):
+    """R6 round-2 minors r2-1 and r2-2."""
+
+    def test_unregistered_challenge_cells_are_incomplete(self):
+        extra = [dict(row("adaptive", 0, 1.0, event_counts={"overspeed": 3}), challenge="yaw_C@late",
+                      learn_usable_during_challenge=0.9)]
+        g = gate(good_heldout(), ch=good_challenges() + extra)
+        self.assertEqual(status(g, "registered grid"), "incomplete")
+        self.assertNotEqual(g["overall"], "pass")
+
+    def test_new_fault_fails_even_when_another_pair_lacks_counts(self):
+        rows = good_heldout()
+        rows[N].pop("event_counts")                                   # adaptive seed 0: no counts
+        rows[-1] = row("adaptive", 9, 1.0, event_counts={"overtemp": 1})
+        self.assertEqual(status(gate(rows), "no new fault"), "fail")
+
+
 class TestGateEvidence(unittest.TestCase):
     def _log(self):
         import numpy as np

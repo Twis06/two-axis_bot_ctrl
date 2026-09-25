@@ -63,18 +63,45 @@ REGISTRATION = dict(
 )
 EXECUTABLE = ("yaw_B", "yaw_C", "feedback_outage", "derate")
 
+# R3 review M1: the registered onsets (9 s, 12.5 s) precede the frozen estimator's typical
+# first usable time (L4 median 16.6 s), so the correction was rarely active. This AMENDMENT
+# is registered separately, before it runs, and repeats the same challenges starting at
+# 17.5 s (during the final test move). It supplements; it does not replace the original.
+AMEND_PATH = ROOT / "report" / "task3_challenges_late_registration.json"
+AMENDMENT = dict(
+    packet="R3 supplementary adaptive challenges, late-onset amendment",
+    label="supplementary validation, not held-out discovery data; registered after the original "
+          "challenge results (onset chosen from the L4 first-usable times), before this amendment ran",
+    amends="report/task3_challenges_registration.json",
+    reason="original onsets precede the candidate's typical first usable time (median 16.6 s over the "
+           "37 ever-usable L4 runs), leaving yaw B/C unexercised",
+    candidate=REGISTRATION["candidate"], comparator=REGISTRATION["comparator"],
+    loads=REGISTRATION["loads"], limit_A=REGISTRATION["limit_A"], seeds=REGISTRATION["seeds"],
+    challenges={
+        "yaw_B@late": "yaw 75 deg at 1.5 Hz, ramped over 1 s from t = 17.5 s",
+        "yaw_C@late": "yaw 75 deg at 2.2 Hz, ramped over 1 s from t = 17.5 s",
+        "feedback_outage@late": "feedback-only loss for 60 ms at t = [17.5, 17.56) s",
+        "derate@late": "current limit 3.2 -> 2.4 A at t = 17.5 s",
+    },
+    scoring=dict(same_as="original registration", onset_s={k: 17.5 for k in
+                 ("yaw_B@late", "yaw_C@late", "feedback_outage@late", "derate@late")}),
+)
+LATE = 17.5
+
 
 def challenge_scenario(name, load, lim):
     sc, test_wp = T.scenario(load, lim, f"R3 {name} {load} {lim}A")
     cfg, yaw = sc.cfg, sc.yaw
-    if name == "yaw_B":
-        yaw = RampedSine(R(75), 1.5, t_ramp=1.0, t0=TEST_START)
-    elif name == "yaw_C":
-        yaw = RampedSine(R(75), 2.2, t_ramp=1.0, t0=TEST_START)
-    elif name == "feedback_outage":
-        cfg = cfg.with_(timing=dict(feedback_blackout=((12.5, 12.56),)))
-    elif name == "derate":
-        cfg = cfg.with_(drive=dict(derate_schedule=((12.5, 2.4),)))
+    base, late = name.split("@")[0], name.endswith("@late")
+    t_yaw, t_evt = (LATE, LATE) if late else (TEST_START, 12.5)
+    if base == "yaw_B":
+        yaw = RampedSine(R(75), 1.5, t_ramp=1.0, t0=t_yaw)
+    elif base == "yaw_C":
+        yaw = RampedSine(R(75), 2.2, t_ramp=1.0, t0=t_yaw)
+    elif base == "feedback_outage":
+        cfg = cfg.with_(timing=dict(feedback_blackout=((t_evt, t_evt + 0.06),)))
+    elif base == "derate":
+        cfg = cfg.with_(drive=dict(derate_schedule=((t_evt, 2.4),)))
     else:
         raise ValueError(name)
     segs = sc.roll.segs[-len(test_wp):]
@@ -84,6 +111,10 @@ def challenge_scenario(name, load, lim):
 
 
 _BOOK = None
+
+
+def fnum(x, nd):
+    return "—" if x is None or (isinstance(x, float) and not math.isfinite(x)) else f"{x:.{nd}f}"
 
 
 def _transitions(log, t_from):
@@ -104,9 +135,9 @@ def _work(job):
     _, dwells = T.sequence()
     prim, n = T.primary(log, dwells)
     comp = ev.get("completion") or {}
-    onset = REGISTRATION["scoring"]["onset_s"][name]
+    onset = {**REGISTRATION["scoring"]["onset_s"], **AMENDMENT["scoring"]["onset_s"]}[name]
     learn = np.nan_to_num(np.asarray(log.get("c_learn_usable", np.zeros(len(log.t))), float))
-    k0 = int(np.searchsorted(log.t, onset))
+    k0 = min(int(np.searchsorted(log.t, onset)), len(log.t) - 1)
     row = dict(challenge=name, variant=variant, load=list(load), limit=REGISTRATION["limit_A"], seed=seed,
                run_id=rid, primary_deg=prim, primary_samples=n, completed=bool(comp.get("completed")),
                missing_waypoints=comp.get("missing_waypoints"), waypoint_visits=comp.get("waypoint_visits"),
@@ -128,6 +159,7 @@ def _work_entry(job):
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--register", action="store_true")
+    ap.add_argument("--register-amendment", action="store_true")
     ap.add_argument("--out", default=None)
     ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     args = ap.parse_args(argv)
@@ -137,12 +169,22 @@ def main(argv=None):
         MF.write_json(REGISTRATION, REG_PATH)
         print(f"registered {REG_PATH}")
         return
-    if not REG_PATH.exists() or MF.read_json(REG_PATH) != json.loads(json.dumps(MF.jsonable(REGISTRATION))):
-        raise SystemExit("registration missing or differs from the code: refusing to run")
+    if args.register_amendment:
+        if AMEND_PATH.exists():
+            raise SystemExit(f"{AMEND_PATH} exists: a registration is never regenerated")
+        MF.write_json(AMENDMENT, AMEND_PATH)
+        print(f"registered {AMEND_PATH}")
+        return
+    for path, reg in ((REG_PATH, REGISTRATION), (AMEND_PATH, AMENDMENT)):
+        if not path.exists() or MF.read_json(path) != json.loads(json.dumps(MF.jsonable(reg))):
+            raise SystemExit(f"{path.name} missing or differs from the code: refusing to run")
     if baseline_fingerprint()[0][:16] != T.FROZEN:
         raise SystemExit("baseline fingerprint is not the frozen one")
-    jobs = [(c, v, tuple(ld), sd) for c in EXECUTABLE for v in ("int1", "adaptive")
+    names = EXECUTABLE + tuple(f"{c}@late" for c in EXECUTABLE)
+    jobs = [(c, v, tuple(ld), sd) for c in names for v in ("int1", "adaptive")
             for ld in REGISTRATION["loads"] for sd in REGISTRATION["seeds"]]
+    expected = [(c, list(ld), REGISTRATION["limit_A"], sd) for c in names
+                for ld in REGISTRATION["loads"] for sd in REGISTRATION["seeds"]]
     with ProcessPoolExecutor(max_workers=args.jobs) as ex:
         res = list(ex.map(_work_entry, jobs, chunksize=1))
     if len({r["code"]["code_hash"] for r in res}) != 1:
@@ -155,21 +197,26 @@ def main(argv=None):
     lines = ["# Task 3 R3 — supplementary adaptive challenges (generated)", "",
              "Generated by `python -m exp.task3_challenges`. **Simulated.** Registered in "
              "[task3_challenges_registration.json](../../task3_challenges_registration.json) before execution. "
+             "The late-onset amendment is registered separately in "
+             "[task3_challenges_late_registration.json](../../task3_challenges_late_registration.json). "
              "Supplementary validation, not held-out discovery data.", "",
              f"Baseline fingerprint `{baseline_fingerprint()[0][:16]}`; {len(book.runs)} runs.", "",
              T.table(["Challenge", "Variant", "Median primary °", "Completed", "WD trips", "Suspended",
                       "Usable at onset", "Usable share after onset", "Max applied correction N·m",
-                      "Applied while unusable", "Max target over limit A", "Run set"],
+                      "Applied while unusable", "Max host command over limit A (pre-clamp)", "Run set"],
                      [[c, v, f"{T.med([r['primary_deg'] for r in rs]):.3f}",
                        f"{sum(r['completed'] for r in rs)}/{len(rs)}", str(sum(r['wd_trips'] for r in rs)),
                        str(sum(r['suspended'] for r in rs)),
                        f"{sum(r['learn_usable_at_onset'] for r in rs)}/{len(rs)}",
-                       f"{T.med([r['learn_usable_during_challenge'] for r in rs]):.2f}",
-                       f"{max(r['learn_applied_max_Nm'] for r in rs):.3f}",
-                       str(sum(r['applied_while_unusable'] for r in rs)),
-                       f"{max(r['target_over_limit'] for r in rs):.3g}",
+                       fnum(T.med([r['learn_usable_during_challenge'] for r in rs
+                                   if r['learn_usable_during_challenge'] is not None]), 2),
+                       fnum(max([r['learn_applied_max_Nm'] for r in rs if r['learn_applied_max_Nm'] is not None],
+                                default=None), 3),
+                       "—" if all(r['applied_while_unusable'] is None for r in rs)
+                       else str(sum(r['applied_while_unusable'] or 0 for r in rs)),
+                       f"{max(r['command_over_limit'] for r in rs):.3g}",
                        f"`{run_set_id([r['run_id'] for r in rs])}`"]
-                      for c in EXECUTABLE for v in ("int1", "adaptive")
+                      for c in names for v in ("int1", "adaptive")
                       for rs in [[r for r in rows if r['challenge'] == c and r['variant'] == v]]]), "",
              "Payload change: registered as not executable in the frozen simulator; no rows. "
              "The adoption gate therefore stays `incomplete` for challenges regardless of these results."]
@@ -179,7 +226,8 @@ def main(argv=None):
         book.check_unchanged()
     with MF.staged_publish(out, staging_root=Path(tempfile.gettempdir()) / "task3_ch_stage", check=check) as st:
         (st / "task3_challenges_numbers.md").write_text("\n".join(lines) + "\n")
-        MF.write_json(dict(registration=REGISTRATION, rows=rows), st / "task3_challenges_results.json")
+        MF.write_json(dict(registration=REGISTRATION, amendment=AMENDMENT, expected_keys=expected, rows=rows),
+                      st / "task3_challenges_results.json")
         MF.write_json(book.record(), st / "task3_challenges_runs.json")
     print(f"published {len(rows)} rows to {out}")
 

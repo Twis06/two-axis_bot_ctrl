@@ -1,0 +1,45 @@
+{
+ "amends": "report/task3_challenges_registration.json",
+ "candidate": {
+  "controller": "ctrl.adaptive.AdaptiveController",
+  "est_seed": "= run seed",
+  "estimator": "ctrl.payload_estimator.PayloadEstimator (frozen L1 settings)",
+  "stationarity": "frozen default (2 encoder counts)",
+  "variant": "adaptive"
+ },
+ "challenges": {
+  "derate@late": "current limit 3.2 -> 2.4 A at t = 17.5 s",
+  "feedback_outage@late": "feedback-only loss for 60 ms at t = [17.5, 17.56) s",
+  "yaw_B@late": "yaw 75 deg at 1.5 Hz, ramped over 1 s from t = 17.5 s",
+  "yaw_C@late": "yaw 75 deg at 2.2 Hz, ramped over 1 s from t = 17.5 s"
+ },
+ "comparator": "int1 (frozen baseline, wi_ratio 0.1)",
+ "label": "supplementary validation, not held-out discovery data; registered after the original challenge results (onset chosen from the L4 first-usable times), before this amendment ran",
+ "limit_A": 3.2,
+ "loads": [
+  [
+   0.0,
+   0.18
+  ],
+  [
+   0.06,
+   0.14
+  ]
+ ],
+ "packet": "R3 supplementary adaptive challenges, late-onset amendment",
+ "reason": "original onsets precede the candidate's typical first usable time (median 16.6 s over the 37 ever-usable L4 runs), leaving yaw B/C unexercised",
+ "scoring": {
+  "onset_s": {
+   "derate@late": 17.5,
+   "feedback_outage@late": 17.5,
+   "yaw_B@late": 17.5,
+   "yaw_C@late": 17.5
+  },
+  "same_as": "original registration"
+ },
+ "seeds": [
+  201,
+  202,
+  203
+ ]
+}

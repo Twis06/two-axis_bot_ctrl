@@ -50,7 +50,7 @@ from sim.trajectories import Hold, MinJerkSequence
 
 ROOT = Path(__file__).resolve().parents[1]
 ENTRY = "exp.task3_l4"
-PROVENANCE_SOURCES = ("exp/evidence.py",)
+PROVENANCE_SOURCES = ("exp/evidence.py", "exp/task3_gate.py")
 FROZEN = "7d857df507c389c9"
 R, DEG = math.radians, 180 / math.pi
 
@@ -160,22 +160,40 @@ def dwell_mask(log, dwells):
     return m
 
 
-def gate_evidence(log, dwells, t_from=None):
+def gate_evidence(log, dwells, t_from=None, grace_s=0.02):
     """Per-run evidence for exp.task3_gate (R3): limit compliance, availability split,
-    and learned correction applied while the estimator reports itself unusable."""
-    learn = np.nan_to_num(np.asarray(log.get("c_learn_usable", np.zeros(len(log.t))), float))
-    ff = np.nan_to_num(np.asarray(log.get("c_learn_ff", np.zeros(len(log.t))), float))
-    has_learn = "c_learn_usable" in log
-    dm = dwell_mask(log, dwells)
-    sel = np.ones(len(log.t), bool) if t_from is None else np.asarray(log.t) >= t_from
-    return dict(
-        target_over_limit=float(np.max(np.abs(log.i_tgt) - log.i_lim)),
-        applied_while_unusable=int(np.sum((np.abs(ff) > 0) & (learn < 0.5))) if has_learn else 0,
-        learn_usable_in_dwells=float(np.mean(learn[dm] > 0.5)) if (has_learn and dm.any()) else 0.0,
-        learn_applied_max_Nm=float(np.max(np.abs(ff))) if has_learn else 0.0,
-        learn_usable_during_challenge=float(np.mean(learn[sel] > 0.5)) if has_learn else 0.0,
+    and learned correction applied while the estimator reports itself unusable.
+    Learning fields are None (not zero) when the run has no learning telemetry."""
+    t = np.asarray(log.t)
+    lim = np.asarray(log.i_lim)
+    near_change = np.zeros(len(t), bool)
+    for k in np.flatnonzero(np.diff(lim) != 0) + 1:
+        near_change |= (t >= t[k]) & (t < t[k] + grace_s)
+    has_learn = "c_learn_usable" in log and "c_learn_ff" in log
+    out = dict(
+        # The drive clamps the applied target by construction: simulator consistency only.
+        target_over_limit=float(np.max(np.abs(log.i_tgt) - lim)),
+        # Pre-clamp command the drive received, outside a short grace after a limit change.
+        command_over_limit=float(np.max((np.abs(log.i_raw) - lim)[~near_change])),
+        measured_over_limit=float(np.max(np.abs(log.i) - lim)),
         lockout=any(e[1] == "lockout" for e in log.events),
+        applied_while_unusable=None, learn_usable_in_dwells=None, learn_applied_max_Nm=None,
+        learn_usable_during_challenge=None,
     )
+    if has_learn:
+        learn = np.nan_to_num(np.asarray(log.c_learn_usable, float))
+        ff = np.nan_to_num(np.asarray(log.c_learn_ff, float))
+        dm = dwell_mask(log, dwells)
+        sel = np.ones(len(t), bool) if t_from is None else t >= t_from
+        out.update(applied_while_unusable=int(np.sum((np.abs(ff) > 0) & (learn < 0.5))),
+                   learn_usable_in_dwells=float(np.mean(learn[dm] > 0.5)) if dm.any() else 0.0,
+                   learn_applied_max_Nm=float(np.max(np.abs(ff))),
+                   learn_usable_during_challenge=float(np.mean(learn[sel] > 0.5)))
+    return out
+
+
+def heldout_keys():
+    return [(ld, lim, sd) for ld in HELDOUT_LOADS for lim in LIMITS for sd in HELDOUT_SEEDS]
 
 
 def _work(job):
@@ -338,11 +356,13 @@ def main(argv=None):
                f"at least 10 % (median, paired) over the stronger deterministic comparator. This establishes "
                "potential headroom but is not deployable controller evidence.")
     from exp.task3_gate import adoption_gate
-    challenge_rows = None
+    challenge_rows = challenge_keys = None
     if args.challenges and Path(args.challenges).exists():
         import json as _json
-        challenge_rows = _json.loads(Path(args.challenges).read_text())["rows"]
-    gate_result = adoption_gate(H, ref, "adaptive", challenge_rows)
+        ch = _json.loads(Path(args.challenges).read_text())
+        challenge_rows, challenge_keys = ch["rows"], ch["expected_keys"]
+    gate_result = adoption_gate(H, ref, "adaptive", challenge_rows, expected_keys=heldout_keys(),
+                                expected_challenge_keys=challenge_keys)
     adaptive_gate = gate_result["overall"] == "pass"
     fmtv = lambda v: "—" if v is None else (f"{v:.3f}" if isinstance(v, float) else str(v))
     gate_lines = ["", "### Adoption gate (machine-audited, exp/task3_gate.py)", "",

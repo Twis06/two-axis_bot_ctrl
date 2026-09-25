@@ -361,6 +361,6 @@ It is the comparator for Task 3 and the controller for the Task 5 prediction.
 - payload and thermal behaviour;
 - fallback clearance and a coordinated yaw stop.
 
-A ±2° RMS / ±5° peak target is not specified by the assessment and is not used to label runs successful. D/E deliberately trade delivered progress for staying within the *nominal-model* torque budget; the unmodelled payload still puts nominal E at the command limit 5.5% of the time (146 saturation entries).
+Neither threshold is specified by the assessment. The 2° request-window path RMS is a **project assumption** used by the "tracked" classifier (§6), together with ≥95% progress and no rejection, suspension or tracking fault. The 5° figure is a different project rule: the Task 3 whole-run overshoot allowance, not a peak-error criterion of this classifier. D/E deliberately trade delivered progress for staying within the *nominal-model* torque budget; the unmodelled payload still puts nominal E at the command limit 5.5% of the time (146 saturation entries).
 
 Implementation: [controller](../ctrl/baseline.py), [governor](../ctrl/governor.py), [yaw/roll estimator](../ctrl/yaw_estimator.py), [supervisor](../ctrl/supervisor.py), [fault classes](../ctrl/interfaces.py), [gain derivation](../ctrl/loopshape.py), [drive model](../sim/drive.py), [evidence plumbing](../exp/evidence.py).

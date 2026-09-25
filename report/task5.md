@@ -1,6 +1,6 @@
 # Task 5 — motor-strength explanation test (R2 retrospective correction of the analysis)
 
-Prediction registration precedes the new experiment. The exact nominal Run B, Kt×0.90 paired intervention was not present in the prior matched evidence; earlier Kt±15% random/corner cases remain prior context and are not relabeled.
+The prediction was registered for this experiment, but the registration and the original results were first committed together (f19fff2), so git gives no evidence that the registration came first (R2 audit). The exact nominal Run B, Kt×0.90 paired intervention was not present in the prior matched evidence; earlier Kt±15% random/corner cases remain prior context and are not relabeled.
 
 Claim: With yaw feed-forward unchanged, a weaker true motor produces a predictable coupling-torque residual and requires proportionally more current.
 

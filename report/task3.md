@@ -44,9 +44,41 @@ The L2 audit is [`exp/task3_estimator_audit.py`](../exp/task3_estimator_audit.py
 
 The L1/L2 audit establishes a bounded estimator kernel, not a useful controller improvement. The registered L4 comparison then tested the exact frozen L1 configuration through the feed-forward-only adapter on the same paired loads, limits, motions, and seeds as the deterministic comparator.
 
-The adaptive candidate achieved **0.0% median paired reduction** against `int1`, with a range of 0.0–78.7%. Only **37/50 held-out runs (74%)** obtained a usable estimate, below the preregistered 80% minimum. It lost no comparator-completed sequences and introduced no watchdog trips, suspensions, or request rejections, so the failure is primarily insufficient and unreliable benefit rather than a demonstrated safety regression.
+### What the comparison found
 
-The [known-load ceiling](<repo>/report/task3_ceiling_numbers.md) shows why the comparison was necessary. Under the frozen protocol, the feed-forward-only diagnostic oracle reduced the primary metric by **76.9% median paired** against `int1` and completed **50/50** held-out sequences. The oracle uses true load and is not deployable; it shows that the two-parameter load law can matter, while the tested online estimator did not realize that potential reliably enough.
+The registered adoption gate ([`exp/task3_gate.py`](../exp/task3_gate.py)) returns **fail** (Simulated; 50 held-out pairs against `int1`; scoring metrics version 4A.4, phase-aware completion):
+
+| Gate criterion | Status | Value |
+|---|---|---|
+| Median paired reduction ≥10% | **fail** | 0.0% (range 0.0–78.7%) |
+| ≥80% of runs ever obtain a usable estimate | **fail** | 37/50 (74%) |
+| No comparator waypoint or completion lost | pass | 0 lost |
+| No ordinary feasible case more than 20% worse | pass | worst +0.0% |
+| Pre-clamp current command within the active limit | pass | 0.000 A excess |
+| No new fault, suspension, rejection or lockout | pass | 0 |
+| No learned correction applied while unusable | pass | 0 samples |
+| No benefit credited to slower motion | pass | 0 |
+| Supplementary challenges | **incomplete** | payload change not executed |
+| Registered grid complete | pass | 50/50 held-out, 96 challenge cells |
+
+**The median hides a split outcome.** The frozen estimator's data gates are rarely met during the calibration dwells:
+
+- **Late or never:** it first becomes usable at a median of 16.6 s (over the 37 runs where it ever does; the test phase is 9–19 s), and its median usable share within the scored dwells is 0%.
+- **When it is active, it helps:** it is active during scoring in 22/50 runs, 20/50 pairs improve, and 8 improve by 42–79%.
+
+The candidate therefore fails on availability rather than on the value of the correction.
+
+**Completion.** Both `int1` and the candidate complete 40/50 held-out test sequences. The 10 incomplete runs of each are all at load (−0.06, +0.14). They reach every waypoint but overshoot the ±65° range by 5.65–6.89° (by seed), against the 5° allowed; the peak is on the +65° test move. They are not failures to reach a target.
+
+**Safety scope.** No safety criterion failed. That holds only in the evaluated conditions:
+
+- **Held-out set:** 5 loads × 2 limits × 5 seeds.
+- **Supplementary challenges:** registered yaw B and C, a 60 ms feedback outage and a 3.2 → 2.4 A derate, at 9, 12.5 and (late-onset amendment) 17.5 s; loads (0, 0.18) and (0.06, 0.14); seeds 201–203.
+- **What those runs showed:** the correction was active in half of the late-onset challenge runs, with no limit, fault or waypoint regression. See [challenge numbers](task3_challenges_numbers.md).
+- **Not executed:** payload change mid-run, which the frozen simulator cannot represent without a harness patch.
+- **Configuration:** all results are for the exact frozen configuration, `AdaptiveController(est_seed = seed)` with the L1 stationarity gate.
+
+The [known-load ceiling](task3_ceiling_numbers.md) shows why the comparison was necessary. Under the frozen protocol, the feed-forward-only diagnostic oracle reduced the primary metric by **76.9% median paired** against `int1` and completed **50/50** held-out sequences. The oracle uses the true load and is not deployable. It shows that the two-parameter load law can matter; the tested online estimator did not realize that potential reliably enough. (The full oracle, which also informs the governor, never starts the path in 15 runs at 2.4 A and is reported only as a diagnostic.)
 
 The explicit `INF-P` case remains a separate capacity boundary: its 0.41 N·m static load exceeds the 0.336 N·m derated capacity, so no bounded feed-forward correction can make that request physically holdable. This does not explain away the feasible-load comparison.
 
@@ -54,6 +86,8 @@ The L3 adapter is in [`ctrl/adaptive.py`](../ctrl/adaptive.py) with focused cont
 
 ## Verification and provenance
 
-The focused estimator suite passed **15 tests**; the L3 adapter contract suite passed **7 tests**; the full repository suite passed **203 tests** with zero failures. The matched L4 packet contains **357 manifested runs**, including 50 paired adaptive held-out cases. The published L2 packet contains 60 rows and zero structural violations. The final estimator source hash is `cefc2b5169bfd66593dbb525ec8f143f0c829dd51c53611e64a9784060aab392`.
+- **Test counts:** `python3 -m unittest discover -s tests` passed **255 tests** at commit `039f83b` on 2026-09-24. The focused suites are the estimator (15), the adapter contract, the phase-aware scorer (25) and the adoption gate (19). Passing tests show the code does what the tests check; they do not validate the experiment design.
+- **Evidence:** the L4 packet contains **357 manifested runs** and the challenge packet **96**, both regenerated from committed sources by [R4](packets/R4.md). The published L2 packet contains 60 rows and zero structural violations.
+- **Corrections:** these are recorded in packets [R1](packets/R1.md) (scoring) and [R3](packets/R3.md) (gate and challenges).
 
-All estimator, ceiling, audit, and matched adaptive results are simulated or replay-like. They are not hardware observations, payload-mass identification, uncertainty intervals, or safety certification. The deterministic baseline at fingerprint `7d857df507c389c9` remains the final controller for this assessment; Task 5's prospective simulation is recorded separately and hardware confirmation remains pending.
+All estimator, ceiling, audit and matched adaptive results are simulated or replay-like. They are not hardware observations, payload-mass identification, uncertainty intervals or safety certification. The deterministic baseline at fingerprint `7d857df507c389c9` remains the final controller for this assessment.

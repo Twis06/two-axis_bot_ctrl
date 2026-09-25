@@ -14,11 +14,11 @@
 
 | Run | Test condition | Observed tracking | Observed actuator/fault behavior | Supported interpretation |
 |---|---|---|---|---|
-| A | Shaped moves to ±45° roll; yaw stationary | RMS 2.8°, peak 6.1° | Peak current 2.1 A; no fault | Tracking is imperfect despite current headroom. The nominal current ceiling is unlikely to explain the error. |
+| A | Shaped moves to ±45° roll; yaw stationary | RMS 2.8°, peak 6.1° | Peak current 2.1 A; no fault | Tracking is imperfect despite current headroom. [Calc → Hyp] Peak current is about 66% of the nominal ceiling, so the current limit is unlikely to be the cause; voltage limits and trajectory feasibility are not excluded. |
 | B | Roll held at 0°; yaw sine ±75° at 1.5 Hz | RMS 4.2°, peak 11.5° | Peak current 3.1 A; 8% of samples current-clipped | Holding roll requires disturbance rejection. Clipping is already occurring. |
 | C | Same as B; yaw frequency increased to 2.2 Hz | RMS 7.8°, peak 20.7° | Current at 3.2 A for 31% of samples; one tracking watchdog trip | Increased yaw excitation accompanies worse tracking, more saturation, and a fault. |
 | D | Payload COM shifted 35 mm; roll sweep ±80° | RMS 9.1°; signed mean +4.6° | Current-limited for 38% of the run | A directional error bias accompanies substantial current limiting after a load change. |
-| E | Same trajectory as D after thermal derating to 2.4 A | RMS 12.6°, peak 25.4° | Repeated exits from and re-entries into saturation | Reduced available torque makes the same request harder to execute. |
+| E | Same trajectory as D after thermal derating to 2.4 A | RMS 12.6°, peak 25.4° | Repeated exits from and re-entries into saturation | Reduced available torque makes the same request harder to execute (assuming E keeps D's payload shift, which the summary does not state). |
 
 “Not reported” must not be read as zero. For example, D's peak error and E's saturation fraction are not given. B's 3.1 A peak together with clipping also means the logging definitions need checking: commanded versus measured current, rounding, and sampling could differ.
 
@@ -94,11 +94,11 @@ $$
 
 These are near-zero-roll holding budgets. They do not include substantial corrective roll acceleration or velocity once tracking has already deteriorated. For mathematically exact stationary holding, modeled friction and roll gravity are zero: coupling plus the disturbance bound is 0.186 N·m for B and 0.297 N·m for C.
 
-**Verdict [Calc]:** Both runs have nominal-model torque headroom at 3.2 A for near-zero-roll holding. C becomes marginal at 2.4 A once correction/friction reserve is included. The 0.337 versus 0.336 N·m comparison is too close, and too conservative, to prove that exact holding is physically impossible. It does justify reshaping C under a policy that requires operating reserve.
+**Verdict [Calc]:** Both runs have nominal-model torque headroom at 3.2 A for near-zero-roll holding. C becomes marginal at 2.4 A once correction/friction reserve is included. The 0.337 versus 0.336 N·m comparison is too close, and too conservative, to prove that exact holding is physically impossible. It does justify reshaping a C-like request when derated to 2.4 A, under a policy that requires operating reserve. (Observed C ran at 3.2 A, where the calculation shows headroom.)
 
 **[Obs + Calc]** B→C is particularly informative: modeled coupling increases **1.82×**, observed RMS error **1.86×**, and peak error **1.80×**. **[Hyp]** This supports yaw coupling as a major contributor. It does not identify the feedback gains or establish a particular delay-induced failure.
 
-**[Obs + Calc]** The observed current peaks exceed the coupling-only requirement considerably. That gap could reflect corrective dynamics, poorly damped response, noisy control effort, additional loads, or inaccurate coupling coefficients. Comparing these peaks is not a measurement of controller efficiency because their time alignment is unknown.
+**[Obs + Calc]** The observed current peaks exceed the coupling-only requirement considerably: B 3.1 A against 0.97 A; C is clipped at 3.2 A against 1.76 A, so its true demand is unknown and 3.2 A is only a lower bound. That gap could reflect corrective dynamics, poorly damped response, noisy control effort, additional loads, or inaccurate coupling coefficients. Comparing these peaks is not a measurement of controller efficiency because their time alignment is unknown.
 
 ### Runs D/E: load uncertainty prevents a unique torque calculation
 
@@ -112,11 +112,13 @@ Its angular dependence depends on the shift direction. A general planar gravity 
 
 **[Calc from Obs]** D's bias is substantial: $4.6^2/9.1^2\approx26\%$ of its mean-square error is associated with the nonzero mean. The remaining fluctuation has RMS approximately 7.9°. Thus, removing a constant bias alone would leave considerable tracking error.
 
-**[Obs + Calc]** E reduces torque capacity by 25% while RMS error increases by **38%** relative to D. **[Hyp]** This is consistent with actuator limits contributing materially to the poor tracking.
+**[Obs + Calc]** E reduces torque capacity by 25% while RMS error increases by **38%** relative to D. This assumes E retains D's payload shift; the summary says only "same trajectory". **[Hyp]** This is consistent with actuator limits contributing materially to the poor tracking.
 
 **Verdict [Obs → Hyp]:** D and E are current-limited under the observed controller, and E has less physical capacity for the same motion. The summaries do not establish whether the entire trajectory is fundamentally infeasible for every controller. That requires payload torque and trajectory timing. Slow the request if dynamic torque is excessive; restrict or reject positions if their static holding demand exceeds capacity. Slowing cannot solve an excessive static load.
 
 ## 3. Leading explanation and competing causes
+
+**Leading explanation [Hyp]:** the dominant failure is *disturbance torque that the controller does not anticipate or reject within its current limit*: yaw coupling in B/C, changed payload gravity in D/E, and less capacity in E. Run A shows that tracking is imperfect even without this. The per-run statements below are the parts of that explanation.
 
 **[Hyp] B/C: inadequate rejection of the yaw-dependent disturbance.** Faster yaw increases the modeled disturbance, and the errors increase by a similar factor. Predictable coupling compensation is therefore a justified candidate. Feedback delay and estimator behavior may worsen rejection, but their contribution cannot be identified from aggregate errors.
 
@@ -132,13 +134,18 @@ Its angular dependence depends on the shift direction. A general planar gravity 
 | Voltage/back-EMF limits | Bus voltage, duty cycle, and roll speed are not logged | Add electrical feasibility limits if voltage is exhausted |
 | Sensor/reference offset or asymmetric sampling | D's signed mean need not come exclusively from gravity | Check calibration and sweep coverage before interpreting the bias as payload identification |
 
-**[Sim]** The existing reconstructed PD controller has **no integrator** yet produces E-like saturation cycling. It also matches approximate RMS errors while missing B/C/D's observed saturation. This demonstrates that the summaries admit multiple explanations; the reconstruction is not identification of the original controller. See [Task 4](task4.md).
+**[Sim]** The existing reconstructed PD controller has **no integrator**. It was fitted by search under an assumed 0.7 kg lateral payload and a 1 Hz sweep:
+
+- it reproduces the RMS ordering within about 25% and shows repeated saturation entries in the E condition;
+- it misses the observed peaks (A 10.6° vs 6.1°, B 6.3° vs 11.5°, C 12.9° vs 20.7°), B/C/D's current limiting, and the sign of D's mean error (−4.9° vs +4.6°).
+
+So saturation cycling does not by itself imply windup, and the summaries admit multiple explanations. This is a consistency check, not identification of the original controller. See [Task 4](task4.md).
 
 ## 4. Timing, sensing, electrical, and thermal limits
 
 - **Timing:** Keep the fixed 1 ms command delay, CAN latency of 0.6–1.8 ms with occasional 4 ms bursts, and the 1.2 ms first-order current lag separate. Feedback transport, sampling, and command hold contribute additional loop phase lag. Neither a sinusoidal CAN-delay pattern nor a specific total observed delay is supplied.
 - **Sensing:** A 14-bit encoder gives $2\pi/16384=0.0003835$ rad, or 0.022° per count. One-count finite differences correspond to 0.383 rad/s at 1 kHz and 0.192 rad/s at 500 Hz. These increments exceed the 0.02 rad/s friction scale, so raw differentiated velocity is unsuitable for abrupt friction compensation. Quantization alone does not explain multi-degree position errors, but control action can amplify its effects.
-- **Electrical:** Use $V=Ri+L\,di/dt+K_e\dot q_r$, with a drive-voltage convention stated explicitly. At $R=2.25\ \Omega$, 3.2 A requires 7.2 V resistively. Current transients and back-EMF need extra headroom. This does not by itself establish that voltage limits caused, or could not have caused, the recorded errors: roll speed and duty cycle are missing. Large yaw speed is not directly the roll motor's back-EMF speed.
+- **Electrical:** Use $V=Ri+L\,di/dt+K_e\dot q_r$, with a drive-voltage convention stated explicitly. At $R=2.25\ \Omega$, 3.2 A requires 7.2 V resistively. [Calc] A current reversal adds about 2.9 V ($L\,di/dt$). At 24 V the speed allowed at 3.2 A is about 120 rad/s with a DC-equivalent convention and 48 rad/s with $V_{bus}/\sqrt3$. Run A needs about 2.3 rad/s and C's roll error motion ≤5 rad/s ([Phase 0](phase0_numbers.md)). Under either convention, the voltage limit is therefore unlikely to bind in A–C if those speed estimates hold. D's sweep speed is unknown. This does not by itself establish that voltage limits caused, or could not have caused, the recorded errors: roll speed and duty cycle are missing. Large yaw speed is not directly the roll motor's back-EMF speed.
 - **Thermal:** E explicitly establishes thermal derating. Other runs establish current loading, not temperature histories or thermal causation. Under the simplified $i^2R$ convention, the stated 31% occupancy at 3.2 A in C implies $i_{\rm RMS}\ge3.2\sqrt{0.31}=1.78$ A and resistive loss of at least 5.7 W at 1.8 Ω. This is a heating estimate, not proof of overheating; cooling, duration, and the motor's electrical convention matter.
 
 ## 5. What the summaries cannot prove
@@ -172,4 +179,9 @@ This experiment is more decisive than gain tuning because it separates the physi
 
 ## Supporting calculations and corrections to earlier drafts
 
-[Phase 0 calculations](phase0_numbers.md) provide additional conditional estimates; [Phase 1 results](phase1_numbers.md) show the reconstruction mismatch. Earlier phase text described windup, missing feed-forward, a lateral payload, and derated infeasibility more conclusively than the summaries justify. The qualified statements above are the current diagnosis. Analytic bandwidth calculations describe a selected controller under a delay model, not an identified bandwidth limit of the unknown original controller.
+[Phase 0 calculations](phase0_numbers.md) provide additional conditional estimates; [Phase 1 results](phase1_numbers.md) show the reconstruction mismatch. Earlier phase text described these more conclusively than the summaries justify. The qualified statements above are the current diagnosis and **supersede**:
+
+- phase0_numbers' claim that A "is what feedback-only tracking would give";
+- that the evidence "favours a lateral load";
+- that E's cycling is "better explained by integrator windup";
+- that C "must be reshaped/rejected when derated". Analytic bandwidth calculations describe a selected controller under a delay model, not an identified bandwidth limit of the unknown original controller.

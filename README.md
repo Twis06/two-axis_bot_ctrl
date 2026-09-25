@@ -25,6 +25,9 @@ Start with [Task 1 — Understand the failure](report/task1.md). The [task index
 
 ## Status
 - ✅ Phase 0: paper analysis
-- ✅ Phase 1: simulator + consistency with the logs
-- ✅ Task 2: deterministic baseline frozen after governor, recovery and information-mode review
-- ✅ Phase 3: learning/adaptation decision completed; tested candidate rejected, baseline retained
+- ✅ Phase 1: simulator + consistency with the logs (a fit, not identification)
+- ✅ Task 2: deterministic baseline frozen (fingerprint `7d857df507c389c9`)
+- ✅ Task 3: the tested adaptive candidate fails its registered adoption gate (benefit, availability); baseline retained. The payload-change challenge was not executed.
+- ◐ Task 5: registered prediction tested in simulation and retrospectively corrected (R2); the closed-loop prediction is untested, and hardware confirmation is pending
+- ◐ Corrective packets R1–R4 done ([report/packets](report/packets)); final review (R6) pending
+- ☐ Four-page memo, one-page hardware qualification plan, references note

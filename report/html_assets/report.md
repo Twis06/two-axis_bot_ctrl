@@ -4,7 +4,7 @@ Engineering assessment · evidence snapshot · 24 September 2026
 
 **Recommendation:** retain the frozen deterministic controller for hardware qualification. It tracks the assumed nominal A–C scenarios well, but loaded D/E requests remain substantially reshaped and a demanding loaded finite move fails to complete. The tested adaptive load correction does not meet its adoption criteria.
 
-This report answers the five assessment tasks using the evidence currently on disk. **Observed** means only the supplied A–E summaries; **calculated** means model-based analysis; **simulated** means project experiments; **proposed** means unperformed work. No new control experiments were run to assemble this report. Expand the evidence sections for full tables and source narratives.
+This report answers the five assessment tasks using the evidence currently on disk. **Observed** means only the supplied A–E summaries; **calculated** means model-based analysis; **simulated** means project experiments; **proposed** means unperformed work. No new control experiments were run to assemble this report; all current evidence was regenerated from committed sources before the build (packet R4). Expand the evidence sections for full tables and source narratives.
 
 ## Task 1 — Understand the failure {#task1}
 
@@ -110,19 +110,26 @@ All variants receive the same calibration trajectory and time budget. The held-o
 | int0.5 | 2.914° | −37.5% | 18/50 | Slower integral comparator. |
 | int1 · frozen baseline | 2.130° | reference | 40/50 | Best tuning-selected setting meeting declared loop-margin criteria. |
 | int2 | 1.157° | +42.6% | 50/50 | Faster, but fails the frozen margin criteria: 43.7° nominal PM, 28.1° corner PM / 5.7 dB GM. |
-| Adaptive feed-forward | 2.088° | **0.0%** | 40/50 | Only 37/50 runs obtain a usable estimate (74% versus required 80%). |
+| Adaptive feed-forward | 2.088° | **0.0%** | 40/50 | Only 37/50 runs obtain a usable estimate (74% versus required 80%); active while scored in 22/50, where 8 pairs improve 42–79%. |
 | Oracle feed-forward only | 0.499° | +76.9% | 50/50 | Uses true load; diagnostic and unavailable to a deployed controller. |
 | Oracle with governor load access | 0.400° | +78.6% | 35/50 | Loses 15 comparator completions; a low error score alone is insufficient. |
 
-The median of paired percentage reductions differs from the percentage change between two aggregate medians. The adaptive candidate loses no comparator-completed sequences and has no watchdog trips, suspensions or rejections in the 50 held-out cases, but fails the ≥10% benefit gate and availability criterion.
+The median of paired percentage reductions differs from the percentage change between two aggregate medians. The machine-audited gate (`exp/task3_gate.py`) returns **fail**. The candidate loses no comparator waypoint or completion. It has no pre-clamp command above the limit and no watchdog trip, suspension, rejection or lockout in the 50 held-out cases, but it fails the ≥10% benefit and ≥80% availability criteria. The 10 incomplete int1 and adaptive runs are all at load (−0.06, +0.14): they reach every waypoint but overshoot the ±65° range by 5.65–6.89°, beyond the 5° allowance.
 
 <!-- INTERACTIVE:learning -->
 
-**Scope of the verdict:** the main L4 matrix has stationary yaw. The learning plan also called for separate B/C-yaw, feedback-outage, mid-run-derating and payload-change integration challenges; these are not present as separate L4 run groups. L2 and baseline stress tests cover related behavior, but do not substitute for all adaptive closed-loop challenges. This limits a positive safety/generalization claim; it does not erase the observed benefit failure.
+**Scope of the verdict:** the main L4 matrix has stationary yaw. Registered supplementary challenges were run with 96 runs, and none showed a limit, fault or waypoint regression:
+
+- B- and C-yaw, a 60 ms feedback outage and a 3.2 → 2.4 A derate;
+- onsets at 9 s and 12.5 s, plus a late-onset (17.5 s) amendment registered after the first results;
+- loads (0, 0.18) and (0.06, 0.14), seeds 201–203.
+
+The correction was active in only half of the late-onset runs. The payload-change challenge was **not executed**, so the gate's challenge criterion is `incomplete`. Safety statements are limited to these evaluated conditions and this exact configuration. None of this changes the benefit failure.
 
 **What would change the choice:** a redesigned estimator that acquires useful correction reliably, passes a newly registered held-out comparison and completes the remaining adaptive stress challenges. Preserve the current results; do not tune against them and relabel them unseen. No feed-forward estimator can hold a truly infeasible static load above the actuator's capacity.
 
 <!-- DETAIL:task3_ceiling_numbers.md|All L4 tuning, held-out, per-load and unholdable-case tables -->
+<!-- DETAIL:task3_challenges_numbers.md|Registered supplementary challenge results -->
 <!-- DETAIL:task3_estimator_audit.md|L2 audit summary and bias / abstention results -->
 <!-- DETAIL:task3.md|Full Task 3 implementation and decision narrative -->
 
@@ -152,31 +159,34 @@ The simulator includes 10 kHz RK4 plant integration, 1.2 ms current lag, a fixed
 
 ### Evidence quality and reproduction status
 
-The frozen baseline fingerprint is `7d857df507c389c9`. Task 2 publishes 177 manifested runs; Packet 4B publishes 394; L4 publishes 357. These sets overlap in purpose and must not be presented as independent samples. The prior execution record reports a full suite of **203 passing tests**; this HTML build does not rerun or independently revalidate that suite.
+The frozen baseline fingerprint is `7d857df507c389c9`. Task 2 publishes 177 manifested runs, Packet 4B 397, L4 357 and the Task 3 challenges 96. These sets overlap in purpose and must not be presented as independent samples. `python3 -m unittest discover -s tests` passed **255 tests** at commit `039f83b` (2026-09-24). This HTML build does not rerun the suite, and passing tests do not validate an experiment design.
 
-**Open publication gap:** Packet 4B's round-2 corrections were verified in a clean scratch export, while published `task4b_*` files still contain the round-1 evidence. The report preserves that distinction. `run_all.py` currently stops after Task 2 evaluation: it does not reproduce every current evidence packet. Clean one-command reproduction and final independent submission review remain unfinished.
+**Publication and reproduction:** `python3 run_all.py` now regenerates every current evidence packet: Task 1 calculations, Task 2, Packet 4B, the Task 3 audit, L4 and challenges, and Task 5. All of them were republished from committed sources (packet R4), with Packet 4B at its reviewed round-2 state. The clean-snapshot reproduction and its tolerances are reported in packet R4. The final independent submission review (R6) remains open.
 
 <!-- DETAIL:task2_numbers.md|All current baseline results, uncertainty ranges and run identifiers -->
-<!-- DETAIL:task4b_numbers.md|Published Packet 4B results — round-1 artifact, publication caveat above applies -->
-<!-- DETAIL:packets/4B.md|Packet 4B review history, round-2 findings and republish status -->
+<!-- DETAIL:task4b_numbers.md|Packet 4B results (reviewed round-2 evidence, republished by R4) -->
+<!-- DETAIL:packets/4B.md|Packet 4B review history and round-2 findings -->
+<!-- DETAIL:packets/R4.md|Publication and clean-snapshot reproduction record -->
 
 ## Task 5 — Test the explanation {#task5}
 
-**Prospective test:** weaken true Kt and Ke by 10% in nominal Run B, keep the controller unchanged, and pair feed-forward on/off across seeds 21–23. Score 2–8 s. The repository records registration before this experiment; earlier ±15% motor uncertainty tests remain prior knowledge.
+**Registered test, retrospectively corrected analysis:** weaken true Kt and Ke by 10% in nominal Run B, keep the controller unchanged, and pair feed-forward on/off across seeds 21–23. Score 2–8 s, with one window for every windowed quantity. The registration file is unchanged, but it and the original results were first committed together, so git gives no evidence of ordering. Packet R2 corrected mixed windows and a torque/current unit error in the original analysis.
 
-| Quantity | Registered calculation / measured simulation |
-|---|---|
-| Peak yaw coupling | 0.135622 N·m calculated; logged true coupling matches. |
-| Extra ideal coupling current at Kt ×0.90 | 0.107637 A; tolerance ±0.15 A for the component-current check. |
-| Residual with unchanged nominal feed-forward | 0.013562 N·m; tolerance ±0.01 N·m for the residual calculation. |
-| Actual total-current peak change | Median +0.026 A; paired range −0.001 to +0.033 A. |
-| Weakened motor, feed-forward on | 0.289° median governed RMS versus 0.242° nominal; paired change +0.047°. |
-| Weakened motor, feed-forward off | 3.768° median governed RMS. |
-| Limits / faults | No clipping or events in any of the 12 rows. |
+| Prediction | Basis | Predicted | Measured (Simulated) | Verdict |
+|---|---|---:|---:|---|
+| Peak coupling torque | registered | 0.135622 N·m | 0.135622 N·m | Consistency check only (same equation) |
+| Peak ideal coupling current, nominal Kt | registered | 0.9687 A | 0.9687 A | Consistency check only |
+| Commanded coupling FF current | post hoc diagnostic | — | 1.160 A peak | Diagnostic: +5% sustained gain, transient peak overshoot |
+| Extra ideal current at Kt ×0.90 | registered | +0.1076 A | commanded FF unchanged | **Not tested**: component not separable; ±0.15 A includes 0 |
+| Coupling residual increase | post hoc operationalization | +0.0136 N·m | −0.0007 N·m | **Failed** (plan-mode diagnostic +0.0123 N·m) |
+| Yaw FF remains valuable | post hoc criterion | — | FF off worse by 3.51–3.89° | Supported (3/3) |
+| Weaker motor leaves more error | post hoc criterion | — | +0.054° median | Not uniform (2/3) |
+
+Windowed governed RMS with feed-forward on is 0.328° median for the weakened motor versus 0.274° nominal, and 3.936° with feed-forward off. There are no events or clipping in any row.
 
 <!-- INTERACTIVE:prediction -->
 
-**Interpretation:** yaw feed-forward is useful in this controlled simulation, and motor-strength mismatch leaves feedback work to do. The ideal 0.107637 A increment concerns one torque component; it is not a prediction of the maximum of the total current waveform. The coupling match checks the supplied model calculation, rather than independently validating the hardware explanation. A total-current prediction and quantitative hardware residual test remain open.
+**Interpretation:** yaw feed-forward is useful in this controlled simulation. The registered numerical predictions are either arithmetic on the prescribed model or were not measurable as registered. The residual prediction fails under the frozen baseline's causal estimate, whose transient error dominates the residual peak, but holds with exact feed-forward. No closed-loop tracking prediction was registered; that stronger test and the hardware residual test remain open.
 
 **Smallest justified design change: none.** Retain the frozen controller; this experiment does not justify retuning. Confirm effective torque/current calibration, the electrical convention and timestamped yaw-disturbance response before changing compensation on hardware.
 
@@ -202,7 +212,7 @@ The assessment PDF supplies the plant constants, task questions and the only har
 
 The implementation uses Python, NumPy, SciPy, Matplotlib and standard-library unittest. Automated coding agents contributed implementation, experiments, review and documentation, as recorded in the packet histories and Task 3 execution log. This HTML report was assembled by Codex from those artifacts; its charts reorganize stored rows and do not create new experimental evidence. The offline report builder uses Python-Markdown; HTML/CSS/JavaScript provide presentation. A repository-wide third-party reused-code/license audit has not been established by the available notes.
 
-The HTML is a comprehensive report with appendices; it is **not the separately page-verified four-page submission memo**. Remaining delivery work is the Packet 4B republish, complete clean reproduction, final independent review, and a page-limited submission export. Hardware experiments above remain proposed.
+The HTML is a comprehensive report with appendices; it is **not the separately page-verified four-page submission memo**. Remaining delivery work is the final independent review, the page-limited four-page memo, the one-page hardware qualification plan and the references/reused-code note. Hardware experiments above remain proposed.
 
 <!-- SOURCES -->
 

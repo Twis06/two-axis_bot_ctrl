@@ -46,7 +46,7 @@
     "report/task2.md": "ff25811bb3dc12560f52e4e984f939741884f5ea4d73d76be3384ca4062f06a3",
     "report/task2_numbers.md": "71e7ff8ddfcdee2798344bad446e5dc8e4e33f2f08bc9b3ea82a5d1a1e27f57d",
     "report/task2_robustness.md": "bd8aea9d2e86d194eea58c4f7462cb30bee0efbd1d71648bc6ae589fe289a265",
-    "report/task3.md": "3880ab89e8a9584634b0efcf23b9055c00e7dc446fc8175a424f02f7ca057720",
+    "report/task3.md": "702382dcd0eb94c75d7d73922094f46780d97d446e42bd6ab7f79d939655d4a4",
     "report/task3_ceiling_numbers.md": "c8b220da7545ae805f4e4900eeb16da2f1ea0183ebe49ab6078e7ed4c455b029",
     "report/task3_challenges_numbers.md": "72603e97f01d1b374bdc75a879195b98a2ce153f79788a51b989bb7f508ec269",
     "report/task3_estimator_audit.md": "522a99a753228d508574c051227474a03a5e35b7754b97c68aa5eaac3e3f6171",
@@ -60,7 +60,7 @@
     "report/html_assets/holdability_figure.py": "8d27664ef3cafff2f5f3a6a162a8084bd87dbad1115734d1eef0d8e271bc7fd9",
     "sim/params.py": "4f9b323b29f5b3616e920e195920898a5f796ba846c135ed850ef56011198fe4"
   },
-  "output_sha256": "823c68fe25d0cd694021009b329dc176af096167e798bc52182bcd5b8ebab8d6",
+  "output_sha256": "dd1a7f3c88253c9c2ecb5095e781b0c96cbff76c0059cce348a23add9b996c30",
   "figure_count": 20,
   "learning_rows": 357,
   "prediction_rows": 18,

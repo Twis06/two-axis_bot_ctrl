@@ -2,13 +2,13 @@
 
 Engineering assessment · evidence snapshot · 24 September 2026
 
-**Recommendation:** retain the frozen deterministic controller for hardware qualification. It tracks the assumed nominal A–C scenarios well, but loaded D/E requests remain substantially reshaped and a demanding loaded finite move fails to complete. The tested adaptive load correction does not meet its adoption criteria.
+**Contribution and recommendation:** the frozen deterministic controller combines causal yaw-torque compensation, a torque-aware path governor and fault containment. In simulation it tracks the assumed nominal A–C scenarios, explicitly slows loaded D/E requests, and suspends a demanding loaded move that cannot be completed. Take this design to hardware qualification. The tested adaptive load correction misses its adoption criteria and is excluded from that build.
 
 This report answers the five assessment tasks using the evidence currently on disk. **Observed** means only the supplied A–E summaries; **calculated** means model-based analysis; **simulated** means project experiments; **proposed** means unperformed work. No new control experiments were run to assemble this report; all current evidence was regenerated from committed sources before the build (packet R4). Expand the evidence sections for full tables and source narratives.
 
 ## Task 1 — Understand the failure {#task1}
 
-**Leading explanation:** B/C expose inadequate rejection of yaw-dependent torque; D/E expose changed load demand interacting with current capacity. A has tracking error despite current headroom. These are supported hypotheses, not identified hardware failure causes.
+**Leading explanation:** yaw motion pushes on the roll axis in B/C, while the shifted payload changes gravity demand in D/E. Missing compensation or a late response could produce the observed errors; E's lower current limit may worsen them. Run A also has error despite nominal current headroom. These are hypotheses, not identified hardware failure causes.
 
 | Run | Supplied observation | Engineering implication |
 |---|---|---|
@@ -39,7 +39,7 @@ C is marginal under a conservative derated reserve; exact stationary holding is 
 
 **What remains unknown:** the original controller and integrator, payload geometry, reference timing, voltage utilization, thermal history, and whether clipping counts commands or measured current. E does not prove windup; the reconstructed controller has no integrator and still produces saturation cycling. B's 3.1 A peak alongside clipping requires clarification of logging conventions.
 
-**Most decisive experiment:** hold roll near zero and sweep yaw frequency, including B/C frequencies only within the qualified envelope. Log synchronized roll/yaw motion, current commands and measurements, active limits, packet timestamps, bus voltage and duty cycle. Fit the roll torque residual against yaw velocity and acceleration, then validate at a held-out frequency. This separates physical disturbance demand from control response.
+**Most decisive proposed experiment:** hold roll near zero and sweep yaw frequency, including B/C only within a qualified envelope. Log synchronized roll/yaw motion, current commands and measurements, active limits, packet timestamps, bus voltage and duty cycle. Fit yaw-velocity and acceleration torque terms on some frequencies, then predict current and roll response at a held-out frequency. A good fit would support revised coupling feed-forward and a safe yaw envelope; a poor fit would redirect work to latency, calibration or friction. Runs A–E alone do not choose among those causes.
 
 <!-- FIGURES:task1 -->
 <!-- DETAIL:task1.md|Full Task 1 derivation and uncertainty analysis -->
@@ -109,7 +109,7 @@ All variants receive the same calibration trajectory and time budget. The protoc
 |---|---:|---:|---:|---|
 | int0.5 | 2.914° | −37.5% | 18/50 | Slower integral comparator. |
 | int1 · frozen baseline | 2.130° | reference | 40/50 | Best tuning-selected setting meeting declared loop-margin criteria. |
-| int2 | 1.157° | +42.6% | 50/50 | Faster, but fails the frozen margin criteria: 43.7° nominal PM, 28.1° corner PM / 5.7 dB GM. |
+| int2 | 1.157° | +42.6% | 50/50 | Faster, but misses the declared margin criteria: 43.7° nominal PM, 28.1° corner PM / 5.7 dB GM. This excludes it under the design rule, not as proven unsafe hardware. |
 | Adaptive feed-forward | 2.088° | **0.0%** | 40/50 | Only 37/50 runs obtain a usable estimate (74% versus required 80%); active while scored in 22/50, where 8 pairs improve 42–79%. |
 | Oracle feed-forward only | 0.499° | +76.9% | 50/50 | Uses true load; diagnostic and unavailable to a deployed controller. |
 | Oracle with governor load access | 0.400° | +78.6% | 35/50 | Loses 15 comparator completions; a low error score alone is insufficient. |
@@ -124,9 +124,11 @@ All variants receive the same calibration trajectory and time budget. The protoc
 - onsets at 9 s and 12.5 s, plus a late-onset (17.5 s) amendment registered after the first results;
 - loads (0, 0.18) and (0.06, 0.14), seeds 201–203.
 
-The correction was usable after onset in only 23/48 candidate challenge runs, and never in the 9 s-onset yaw B/C sets, so most challenge runs exercise the baseline. The payload-change challenge was **not executed**, so the gate's challenge criterion is `incomplete`. Safety statements are limited to these evaluated conditions and this exact configuration. None of this changes the benefit failure.
+The correction was usable after onset in 23/48 candidate challenge runs, and never in the 9 s-onset yaw B/C sets. That 23 is an upper bound on meaningful exercise: in two runs it never exceeded 0.0004 N·m, and in one it was usable only 0.3% of the post-onset time. Most challenges therefore exercise the baseline. The payload-change challenge was **not executed**, so the gate's challenge criterion is `incomplete`. Safety statements are limited to these evaluated conditions and this exact configuration. None of this changes the benefit failure.
 
-**What would change the choice:** a redesigned estimator that acquires useful correction reliably, passes a newly registered held-out comparison and completes the remaining adaptive stress challenges. Preserve the current results; do not tune against them and relabel them unseen. No feed-forward estimator can hold a truly infeasible static load above the actuator's capacity.
+**Why acquisition matters:** a read-only replay of all 50 held-out cases found only 4 usable models before the 9 s test phase, 20 first usable during it, 13 after it and 13 never usable. The bottleneck is eligible dwell count and angle/feature coverage; once those gates pass, worker publication takes 4–8 ms. A usable snapshot can still have too little applied correction because coefficients ramp and the controller uses bumpless transfer. See the [per-run availability review](../docs/plans/task3-availability-review.md).
+
+**What would change the choice:** on tuning cases, compare longer diverse-angle calibration with a sensor-aware stationarity detector while measuring residual-motion bias. Freeze one candidate and its charged calibration time, then register a fresh held-out comparison including payload change and active-correction safety challenges. Preserve the current results; no feed-forward estimator can hold a truly infeasible static load above actuator capacity.
 
 <!-- DETAIL:task3_ceiling_numbers.md|All L4 tuning, held-out, per-load and unholdable-case tables -->
 <!-- DETAIL:task3_challenges_numbers.md|Registered supplementary challenge results -->
@@ -145,7 +147,7 @@ The correction was usable after onset in only 23/48 candidate challenge runs, an
 | D | 10.23° | 4.10° | 76.68° | 83% | 1.46 A | 1.9% | 0/5 |
 | E | 12.02° | 4.25° | 78.49° | 51% | 1.32 A | 5.5% | 0/5 |
 
-Five-seed medians, except counts. Net progress is path-clock progress, not a measured speed ratio. “Tracked” requires ≥95% progress, ≤2° request-window path RMS, and no rejection, suspension or tracking fault; these are project thresholds. D/E's large original-time error exposes sacrificed timing. Their small governed error is not delivery of the original request. E has 146 saturation entries despite 5.5% occupancy.
+Five-seed medians, except counts. Net progress is path-clock progress, not a measured speed ratio. B/C command a stationary 0° roll hold while yaw oscillates, so their 100%/97% clock values are not roll distance delivered; Run C's yaw amplitude is reduced once to 0.88× during ramp-up. “Tracked” requires ≥95% progress, ≤2° request-window path RMS, and no rejection, suspension or tracking fault; these are project thresholds. D/E's large original-time error exposes sacrificed timing. Their small governed error is not delivery of the original request. E has 146 saturation entries despite 5.5% occupancy.
 
 ### Useful motion, uncertainty and faults
 
@@ -178,7 +180,7 @@ The frozen baseline fingerprint is `7d857df507c389c9`. Task 2 publishes 177 mani
 | Peak ideal coupling current, nominal Kt | registered | 0.9687 A | 0.9687 A | Consistency check only |
 | Commanded coupling FF current | post hoc diagnostic | — | 1.160 A peak | Diagnostic: +5% sustained gain, transient peak overshoot |
 | Extra ideal current at Kt ×0.90 | registered | +0.1076 A | commanded FF unchanged | **Not tested**: component not separable; ±0.15 A includes 0 |
-| Coupling residual increase | post hoc operationalization | +0.0136 N·m | −0.0007 N·m | **Failed** (plan-mode diagnostic +0.0123 N·m) |
+| Coupling residual increase | post hoc operationalization | +0.0136 N·m | −0.0007 N·m | Not resolved by selected peak metric (exact-FF diagnostic +0.0123 N·m) |
 | Yaw FF remains valuable | post hoc criterion | — | FF off worse by 3.51–3.89° | Supported (3/3) |
 | Weaker motor leaves more error | post hoc criterion | — | +0.054° median | Not uniform (2/3) |
 
@@ -186,7 +188,7 @@ Windowed governed RMS with feed-forward on is 0.328° median for the weakened mo
 
 <!-- INTERACTIVE:prediction -->
 
-**Interpretation:** yaw feed-forward is useful in this controlled simulation. The registered numerical predictions are either arithmetic on the prescribed model or were not measurable as registered. The residual prediction fails under the frozen baseline's causal estimate, whose transient error dominates the residual peak, but holds with exact feed-forward. No closed-loop tracking prediction was registered; that stronger test and the hardware residual test remain open.
+**Interpretation:** yaw feed-forward is useful in this controlled simulation. The registered numerical predictions are either arithmetic on the prescribed model or were not measurable as registered. For this Run B operating point, the post hoc residual-peak metric does not resolve the predicted component because causal yaw-estimate transients dominate its peak; exact feed-forward reveals it diagnostically. No closed-loop tracking prediction was registered; that stronger test and the hardware residual test remain open.
 
 **Smallest justified design change: none.** Retain the frozen controller; this experiment does not justify retuning. Confirm effective torque/current calibration, the electrical convention and timestamped yaw-disturbance response before changing compensation on hardware.
 
@@ -198,13 +200,14 @@ This is a proposed test sequence, not completed qualification. Use the existing 
 
 | Stage | Instrumentation / procedure | Progression and stop criteria |
 |---|---|---|
-| 1 · Instrument and identify | Synchronized ≥1 kHz encoder, current target/measurement, active limits, bus/duty, temperature and packet timestamps; calibrated torque fixture and independent emergency stop. Identify sign, Kt/Ke, latency, offsets and load moment. | Stop on wrong sign, invalid feedback, lost timestamps or unverified current convention. Establish collision-free clearance and load containment before powered motion. |
-| 2 · Static holds | Mechanically supported setup; first nominal payload, then identified loads, initially ±15° at derated 2.4 A. | Admit only poses whose conservative estimated holding demand fits 0.8 Kt I_limit − 0.05 N·m. Do not admit unknown static load from simulation alone. |
-| 3 · Limited sweeps | Begin slow ±15° moves; increase toward ±45° only after each case passes. Log original and governed requests separately. | Stop on >5° tracking error, sustained ≥95% current utilization for 100 ms, or a predefined clearance/temperature boundary, whichever occurs first. These are proposed test stops, not firmware-certified limits. |
-| 4 · Yaw disturbance | Roll-held low-amplitude yaw sweeps, then B/C frequencies if feasible. Fit coupling and validate at a held-out frequency. | Require ≤2° RMS / ≤5° peak in the admitted envelope; record any yaw reduction as changed delivery. Stop if coupling exceeds modeled available reserve. |
-| 5 · Fault / derating tests | Protected fixture: command-only, feedback-only and bidirectional outages; 3.2→2.4 A derating; verify catch, re-arm and suspension. | No target limit bypass; communication recovery requires the 50 ms fresh aligned dwell. Tracking-fault requests stay suspended until replan. Accept only if measured fallback motion fits physical clearance. |
+| 1 · Blocked-axis identification | Synchronized ≥1 kHz sensing; calibrated torque fixture and independent e-stop. Check sign, current offset, Kt from torque/current, stationary electrical response and latency. | A blocked axis cannot identify Ke. Stop for wrong sign, invalid feedback, unexplained current/voltage or out-of-range Kt/latency. Verify support, clearance and stop path before rotation. |
+| 2 · Guarded low-speed rotation | Supported axis initially within ±5° at 2.4 A. Measure back-EMF Ke from voltage/current/speed and resolve the bus-to-phase/PWM convention. | Stop for unexpected motion/voltage. Re-run model and margins if Ke or available voltage differs before broader moves. |
+| 3 · Static holds | Supported nominal payload, then identified loads, 0° and ±15° at 2.4 A. | Admit only poses whose measured conservative holding demand fits 0.8 Kt I_limit − 0.05 N·m. The nominal governor cannot infer an unknown load. |
+| 4 · Limited sweeps | Slow ±15° moves, then ±45° after each case passes; log original and governed requests. | Stop on >5° error, sustained ≥95% current use for 100 ms, or clearance/temperature boundary. Require ≤2° RMS, ≤5° peak and ≥95% admitted-path progress. |
+| 5 · Yaw disturbance | Roll-held low-amplitude sweeps, then B/C frequencies within the measured reserve; validate coupling at a held-out frequency. | Require ≤2° RMS / ≤5° peak in the admitted envelope; record yaw reduction. Stop if coupling exceeds reserve. |
+| 6 · Fault / derating tests | Protected fixture: command-only, feedback-only and bidirectional outages; 3.2→2.4 A derating; verify catch, re-arm and suspension. | No target-current limit bypass; 50 ms fresh aligned dwell before re-arm; tracking-fault request stays suspended. Measure passive fallback excursion against verified clearance. |
 
-The simulated 25 rad/s overspeed trip and 130°C thermal trip are not initial bench operating targets. Use lower verified hardware/fixture limits where required. The loaded ≈42° fallback excursion makes an unprotected outage test inappropriate; establish containment or reduce speed first. Reconsider adaptive control only after baseline qualification and a new evidence gate.
+The simulated 25 rad/s overspeed and 130°C thermal trips are not initial bench targets. Use lower verified fixture limits. Communication loss invokes local damping, not a guaranteed hold; feedback loss or e-stop has no promised active hold. The loaded ≈42° simulated fallback excursion is not a hardware bound, so support, brake or end stops must contain motion. Reconsider adaptive control only after baseline qualification and a new evidence gate.
 
 ## Sources, artifacts and remaining work {#sources}
 
@@ -212,7 +215,7 @@ The assessment brief (an outside document, not redistributed in this repository)
 
 The implementation uses Python, NumPy, SciPy, Matplotlib and standard-library unittest. Automated coding agents contributed implementation, experiments, review and documentation, as recorded in the packet histories and Task 3 execution log. This HTML report was assembled by Codex from those artifacts; its charts reorganize stored rows and do not create new experimental evidence. The offline report builder uses Python-Markdown; HTML/CSS/JavaScript provide presentation. A repository-wide third-party reused-code/license audit has not been established by the available notes.
 
-The HTML is a comprehensive report with appendices. The page-limited submission documents are separate: the [four-page memo](memo.pdf), the [one-page hardware qualification plan](hardware_qualification_plan.pdf) and the [references, reused-code and tools note](references_and_tools.md). The final independent review (R6) remains open. Hardware experiments above remain proposed.
+The HTML is a comprehensive report with appendices. The page-limited submission documents are separate: the [four-page memo](memo.pdf), the [one-page hardware qualification plan](hardware_qualification_plan.pdf) and the [references, reused-code and tools note](references_and_tools.md). [R6](packets/R6.md) round 2 passed with minor issues on commit `961b6f2`; later editorial changes require separate verification. Hardware experiments above remain proposed.
 
 <!-- SOURCES -->
 

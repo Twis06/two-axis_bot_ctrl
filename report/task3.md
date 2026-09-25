@@ -88,7 +88,7 @@ The candidate therefore fails on availability rather than on the value of the co
 
 - **Held-out set:** 5 loads × 2 limits × 5 seeds.
 - **Supplementary challenges:** registered yaw B and C, a 60 ms feedback outage and a 3.2 → 2.4 A derate, at 9, 12.5 and (late-onset amendment) 17.5 s; loads (0, 0.18) and (0.06, 0.14); seeds 201–203.
-- **What those runs showed:** there was no limit, fault or waypoint regression. The gate compares every event type per pair, not only watchdog trips. The correction was usable after onset in only **23 of 48** candidate challenge runs, and in none of the 9 s-onset yaw B/C runs; the gate reports this per onset set. So most challenge runs exercise the baseline, not the learned correction. See [challenge numbers](task3_challenges_numbers.md).
+- **What those runs showed:** there was no limit, fault or waypoint regression. The gate compares every event type per pair, not only watchdog trips. The correction was usable after onset in **23 of 48** candidate challenge runs, and in none of the 9 s-onset yaw B/C runs; the gate reports this per onset set. The 23 is an upper bound on meaningful exercise: in two runs the correction never exceeded 0.0004 N·m, and in one it was usable only 0.3% of the post-onset time. Most challenge runs therefore exercise the baseline. See [challenge numbers](task3_challenges_numbers.md).
 - **Not executed:** payload change mid-run, which the frozen simulator cannot represent without a harness patch.
 - **Configuration:** all results are for the exact frozen configuration, `AdaptiveController(est_seed = seed)` with the L1 stationarity gate.
 
@@ -100,7 +100,7 @@ The L3 adapter is in [`ctrl/adaptive.py`](../ctrl/adaptive.py) with focused cont
 
 ## Verification and provenance
 
-- **Test counts:** `python3 -m unittest discover -s tests` passed **255 tests** at commit `039f83b` on 2026-09-24. The focused suites are the estimator (15), the adapter contract, the phase-aware scorer (25) and the adoption gate (19). Passing tests show the code does what the tests check; they do not validate the experiment design.
+- **Test counts:** the release review ran **262 tests** at commit `961b6f2`. An earlier snapshot at `039f83b` passed 255 tests; that count is historical. The focused suites cover the estimator, adapter contract, phase-aware scorer and adoption gate. Passing tests show the code does what the tests check; they do not validate the experiment design.
 - **Evidence:** the L4 packet contains **357 manifested runs** and the challenge packet **96**, both regenerated from committed sources by [R4](packets/R4.md). The published L2 packet contains 60 rows and zero structural violations.
 - **Corrections:** these are recorded in packets [R1](packets/R1.md) (scoring) and [R3](packets/R3.md) (gate and challenges).
 

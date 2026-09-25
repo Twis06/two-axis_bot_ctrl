@@ -196,6 +196,7 @@ All numbers below are from [task2_numbers.md](task2_numbers.md) (five seeds unle
 | E: as D at 2.4 A | 12.02° | 78.5° / 164° | 4.25° / 9.54° | 51% | 0 | 0/5 |
 
 - **A–C:** delivered at full or near-full path rate, with sub-degree error and no events.
+- **B/C progress is only a clock metric:** both request a 0° roll hold, so 100%/97% does not measure roll travel or speed. Yaw is the moving stimulus; its amplitude reduction in C is reported separately below.
 - **C and the estimate mode:** in estimate mode C costs 0.15° of RMS against the plan look-ahead, and yaw is reduced once to 0.88× during the yaw ramp-up. C sits about 0.02 N·m inside its hold budget (2B §5.2).
 - **D/E are not delivered as requested.** The governor slows the path to 83% and 51% of the clock, so error against the original wall clock is very large. D/E meet the tracking rule in 0/5 runs. The unmodelled payload (Task 3) is the cause, not a fault.
 

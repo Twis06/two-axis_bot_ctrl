@@ -1,6 +1,6 @@
 # Assessment answers
 
-Read the [interactive HTML report](assessment_report.html) for a consolidated answer to Tasks 1–5, all 18 figures, expandable evidence, and learning / prediction charts. It records the remaining gaps explicitly. Open directly in a browser; no server or network is required. Build instructions: [HTML report README](html_assets/README.md).
+Read the [interactive HTML report](assessment_report.html) for a consolidated answer to Tasks 1–5, 19 figures, expandable evidence, and learning / prediction charts. It records the remaining gaps explicitly. Open directly in a browser; no server or network is required. Build instructions: [HTML report README](html_assets/README.md).
 
 Current execution priorities and agent handoffs: [EXECUTION_PLAN.md](../EXECUTION_PLAN.md).
 
@@ -49,4 +49,4 @@ Task 2 evidence is regenerated on the frozen baseline; see [current numbers](tas
 | References, reused code and automated tools | [references_and_tools.md](references_and_tools.md) |
 | Runnable code, README, one-command reproduction | [../README.md](../README.md), `uv run python run_all.py` |
 
-PDFs are rendered with `python report/html_assets/render_pdf.py <file>.md <file>.pdf` (Python-Markdown and headless Chrome). Independent final review: [R6](packets/R6.md), round 1 FAIL with findings resolved; round 2 pending.
+PDFs are rendered with `python report/html_assets/render_pdf.py <file>.md <file>.pdf` (Python-Markdown and headless Chrome). Independent final review: [R6](packets/R6.md), round 1 findings resolved; round 2 PASS WITH ISSUES on commit `961b6f2`. Later editorial changes require separate verification.

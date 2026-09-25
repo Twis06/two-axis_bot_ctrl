@@ -11,15 +11,18 @@ import json
 import re
 import markdown
 
+from holdability_figure import render as render_holdability
+
 HERE = Path(__file__).resolve().parent
 REPORT = HERE.parent
 ROOT = REPORT.parent
 FIGURES = {
-    'task1': [('p0_torque_budget.png', 'Calculated torque budgets', 'Early analytic budget under stated motion assumptions; current Task 1 qualifications take precedence.'),
+    'task1': [('p0_torque_budget.png', 'Historical assumed torque budget', 'D/E load bars use an early quasi-static payload fit of about 1.79 kg; neither mass nor sweep inertia is identified from the supplied summaries. Current Task 1 qualifications take precedence.'),
               ('p0_yaw_envelope.png', 'Calculated yaw envelope', 'Model-based yaw feasibility under the plotted reserve assumptions, not a measured hardware boundary.')],
-    'task2': [('task2_delay_robustness.png', 'Delay and parameter robustness', 'Frozen-baseline local analysis and simulated instability cross-checks.'),
+    'task2': [('static_holdability.png', 'Calculated static holdability', 'Nominal versus explicitly assumed INF-P load across roll angle, with 2.4 A capacity and governor budget. At 0°, INF-P gravity alone needs 0.412 N·m against 0.336 N·m available. Static angle tests are not dynamic reachability; D/E payloads are unknown.'),
+              ('task2_delay_robustness.png', 'Delay and parameter robustness', 'Frozen-baseline local analysis and simulated instability cross-checks.'),
               ('task2_saturation.png', 'Saturation and anti-windup', 'Distinguish shaped-request behavior from the diagnostic governor-disabled case.')],
-    'task4': [('task2_tracking.png', 'Tracking the admitted and original requests', 'Frozen-baseline A–E simulations; payload and trajectory reconstruction assumptions apply.'),
+    'task4': [('task2_tracking.png', 'Tracking the admitted and original requests', 'B/C request a 0° roll hold while yaw moves at 1.5/2.2 Hz; the original and governed roll lines overlap. Actual roll moves under yaw coupling. E shows sacrificed original-request timing.'),
               ('task2_feedback_loss.png', 'Feedback loss and recovery', 'Local fallback, host state and subsequent delivered motion must be read together.'),
               ('task4b_saturation.png', 'Saturation duration and entries', 'Packet 4B (reviewed round 2, republished in R4).'),
               ('task4b_frequency.png', 'Frequency response and phase', 'Packet 4B frequency evidence; separate local frequency behavior from nonlinear guarantees.'),
@@ -76,6 +79,7 @@ def interactive(kind):
 
 
 def main():
+    render_holdability(REPORT / 'figs' / 'static_holdability.png')
     body = (HERE / 'report.md').read_text()
     body = re.sub(r'<!-- FIGURES:(\w+) -->', lambda m: figures(m[1]), body)
     body = re.sub(r'<!-- DETAIL:([^|]+)\|([^>]+) -->', detail, body)
@@ -83,7 +87,9 @@ def main():
     sources = sorted(p for p in REPORT.glob('*.json'))
     # The assessment brief is an outside source and is not redistributed (gitignored), so it is
     # neither linked nor hashed: the report must build from a clean checkout.
-    sources += [ROOT / 'EXECUTION_PLAN.md', ROOT / 'docs/plans/task3-learning.md', ROOT / 'docs/plans/task3-execution-log.md']
+    sources += [ROOT / 'EXECUTION_PLAN.md', ROOT / 'docs/plans/task3-learning.md',
+                ROOT / 'docs/plans/task3-execution-log.md',
+                ROOT / 'docs/plans/task3-availability-review.md']
     links = ['<ul class="source-list">']
     for p in sources:
         rel = str(p.relative_to(ROOT))
@@ -114,9 +120,11 @@ def main():
     for name in used:
         p = REPORT/name
         inputs[str(p.relative_to(ROOT))] = hashlib.sha256(p.read_bytes()).hexdigest()
-    for name in ['report.md','report.css','report.js','build_report.py']:
+    for name in ['report.md','report.css','report.js','build_report.py','holdability_figure.py']:
         p=HERE/name
         inputs[str(p.relative_to(ROOT))] = hashlib.sha256(p.read_bytes()).hexdigest()
+    params = ROOT / 'sim' / 'params.py'
+    inputs[str(params.relative_to(ROOT))] = hashlib.sha256(params.read_bytes()).hexdigest()
     (HERE/'report_manifest.json').write_text(json.dumps({'inputs_sha256':inputs,'output_sha256':hashlib.sha256(page.encode()).hexdigest(),'figure_count':sum(map(len,FIGURES.values())),'learning_rows':len(data['learning']),'prediction_rows':len(data['prediction']),'new_control_experiments':False},indent=2)+'\n')
     print(f'Built report/assessment_report.html: {len(page.encode()):,} bytes; {sum(map(len,FIGURES.values()))} figures; {len(data["learning"])} learning rows; {len(data["prediction"])} prediction rows.')
 

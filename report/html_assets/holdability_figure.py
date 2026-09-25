@@ -1,0 +1,96 @@
+"""Build a calculated static-holdability diagram for the submission report.
+
+This uses the supplied nominal gravity model and the explicitly assumed INF-P
+load; it runs no control simulation and makes no inference about D/E payloads.
+"""
+import math
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+
+from sim import params as P
+
+
+def render(path=None):
+    path = Path(path) if path is not None else ROOT / "report/figs/static_holdability.png"
+    angle_deg = np.linspace(-90.0, 90.0, 1801)
+    q = np.deg2rad(angle_deg)
+    lateral_moment = 1.2 * P.G * 0.035
+    nominal = np.abs(P.TAU_G * np.sin(q)) + P.TAU_C
+    inf_p = np.abs(P.TAU_G * np.sin(q) + lateral_moment * np.cos(q)) + P.TAU_C
+    derated_capacity = P.K_T * P.I_DERATED
+    nominal_capacity = P.K_T * P.I_MAX
+    admission_budget = 0.8 * derated_capacity - P.D_MAX
+
+    assert math.isclose(derated_capacity, 0.336, abs_tol=1e-12)
+    assert lateral_moment > derated_capacity
+    assert nominal[len(q) // 2] < admission_budget
+
+    plt.rcParams.update({"font.size": 11.5, "axes.spines.top": False,
+                         "axes.spines.right": False, "savefig.facecolor": "white"})
+    fig, (ax, band) = plt.subplots(2, 1, figsize=(9.4, 6.2), dpi=170,
+                                   gridspec_kw={"height_ratios": [3.2, 1.15], "hspace": 0.16},
+                                   sharex=True)
+    fig.suptitle("Static holdability depends on load and current limit", x=0.10,
+                 y=0.98, ha="left", fontsize=16, fontweight="bold")
+
+    ax.plot(angle_deg, nominal, color="#24699a", linewidth=2.4,
+            label="Nominal model + friction allowance")
+    ax.plot(angle_deg, inf_p, color="#b54b2b", linewidth=2.4,
+            label="INF-P: assumed 1.2 kg at +35 mm + friction allowance")
+    ax.axhline(nominal_capacity, color="#777777", linewidth=1.5, linestyle="--",
+               label="3.2 A capacity  ·  0.448 N·m")
+    ax.axhline(derated_capacity, color="#222222", linewidth=1.7, linestyle="--",
+               label="2.4 A capacity  ·  0.336 N·m")
+    ax.axhline(admission_budget, color="#41836b", linewidth=1.7, linestyle=":",
+               label="2.4 A governor budget  ·  0.219 N·m")
+    ax.scatter([0], [lateral_moment + P.TAU_C], color="#b54b2b", zorder=5, s=36)
+    ax.annotate("At 0°: INF-P gravity alone = 0.412 N·m\nexceeds derated capacity 0.336 N·m",
+                xy=(0, lateral_moment + P.TAU_C), xytext=(-84, 0.58),
+                arrowprops={"arrowstyle": "->", "color": "#8a3d26", "lw": 1.1},
+                color="#713421", fontsize=10.5, va="top")
+    ax.set_ylabel("Conservative holding demand / capacity (N·m)")
+    ax.set_ylim(0, 0.67)
+    ax.set_xlim(-90, 90)
+    ax.set_xticks(np.arange(-90, 91, 30))
+    ax.grid(alpha=0.18)
+    ax.legend(loc="upper right", frameon=True, facecolor="white", framealpha=0.96,
+              fontsize=9.6, ncol=1)
+
+    bands = [
+        ("Nominal model: governor admits", nominal <= admission_budget, "#24699a"),
+        ("INF-P: derated torque-capable", inf_p <= derated_capacity, "#b54b2b"),
+        ("INF-P: if load known to governor", inf_p <= admission_budget, "#41836b"),
+    ]
+    for index, (_, mask, color) in enumerate(bands):
+        y = 2 - index
+        band.fill_between(angle_deg, y - 0.28, y + 0.28, color="#eee5e3", linewidth=0)
+        band.fill_between(angle_deg, y - 0.28, y + 0.28, where=mask,
+                          color=color, alpha=0.88, linewidth=0)
+    band.set_yticks([2, 1, 0], [b[0] for b in bands])
+    band.set_ylim(-0.52, 2.52)
+    band.set_xlabel("Roll angle (degrees)")
+    band.axvline(0, color="#555555", linestyle=":", linewidth=1)
+    band.grid(axis="x", alpha=0.18)
+    band.tick_params(axis="y", length=0, labelsize=10.5)
+    fig.text(0.10, 0.025,
+             "Colored bands satisfy the stated static torque test; pale regions do not. "
+             "Motion also needs acceleration, braking and voltage headroom.\n"
+             "INF-P is an assumed challenge case, not an identified D/E payload.",
+             fontsize=9.4, color="#454545")
+    fig.subplots_adjust(left=0.30, right=0.98, top=0.91, bottom=0.17)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=170)
+    plt.close(fig)
+    return path
+
+
+if __name__ == "__main__":
+    print(render())

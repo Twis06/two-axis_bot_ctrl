@@ -18,7 +18,7 @@ The simulator includes roll dynamics, first-order current lag, current-command d
 
 Electrical checks use the specified nominal R = 1.8 Ω, L = 0.45 mH, matching SI motor constants, and uncertainty ranges. The simulator uses a conservative `V_bus / sqrt(3)` voltage convention. That drive convention must be verified against hardware rather than treated as specified by the brief.
 
-`python3 -m unittest discover -s tests` passes 255 tests at commit `039f83b` (2026-09-24 snapshot; see [R4](packets/R4.md) for the clean-snapshot rerun). Passing tests show that the code does what the tests check; they do not validate an experiment design.
+The release review ran 262 tests at commit `961b6f2`; the earlier `039f83b` snapshot passed 255 (see [R4](packets/R4.md)). Passing tests show that the code does what the tests check; they do not validate an experiment design.
 
 ## Reconstruction is a consistency check, not identification
 
@@ -74,5 +74,5 @@ Source: [baseline results](phase2_numbers.md).
 
 - **Task 3:** the registered comparison is complete; the exact adaptive candidate failed the benefit and availability gates, so the deterministic baseline remains final. The supplementary payload-change challenge was not executed.
 - **Task 5:** its retrospective correction ([R2](packets/R2.md)) leaves the closed-loop tracking prediction untested.
-- **Reproduction and review:** clean-snapshot reproduction is reported in [R4](packets/R4.md); independent final review (R6) is pending.
+- **Reproduction and review:** clean-snapshot reproduction is reported in [R4](packets/R4.md). [R6](packets/R6.md) round 2 passed with minor issues on commit `961b6f2`; subsequent editorial changes require separate verification.
 - **Reporting rule:** report original-request deviation alongside governed-reference error wherever motion changes.

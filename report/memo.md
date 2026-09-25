@@ -1,24 +1,24 @@
 # Safe control for a coupled two-axis robot — technical memo
 
-**Recommendation.** Take the frozen deterministic baseline (fingerprint `7d857df507c389c9`) to hardware qualification, and do not deploy the tested adaptive load correction.
+**Contribution and recommendation.** The frozen deterministic design (fingerprint `7d857df507c389c9`) combines yaw-torque compensation, a torque-aware path governor and fault containment: it distinguishes tracking, deliberate slowing and requests that cannot be held. Take it to hardware qualification. The tested adaptive load correction missed its adoption gates and is not part of that build.
 
 - **In simulation:** the baseline tracks the A–C scenarios to 0.3–0.7° RMS with no faults and slows the loaded D/E requests rather than saturating blindly.
 - **Infeasible requests:** it restricts or rejects those it can see; an unknown overload is attempted first, then caught and suspended.
 
 **Labels:** *Observed* = the brief's five summaries only; *Calculated* = the supplied model; *Simulated* = our simulator, not hardware; *Proposed* = not yet done.
 
-`uv run python run_all.py` regenerates all evidence in a locked environment (verified on macOS arm64 and Linux x86-64). The full answers are in [task1](task1.md)–[task5](task5.md).
+`uv run python run_all.py` regenerates all evidence in a locked environment: exact results and figures on macOS arm64; identical outcomes and numerical values within 3e-11 on Linux x86-64. The full answers are in [task1](task1.md)–[task5](task5.md).
 
 ## 1. Understanding the failure
 
 **What the motor permits (Calculated).**
 
 - **Torque ceiling:** K<sub>t</sub>I<sub>max</sub> = 0.448 N·m at 3.2 A and 0.336 N·m derated.
-- **Run A has headroom:** its 2.1 A peak is 0.294 N·m, 66% of the ceiling. At 45°, gravity plus the friction and disturbance allowances need only 0.175 N·m. So A's 2.8° RMS error points to response, not current capacity (voltage and trajectory feasibility are not excluded).
+- **Run A does not exhaust the nominal current limit:** its 2.1 A peak is 0.294 N·m, 66% of the ceiling. At 45°, gravity plus friction and disturbance allowances need 0.175 N·m. The 2.8° RMS error motivates checking compensation, response and timing; voltage and full-trajectory feasibility remain unverified.
 - **Yaw coupling (±75°):** 0.008 q̇<sub>y</sub> + 0.0008 q̈<sub>y</sub> peaks at 0.136 N·m at 1.5 Hz (B) and 0.247 N·m at 2.2 Hz (C). Including the 0.05 N·m disturbance and friction allowances, B needs 50% of nominal capacity. C needs 75% of nominal but 100.3% of derated: holdable at 3.2 A, marginal at 2.4 A.
 - **Payload:** the 35 mm centre-of-mass shift adds 0.343·m N·m. The mass is not given, so D/E feasibility cannot be settled from the summaries.
 
-**Leading explanation (hypothesis).** The controller neither anticipates nor rejects the disturbance torque within its current limit.
+**Leading explanation (hypothesis).** Moving yaw and a shifted payload add roll torque. The original controller may predict too little of it or respond too late, so roll deviates; the summaries do not identify which mechanism dominates or prove a current-limit failure.
 
 - **B→C:** modelled coupling rises 1.82×; observed RMS rises 1.86× and peak error 1.80×.
 - **D:** its +4.6° signed mean is 26% of the mean-square error, consistent with an unmodelled gravity load.
@@ -26,7 +26,7 @@
 
 **What the summaries cannot prove:** the original controller (E's cycling does not prove windup), payload mass and direction, trajectory timing, what "clipped" counts, voltage use and thermal history. Our reconstructed legacy controller matches RMS ordering only to about 25%: a consistency check, not identification.
 
-**The experiment that would most change this view:** hold roll near zero and sweep yaw in frequency within a qualified envelope. Log synchronized encoders, current command and measurement, active limit, timestamps and bus voltage. Fit the roll torque residual against yaw velocity and acceleration, and validate at a held-out frequency.
+**Most decisive proposed experiment:** hold roll near zero and sweep yaw within a qualified envelope. Log synchronized encoders, current command/measurement, limits, timestamps and bus voltage. Fit yaw-velocity and acceleration torque terms on some frequencies; predict current and roll response at a held-out frequency. A good fit would support a revised coupling feed-forward and safe yaw envelope; a poor fit would redirect work to delay, calibration or friction. Neither outcome is established by A–E alone.
 
 ## 2. Baseline controller
 
@@ -76,10 +76,12 @@
 
 - **The 0.0% is exact:** the candidate is `int1` plus the learned term on the same seed. In 30 of 50 pairs the correction never changed a scored command: never usable (13), or first usable at 18.3–21.6 s (17), at the end of the test where bumpless transfer cancels a change at constant reference. These pairs are bit-identical to `int1`.
 - **When it was on in time, it helped:** 20 pairs improved, 8 of them by 42–79%, and none got worse (mean +9.5%, not registered).
-- **Gate:** fails on benefit and on availability (74%). No safety criterion fails in the held-out runs or in 96 registered challenge runs (yaw B/C, feedback loss, derating). But the correction was active in only 23/48 candidate challenge runs, and never in the 9 s-onset yaw B/C sets, so most challenge runs test the baseline. Mid-run payload change was not tested.
+- **Gate:** fails on benefit and on availability (74%). No safety criterion fails in the held-out runs or in 96 registered challenge runs (yaw B/C, feedback loss, derating). The correction was usable after onset in 23/48 candidate challenge runs, but this is an upper bound on meaningful exercise: in two, it never exceeded 0.0004 N·m; in one, it was usable for just 0.3% of the post-onset time. It was never usable in the 9 s-onset yaw B/C sets. Most challenges therefore test the baseline. Mid-run payload change was not tested.
 - **Incomplete runs:** the 10 in each variant reach every waypoint but overshoot the ±65° range by 5.65–6.89° (5° allowed).
 
-**What would change the choice:** an estimator that is reliably usable during calibration (the oracle shows the load law is worth about 77%), passing a newly registered held-out comparison including payload change.
+`int2` improves held-out tracking and completion but misses the declared nominal/corner margin thresholds (43.7°/28.1° phase, 5.7 dB corner gain); this is a design-rule exclusion, not proof of hardware danger. The frozen `int1` retains margin reserve.
+
+**What would change the learning choice:** the oracle shows about 77% potential, but only 4/50 adaptive runs were usable before testing. A read-only replay traced the delay to insufficient eligible, diverse calibration dwells; once coverage passed, worker publication took 4–8 ms. Compare bounded calibration and stationarity changes on tuning cases, then pre-register a new held-out test including payload change.
 
 ## 4. Evidence
 
@@ -94,6 +96,7 @@
 | E D at 2.4 A | 12.02° | 4.25° | 78.5° | 51% | 5.5% | 0/5 |
 
 - **Legacy** is a reconstruction; both controllers are simulated.
+- **B/C:** roll is commanded to hold 0° while yaw oscillates; their 100%/97% “progress” is a path-clock metric for that stationary roll request, not delivered roll distance. C separately reduces yaw amplitude to 0.88× in one run.
 - **D/E:** the governed error is small only because the requests are slowed. The original-request error shows the sacrificed timing, and D/E count as not tracked (tracked = ≥ 95% progress, ≤ 2° RMS, no fault; a project threshold).
 
 **Right answer is not to track:**
@@ -113,15 +116,15 @@
 
 - **Consistency checks only:** the coupling and ideal-current matches re-check the model's own arithmetic.
 - **Not tested:** the extra current is not separable in the total current, and its tolerance includes 0.
-- **Failed:** the residual increase was −0.0007 N·m, because the causal yaw estimate's transient error (about 0.03 N·m) swamps it. With exact feed-forward (a diagnostic) the predicted +0.0123 N·m appears.
+- **Not resolved by the selected peak metric:** the post hoc residual-peak increase was −0.0007 N·m. Causal yaw-estimate transients (about 0.03 N·m) obscure the predicted component in this Run B comparison. With exact feed-forward (a diagnostic), +0.0123 N·m appears.
 - **Supported:** feed-forward stays valuable, and removing it costs 3.5–3.9°.
 - **Not uniform:** the weaker motor raised error in only 2 of 3 pairs.
 
-**Revised explanation:** at this operating point, residual error is dominated by estimator transients; motor strength is second-order.
+**Revised explanation:** for this Run B peak metric and operating point, yaw-estimate transients exceed the measured motor-strength effect. This does not rank their importance across other motions.
 
 **Smallest justified design change: none to the frozen controller.** If hardware calibration finds that the effective K<sub>t</sub> differs from nominal, rescale the feed-forward current by K<sub>t,nom</sub>/K<sub>t,meas</sub>. That is one parameter, and it is proposed, not tested.
 
-**Hardware confirmation:** torque-versus-current fixture identification, then the roll-held yaw sweep ([qualification plan](hardware_qualification_plan.md)).
+**Hardware confirmation:** blocked-axis torque/current identification, guarded moving back-EMF identification, then the roll-held yaw sweep ([qualification plan](hardware_qualification_plan.md)).
 
 **Risks carried to hardware:** the drive voltage convention (V<sub>bus</sub> vs V<sub>bus</sub>/√3), the loaded fallback excursion, admission of unknown-load moves that later trip, and assumed thermal thresholds.
 
@@ -129,13 +132,20 @@
 
 ## Appendix A — Plots (outside the page limit)
 
-| What it shows | Figure |
-|---|---|
-| Saturation and anti-windup | ![](figs/task2_saturation.png) |
-| Phase lag: loop frequency response and delay margins | ![](figs/task4b_frequency.png) |
-| Delay robustness | ![](figs/task2_delay_robustness.png) |
-| Fallback behaviour: feedback-loss timeline | ![](figs/task2_feedback_loss.png) |
-| Fault and catch timeline | ![](figs/task4b_fault_timeline.png) |
-| Generalization across chosen stress cases | ![](figs/task4b_generalization.png) |
-| A request that should not be tracked | ![](figs/task4b_infeasible.png) |
-| Tracking, original vs governed reference | ![](figs/task2_tracking.png) |
+<figure class="plot-page"><img src="figs/task2_tracking.png" alt="Roll tracking and current for B, C and E" /><figcaption><strong>Figure 1. Tracking and delivered motion.</strong> Blue is the original roll request, orange the governed roll reference, green actual roll; right panels show current and its active limit. B/C command a 0° roll hold while yaw oscillates at 1.5/2.2 Hz, so their blue and orange roll lines coincide at zero while coupling moves the actual roll. E's requested sweep is slowed substantially; its small governed error does not imply on-time delivery.</figcaption></figure>
+
+<figure class="plot-page"><img src="figs/task2_saturation.png" alt="Current saturation and anti-windup comparison" /><figcaption><strong>Figure 2. Saturation and anti-windup.</strong> Compare governed motion with the diagnostic governor-disabled case; current limiting and integrator handling must be read with the delivered path, not the error trace alone.</figcaption></figure>
+
+<figure class="plot-page"><img src="figs/task4b_frequency.png" alt="Loop frequency response and delay margins" /><figcaption><strong>Figure 3. Linear loop margins.</strong> Frequency response and phase reserve at the declared design and burst-delay conditions. These local margins do not prove stability under unknown-load saturation.</figcaption></figure>
+
+<figure class="plot-page"><img src="figs/task2_delay_robustness.png" alt="Delay and parameter robustness" /><figcaption><strong>Figure 4. Delay robustness.</strong> Calculated margins and simulated behavior across the stated delay/parameter probes; these are tested conditions, not a hardware-wide guarantee.</figcaption></figure>
+
+<figure class="plot-page"><img src="figs/task2_feedback_loss.png" alt="Feedback-loss timeline" /><figcaption><strong>Figure 5. Feedback loss.</strong> Read drive fallback, host recovery and delivered progress together. Drive-local damping reduces motion but does not guarantee a position hold under gravity.</figcaption></figure>
+
+<figure class="plot-page"><img src="figs/task4b_fault_timeline.png" alt="Tracking fault and catch timeline" /><figcaption><strong>Figure 6. Fault and catch.</strong> The tracking fault leads to a catch and suspended request; a bounded catch is not completion of the original command.</figcaption></figure>
+
+<figure class="plot-page"><img src="figs/task4b_generalization.png" alt="Selected uncertainty trials" /><figcaption><strong>Figure 7. Selected uncertainty trials.</strong> A–E tracking and fault counts vary across sampled plants. The selected parameter ranges are stress cases, not measured population probabilities.</figcaption></figure>
+
+<figure class="plot-page"><img src="figs/static_holdability.png" alt="Calculated static holding demand and angle-specific torque bands" /><figcaption><strong>Figure 8. Static torque boundary (Calculated).</strong> Nominal and assumed INF-P demand include a 0.04 N·m friction allowance; horizontal lines show actuator capacities and the stricter 2.4 A governor budget. At 0°, INF-P gravity alone needs 0.412 N·m, above 0.336 N·m derated capacity, while the unaware nominal governor admits the pose. Colored bands show angle-specific static tests, not dynamically reachable paths. D/E payload masses are unknown.</figcaption></figure>
+
+<figure class="plot-page"><img src="figs/task4b_infeasible.png" alt="Infeasible-request response" /><figcaption><strong>Figure 9. Infeasible request.</strong> The unknown INF-P load exceeds derated static capacity at 0°. The nominal-model controller initially attempts it, then faults and suspends; the plot reports the resulting motion rather than a successful hold.</figcaption></figure>

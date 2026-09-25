@@ -47,6 +47,6 @@ Task 2 evidence is regenerated on the frozen baseline; see [current numbers](tas
 | Technical memo (4 pages + plot appendix) | [memo.pdf](memo.pdf) · source [memo.md](memo.md) |
 | One-page hardware qualification plan | [hardware_qualification_plan.pdf](hardware_qualification_plan.pdf) · source [hardware_qualification_plan.md](hardware_qualification_plan.md) |
 | References, reused code and automated tools | [references_and_tools.md](references_and_tools.md) |
-| Runnable code, README, one-command reproduction | [../README.md](../README.md), `python3 run_all.py` |
+| Runnable code, README, one-command reproduction | [../README.md](../README.md), `uv run python run_all.py` |
 
-PDFs are rendered with `python report/html_assets/render_pdf.py <file>.md <file>.pdf` (Python-Markdown and headless Chrome). The independent final review (R6) is still open.
+PDFs are rendered with `python report/html_assets/render_pdf.py <file>.md <file>.pdf` (Python-Markdown and headless Chrome). Independent final review: [R6](packets/R6.md), round 1 FAIL with findings resolved; round 2 pending.

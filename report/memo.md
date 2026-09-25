@@ -7,7 +7,7 @@
 
 **Labels:** *Observed* = the brief's five summaries only; *Calculated* = the supplied model; *Simulated* = our simulator, not hardware; *Proposed* = not yet done.
 
-`python3 run_all.py` regenerates all evidence; it was verified from a `git archive` snapshot in one environment. The full answers are in [task1](task1.md)–[task5](task5.md).
+`uv run python run_all.py` regenerates all evidence in a locked environment (verified on macOS arm64 and Linux x86-64). The full answers are in [task1](task1.md)–[task5](task5.md).
 
 ## 1. Understanding the failure
 
@@ -103,7 +103,7 @@
 - **Loaded M2:** trips and stays suspended rather than cycling.
 - **Fallback:** local damping does not hold against gravity; a loaded 100 ms outage moves the axis up to 42°.
 
-**Reproducibility.** A `git archive` snapshot with no git history ran all 10 steps. Every result value matched the published evidence (wall-clock timings excluded), and 18/18 figures were byte-identical ([R4](packets/R4.md)). 257 unit tests pass.
+**Reproducibility.** A fresh `git archive` snapshot installed from `uv.lock` reproduced every result value, run_id and figure exactly on the Mac. On Linux x86-64, all outcomes were identical and values agreed to 3e-11 (NumPy rounds random draws differently across CPUs) ([R4](packets/R4.md)). 262 unit tests pass.
 
 ## 5. Testing the explanation
 

@@ -7,7 +7,7 @@ A roll-axis simulator, diagnosis, and controller design for the Robotics Control
 With [uv](https://docs.astral.sh/uv/) (recommended; installs the exact locked versions and Python 3.9):
 
 ```bash
-uv run python run_all.py            # tests + every current evidence packet (~15 min on 12 cores)
+uv run python run_all.py            # tests + every current evidence packet (~12 min on a 12-core Mac, ~8 min on 112 cores)
 ```
 
 Without uv, in a Python 3.9 virtual environment:

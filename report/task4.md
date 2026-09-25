@@ -9,8 +9,7 @@
 Run from the repository root:
 
 ```bash
-python3 -m pip install -r requirements.txt
-python3 run_all.py
+uv run python run_all.py       # or: pip install -r requirements.txt && python3 run_all.py
 ```
 
 The shorter `python3 run_all.py --quick` runs tests and analytic calculations only; it does not regenerate the full experiment suite.

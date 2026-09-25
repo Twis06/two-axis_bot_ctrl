@@ -12,7 +12,7 @@
 | 3 · Task 5 inference | Resolved in the memo, HTML and `task5.md`: the selected post hoc residual-peak metric did not resolve the predicted effect, and the Run B inference is scoped. A prospective closed-loop prediction remains unperformed; this is a declared limitation, not claimed. |
 | 4–6 · `int2`, Run A, B/C figure | Resolved in the memo, HTML and Task 2 answer; original experiment figures and numbers are unchanged. |
 | 7 · clean-checkout HTML | Resolved: the builder no longer requires the gitignored brief, and the HTML rebuilds from a clean archive (R6). |
-| 8–9 · progress and release status | Resolved: B/C path-clock progress is qualified; test counts and review status are current (264 tests at the final commit). |
+| 8–9 · progress and release status | Resolved: B/C path-clock progress is qualified; test counts and review status are current (266 tests at the final commit). |
 | 10–11 · appendix and historical plot | Resolved: the memo body is four pages with one plot per appendix page; the early torque budget is labelled as an assumed historical fit. |
 | 12–16 · annotated memo | Resolved: opening, portable PDF paths, failure hypothesis, static-holdability diagram and learning-redesign plan. The diagram is calculated for the explicit INF-P assumption, not a D/E payload estimate. |
 | R6 round-2 minors r2-1, r2-2, r2-6 (referred to in an earlier version of this file) | Resolved: gate fixes with regression tests and a full republication (`ced6c5b`, `20a0a5d`); comparison method committed as `tools/compare_evidence.py`. |

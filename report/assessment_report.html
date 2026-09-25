@@ -6393,7 +6393,7 @@ python3 -m exp.task2_robustness                  # task2_robustness.md, figures
 </ul>
 <p><strong>Method.</strong> Every comparison in this packet can be rerun with <code>uv run python tools/compare_evidence.py &lt;reproduced report dir&gt;</code>. It checks values within 1e-12 + 1e-9·max(|a|, |b|), string/boolean equality, bit-identity counts, run_id sets with Monte Carlo classification, and figure bytes and pixels. (An earlier version of the tool skipped keys by substring and counted 5,412 of 45,717; R6 round 3 found that it also skipped real values such as <code>reshaping_pct</code>. The exact-key count, 5,442, matches R6 round 2's independent count.)</p>
 <p><strong>Republication <code>20a0a5d</code></strong> (evidence from <code>ced6c5b</code>, after the round-2 gate fixes) was run in the repository working tree, where only the untracked personal notes differed from the commit. Its values are bit-identical to <code>25559e3</code>, so the cross-platform comparison above still applies. Its L4 and challenge run_ids changed because the gate source changed. The fresh-snapshot checks of the final commit below cover it.</p>
-<p><strong>Final commit <code>dde280b</code></strong> (11 steps, including memo Figure 8), checked with the committed tool:</p>
+<p><strong>Commit <code>dde280b</code></strong> (11 steps, including memo Figure 8), checked with the committed tool:</p>
 <ul>
 <li>
 <p><strong>Mac, fresh <code>uv sync</code> snapshot:</strong> 10.6 min; 0 of 46,259 floats differ (bit-identical); all run_ids identical; 19/19 figures byte-identical.</p>
@@ -6409,6 +6409,30 @@ python3 -m exp.task2_robustness                  # task2_robustness.md, figures
 </li>
 <li>
 <p><strong>HTML rebuilt in the snapshot:</strong> differs from the published HTML only through the provenance fields of its inputs (the git header lines, interpreter paths in the run records, and the L2 wall-clock times). Rebuilt from committed evidence, it is byte-identical (R6 round 2).</p>
+</li>
+</ul>
+<p><strong>Final release commit <code>4805252</code>.</strong> Its evidence was republished in <code>4bf2f6b</code> from <code>cdbab1c</code>, after the R6 round-3 fixes. Against <code>dde280b</code>'s evidence:</p>
+<ul>
+<li>
+<p>0 of 46,259 floats differ;</p>
+</li>
+<li>
+<p>the one changed leaf is the deliberate Task 5 residual verdict label;</p>
+</li>
+<li>
+<p>all 453 L4 and challenge run_ids changed with the gate source;</p>
+</li>
+<li>
+<p>19/19 figures are byte-identical.</p>
+</li>
+</ul>
+<p>Checked with the committed tool:</p>
+<ul>
+<li>
+<p><strong>Mac, fresh <code>uv sync</code> snapshot of <code>4805252</code>:</strong> 11/11 steps in 10.9 min; 0 of 46,259 floats differ; every run_id, including the current L4 and challenge ids, is identical; 19/19 figures byte-identical.</p>
+</li>
+<li>
+<p><strong>luna1 snapshot of <code>4805252</code>:</strong> 11/11 steps in 7.9 min; 5,442 of 46,259 floats differ in the last digits (worst 3.1e-11); 0 outside tolerance; differing run_ids are 70 Task 2 and 30 4B, all Monte Carlo.</p>
 </li>
 </ul>
 <p><strong>What this establishes.</strong> The published evidence reproduces exactly on the same platform, from a fresh install. Across operating systems and CPU architectures it reproduces to about 1e-11, with identical outcomes. Bit-identity across architectures is not achievable with NumPy's random generators, so a cross-platform check should compare within tolerance and match Monte Carlo runs by (scenario, seed), not by run_id.</p>
@@ -6904,17 +6928,17 @@ python3 -m exp.task2_robustness                  # task2_robustness.md, figures
 <tr>
 <td>1 · Blocked-axis identification</td>
 <td>Synchronized ≥1 kHz sensing; calibrated torque fixture and independent e-stop. Check sign, current offset, Kt from torque/current, stationary electrical response and latency.</td>
-<td>A blocked axis cannot identify Ke. Stop for wrong sign, invalid feedback, unexplained current/voltage or out-of-range Kt/latency. Verify support, clearance and stop path before rotation.</td>
+<td>A blocked axis cannot identify Ke. Stop for wrong sign, invalid feedback, unexplained current/voltage, Kt outside ±15% of the model, or latency bursts above 4 ms. Verify support, clearance and stop path before rotation.</td>
 </tr>
 <tr>
 <td>2 · Guarded low-speed rotation</td>
-<td>Supported axis initially within ±5° at 2.4 A. Measure back-EMF Ke from voltage/current/speed where Ke·q̇ is at least comparable to the IR drop (or by back-driving the unpowered axis), and resolve the bus-to-phase/PWM convention.</td>
+<td>Supported axis initially within ±5° at 2.4 A. Measure Ke primarily as open-circuit EMF while the unpowered axis is back-driven, cross-check from voltage/current/speed, and resolve the bus-to-phase/PWM convention.</td>
 <td>Stop for unexpected motion/voltage. Re-run model and margins if Ke or available voltage differs before broader moves.</td>
 </tr>
 <tr>
 <td>3 · Static holds</td>
 <td>Supported nominal payload, then identified loads, 0° and ±15° at 2.4 A.</td>
-<td>Admit only poses whose measured conservative holding demand fits 0.8 Kt I_limit − 0.05 N·m. The nominal governor cannot infer an unknown load.</td>
+<td>Stop if holding torque (Kt·measured current) exceeds 0.8 Kt I_limit − 0.05 N·m. Accept at hold error ≤ 0.5°. Screen loads by measured holding demand: the nominal governor cannot infer an unknown load.</td>
 </tr>
 <tr>
 <td>4 · Limited sweeps</td>
@@ -6934,7 +6958,7 @@ python3 -m exp.task2_robustness                  # task2_robustness.md, figures
 <tr>
 <td>7 · Payload and envelope</td>
 <td>D-like shifted load at reduced speed, then the loaded finite move.</td>
-<td>Every request is completed within ≤2° RMS / ≤5° peak, or visibly reshaped/rejected with the reason logged; no current-limit bypass; no unexplained fault.</td>
+<td>Completed requests ≤2° RMS / ≤5° peak; reshaped requests governed-reference peak ≤5° with original-request error reported; rejected requests with the reason logged; no current-limit bypass; no unexplained fault.</td>
 </tr>
 </tbody>
 </table></div>

@@ -117,7 +117,7 @@ def main():
     page += '<script id="data" type="application/json">' + json.dumps(data, allow_nan=False).replace('</','<\/') + '</script><script>' + (HERE/'report.js').read_text() + '</script></body></html>'
     (REPORT/'assessment_report.html').write_text(page)
     inputs = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
-    for name in used:
+    for name in sorted(used):
         p = REPORT/name
         inputs[str(p.relative_to(ROOT))] = hashlib.sha256(p.read_bytes()).hexdigest()
     for name in ['report.md','report.css','report.js','build_report.py','holdability_figure.py']:

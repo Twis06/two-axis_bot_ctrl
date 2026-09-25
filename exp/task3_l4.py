@@ -160,6 +160,13 @@ def dwell_mask(log, dwells):
     return m
 
 
+def _event_counts(log):
+    counts = {}
+    for e in log.events:
+        counts[e[1]] = counts.get(e[1], 0) + 1
+    return dict(sorted(counts.items()))
+
+
 def gate_evidence(log, dwells, t_from=None, grace_s=0.02):
     """Per-run evidence for exp.task3_gate (R3): limit compliance, availability split,
     and learned correction applied while the estimator reports itself unusable.
@@ -177,6 +184,8 @@ def gate_evidence(log, dwells, t_from=None, grace_s=0.02):
         command_over_limit=float(np.max((np.abs(log.i_raw) - lim)[~near_change])),
         measured_over_limit=float(np.max(np.abs(log.i) - lim)),
         lockout=any(e[1] == "lockout" for e in log.events),
+        # Every drive/host event, untruncated (the display list `events` is cut short).
+        event_counts=_event_counts(log),
         applied_while_unusable=None, learn_usable_in_dwells=None, learn_applied_max_Nm=None,
         learn_usable_during_challenge=None,
     )
@@ -316,7 +325,8 @@ def main(argv=None):
         usable = sum(1 for r in rs if r.get("learn_usable_max", 0.0) > 0.5)
         out_rows.append([v + (" (DIAGNOSTIC ORACLE)" if v.startswith("oracle") else "") + (" ← comparator" if v == ref else ""),
                          f"{med([r['primary_deg'] for r in rs]):.3f}",
-                         "—" if v == ref else f"{100 * med(red):+.1f} %",
+                         "—" if v == ref else f"{100 * med(red):+.1f} %"
+                         + (f" (n = {len(red)}; {len(rs) - len(red)} pairs unscored)" if len(red) < len(rs) else ""),
                          "—" if v == ref else f"{100 * min(red):+.1f} / {100 * max(red):+.1f} %",
                          f"{sum(r['completed'] for r in rs)}/{len(rs)}", str(lost),
                          f"{usable}/{len(rs)}" if v == "adaptive" else "—",
@@ -372,6 +382,15 @@ def main(argv=None):
                   f"Overall: **{gate_result['overall']}** ({gate_result['pairs']} held-out pairs, "
                   f"candidate `adaptive` against comparator `{ref}`). `incomplete` means required evidence "
                   "is missing; it is never counted as a pass."]
+    ch_crit = next(c for c in gate_result["criteria"] if c["name"].startswith("required supplementary"))
+    exer = next((e["exercise"] for e in ch_crit.get("evidence") or [] if "exercise" in e), [])
+    if exer:
+        gate_lines += ["", "Challenge exercise: candidate runs in which the learned correction was usable after "
+                       "onset, per registered sub-challenge: "
+                       + "; ".join(f"{e['challenge']} {e['correction_active']}/{e['candidate_runs']}" for e in exer)
+                       + f" (total {sum(e['correction_active'] for e in exer)}/{sum(e['candidate_runs'] for e in exer)}). "
+                       "A group counts as exercised if any of its onset sets is; safety criteria are evaluated "
+                       "over every run, active or not."]
     adaptive_verdict = (f"**The adaptive candidate's gate result is {gate_result['overall'].upper()}.** "
                         f"Median paired reduction {100 * adaptive_red:+.1f} % against `{ref}`; "
                         f"{adaptive_usable}/{len(adaptive_rows)} held-out runs ever obtain a usable estimate "

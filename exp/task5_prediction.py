@@ -397,6 +397,17 @@ def _markdown(result: dict) -> str:
         "",
         "The paired rows preserve the same scenario, seed, request, disturbance realization, transport draw, and initial state. The weakened-motor totals are reported separately from the registered component prediction; no controller retuning or design change was made.",
         "",
+        "## Revised explanation and smallest justified design change",
+        "",
+        "**Revised explanation.** At this operating point, the residual tracking error is dominated by the causal "
+        "yaw estimate's transient error (about 0.03 N m at the coupling extrema), not by motor-strength mismatch. "
+        "The 10 % weaker motor is a second-order effect: it raised error in only 2 of 3 pairs, while removing yaw "
+        "feed-forward cost 3.5-3.9 deg in every pair.",
+        "",
+        "**Smallest justified design change: none to the frozen controller.** This experiment does not justify "
+        "retuning. *Proposed, not tested:* if hardware calibration finds effective Kt different from nominal, "
+        "the smallest change is one parameter, rescaling the feed-forward current by Kt_nominal / Kt_measured.",
+        "",
         "## Hardware follow-up",
         "",
         "Hardware confirmation still requires calibrated torque-versus-current identification and a timestamped roll-held yaw experiment with the same stop limits. This simulated result does not certify the drive convention or hardware Kt.",

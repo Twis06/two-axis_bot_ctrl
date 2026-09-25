@@ -9,7 +9,7 @@ def row(variant, seed, primary, **kw):
     r = dict(variant=variant, load=[0.0, 0.1], limit=3.2, seed=seed, run_id=f"{variant}{seed}",
              primary_deg=primary, completed=True, missing_waypoints=[], progress=1.0, wd_trips=0,
              suspended=False, rejected=False, lockout=False, command_over_limit=-0.1, t_complete=18.5,
-             learn_usable_max=1.0, applied_while_unusable=0, events=[])
+             learn_usable_max=1.0, applied_while_unusable=0, events=[], event_counts={})
     r.update(kw)
     return r
 
@@ -169,6 +169,43 @@ class TestReviewR3Adversarial(unittest.TestCase):
         self.assertEqual(gate(good_heldout(), ch=ch + late, expected_challenge_keys=keys)["overall"], "pass")
 
 
+class TestReviewR6(unittest.TestCase):
+    """R6 I1/I2: every fault type counts, and challenge exercise is reported per onset set."""
+
+    def test_new_overspeed_or_overtemp_fault_fails(self):
+        rows = good_heldout()
+        rows[-1] = row("adaptive", 9, 1.0, events=["overspeed", "rearm_after_overspeed", "overtemp"],
+                       event_counts={"overspeed": 1, "rearm_after_overspeed": 1, "overtemp": 1})
+        g = gate(rows)
+        self.assertEqual(status(g, "no new fault"), "fail")
+        self.assertEqual(g["overall"], "fail")
+
+    def test_equal_fault_counts_in_both_variants_pass(self):
+        rows = good_heldout()
+        for r in rows:
+            if r["seed"] == 0:
+                r["event_counts"] = {"invalid_command": 1, "rearm_after_invalid_command": 1}
+        self.assertEqual(status(gate(rows), "no new fault"), "pass")
+
+    def test_missing_event_counts_are_incomplete(self):
+        rows = good_heldout()
+        rows[-1].pop("event_counts")
+        self.assertEqual(status(gate(rows), "no new fault"), "incomplete")
+
+    def test_exercise_is_reported_per_sub_challenge(self):
+        ch = good_challenges()
+        for r in ch:
+            if r["challenge"] == "yaw_B":
+                r["learn_usable_during_challenge"] = 0.0
+        late = [dict(r, challenge="yaw_B@late", learn_usable_during_challenge=0.8)
+                for r in good_challenges() if r["challenge"] == "yaw_B"]
+        keys = CH_KEYS + [("yaw_B@late", [0.0, 0.1], 3.2, s) for s in range(2)]
+        g = gate(good_heldout(), ch=ch + late, expected_challenge_keys=keys)
+        crit = next(c for c in g["criteria"] if c["name"].startswith("required supplementary"))
+        exer = {e["challenge"]: e["correction_active"] for e in crit["evidence"][3]["exercise"]}
+        self.assertEqual((exer["yaw_B"], exer["yaw_B@late"]), (0, 2))
+
+
 class TestGateEvidence(unittest.TestCase):
     def _log(self):
         import numpy as np
@@ -185,6 +222,13 @@ class TestGateEvidence(unittest.TestCase):
         self.assertLessEqual(gate_evidence(log, [])["command_over_limit"], 0.0)
         log.i_raw[(log.t >= 1.5) & (log.t < 1.51)] = 3.0          # long after the change: a violation
         self.assertGreater(gate_evidence(log, [])["command_over_limit"], 0.0)
+
+    def test_event_counts_are_untruncated(self):
+        from exp.task3_l4 import gate_evidence
+        log = self._log()
+        log.events = [(0.1 * k, "invalid_command") for k in range(9)] + [(1.0, "overspeed")]
+        ev = gate_evidence(log, [])["event_counts"]
+        self.assertEqual(ev, {"invalid_command": 9, "overspeed": 1})
 
     def test_missing_learning_telemetry_gives_none(self):
         from exp.task3_l4 import gate_evidence

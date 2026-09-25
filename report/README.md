@@ -4,7 +4,7 @@ Read the [interactive HTML report](assessment_report.html) for a consolidated an
 
 Current execution priorities and agent handoffs: [EXECUTION_PLAN.md](../EXECUTION_PLAN.md).
 
-Read the answers in the order of the five tasks in the [assessment](../Robotics%20Controls%20Technical%20Assessment.pdf).
+Read the answers in the order of the five tasks in the assessment brief (not redistributed in this repository).
 
 | Assessment task | Answer | Current state |
 |---|---|---|

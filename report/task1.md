@@ -2,7 +2,7 @@
 
 **Answer [Hyp]:** The evidence points to two main problems: yaw-dependent disturbance rejection in B/C, and changed payload loading aggravated by reduced torque capacity in D/E. Run A shows tracking error even with current headroom. The right first step is to establish the torque budget and identify the disturbance, before changing gains.
 
-**Evidence boundary:** The only observed results are the summaries in the [assessment](../Robotics%20Controls%20Technical%20Assessment.pdf). The controller structure, raw time series, trajectory timing, payload mass, and temperature history are unknown. Calculations below use the supplied model. Later simulator results test possible explanations; they do not establish what happened on hardware.
+**Evidence boundary:** The only observed results are the summaries in the assessment brief (the PDF is not redistributed in this repository). The controller structure, raw time series, trajectory timing, payload mass, and temperature history are unknown. Calculations below use the supplied model. Later simulator results test possible explanations; they do not establish what happened on hardware.
 
 **Claim labels used below:**
 - **[Obs]** a number in the assessment summaries

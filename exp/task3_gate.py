@@ -135,8 +135,18 @@ def current_limit(rows):
 
 
 def safety(pairs):
+    """Every latched fault and re-arm is compared per pair from the untruncated event
+    counts (any event type the candidate has more often is new), plus suspension,
+    rejection and lockout. Missing counts are incomplete, never pass."""
     new = []
     for k, b, c in pairs:
+        if not isinstance(c.get("event_counts"), dict) or not isinstance(b.get("event_counts"), dict):
+            return _crit("no new fault, suspension, rejection or lockout", "incomplete",
+                         evidence=[dict(pair=list(k), missing="event_counts")])
+        for ev in sorted(set(c["event_counts"]) | set(b["event_counts"])):
+            nc, nb = c["event_counts"].get(ev, 0), b["event_counts"].get(ev, 0)
+            if nc > nb:
+                new.append(dict(pair=list(k), field=ev, comparator=nb, candidate=nc))
         for f in ("wd_trips", "suspended", "rejected"):
             if c.get(f) is None or b.get(f) is None:
                 return _crit("no new fault, suspension, rejection or lockout", "incomplete", evidence=[list(k)])
@@ -183,14 +193,17 @@ def challenges(challenge_rows, comparator, candidate):
     base = lambda r: (r.get("challenge") or "").split("@")[0]      # "yaw_B@late" counts for yaw_B
     groups = {base(r) for r in challenge_rows}
     missing = [g for g in REQUIRED_CHALLENGES if g not in groups]
-    unexercised, failures = [], []
+    unexercised, failures, exercise = [], [], []
     for g in REQUIRED_CHALLENGES:
         rows = [r for r in challenge_rows if base(r) == g]
         if not rows:
             continue
         pairs = []
         for sub in sorted({r["challenge"] for r in rows}):             # pair within each onset set
-            pairs += _pairs([r for r in rows if r["challenge"] == sub], comparator, candidate)[0]
+            sub_pairs = _pairs([r for r in rows if r["challenge"] == sub], comparator, candidate)[0]
+            pairs += sub_pairs
+            active = sum((c.get("learn_usable_during_challenge") or 0) > 0 for _, _, c in sub_pairs)
+            exercise.append(dict(challenge=sub, candidate_runs=len(sub_pairs), correction_active=active))
         cand = [c for _, _, c in pairs]
         if not any((c.get("learn_usable_during_challenge") or 0) > 0 for c in cand):
             unexercised.append(g)
@@ -199,7 +212,7 @@ def challenges(challenge_rows, comparator, candidate):
                 failures.append(dict(challenge=g, criterion=crit["name"], evidence=crit["evidence"]))
             elif crit["status"] == "incomplete":
                 missing.append(f"{g}: {crit['name']}")
-    ev = [dict(missing=missing), dict(unexercised=unexercised), dict(failures=failures)]
+    ev = [dict(missing=missing), dict(unexercised=unexercised), dict(failures=failures), dict(exercise=exercise)]
     if failures:
         return _crit("required supplementary challenges present and passed", "fail", evidence=ev)
     if missing or unexercised:

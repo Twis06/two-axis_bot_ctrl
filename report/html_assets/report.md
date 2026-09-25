@@ -103,7 +103,7 @@ L1 has 15 focused tests; L2 contains 60 replay-like audit runs with zero structu
 
 ### Matched comparison
 
-All variants receive the same calibration trajectory and time budget. The held-out matrix uses five load laws, both 3.2 A and 2.4 A limits, and seeds 101–105. The primary metric is RMS governed error during the **first 0.5 s of each test dwell**, after calibration, excluding fallback. Completion and fault counts must accompany it.
+All variants receive the same calibration trajectory and time budget. The protocol, loads, seeds, metric and gate are cited in a commit made before the candidate was run; the plan file itself was first committed together with the adaptive results. The held-out matrix uses five load laws, both 3.2 A and 2.4 A limits, and seeds 101–105. The primary metric is RMS governed error during the **first 0.5 s of each test dwell**, after calibration, excluding fallback. Completion and fault counts must accompany it.
 
 | Variant | Median primary error | Median paired reduction vs int1 | Completed | Interpretation |
 |---|---:|---:|---:|---|
@@ -114,7 +114,7 @@ All variants receive the same calibration trajectory and time budget. The held-o
 | Oracle feed-forward only | 0.499° | +76.9% | 50/50 | Uses true load; diagnostic and unavailable to a deployed controller. |
 | Oracle with governor load access | 0.400° | +78.6% | 35/50 | Loses 15 comparator completions; a low error score alone is insufficient. |
 
-**Why exactly 0.0%:** the candidate is `int1` plus the learned term on the same seed. In 30 of 50 pairs no correction reached the scored samples (never usable in 13; first usable at 18.3–21.6 s in 17), so those runs are bit-identical to `int1`. Twenty pairs improve and none gets worse. The median of paired percentage reductions also differs from the percentage change between two aggregate medians. The machine-audited gate (`exp/task3_gate.py`) returns **fail**. The candidate loses no comparator waypoint or completion. It has no pre-clamp command above the limit and no watchdog trip, suspension, rejection or lockout in the 50 held-out cases, but it fails the ≥10% benefit and ≥80% availability criteria. The 10 incomplete int1 and adaptive runs are all at load (−0.06, +0.14): they reach every waypoint but overshoot the ±65° range by 5.65–6.89°, beyond the 5° allowance.
+**Why exactly 0.0%:** the candidate is `int1` plus the learned term on the same seed. In 30 of 50 pairs the correction never changed a scored command: it was never usable in 13, and first usable only at 18.3–21.6 s in 17, where bumpless transfer cancels a change at constant reference. Those runs are bit-identical to `int1`. Twenty pairs improve and none gets worse. The median of paired percentage reductions also differs from the percentage change between two aggregate medians. The machine-audited gate (`exp/task3_gate.py`) returns **fail**. The candidate loses no comparator waypoint or completion. It has no pre-clamp command above the limit and no watchdog trip, suspension, rejection or lockout in the 50 held-out cases, but it fails the ≥10% benefit and ≥80% availability criteria. The 10 incomplete int1 and adaptive runs are all at load (−0.06, +0.14): they reach every waypoint but overshoot the ±65° range by 5.65–6.89°, beyond the 5° allowance.
 
 <!-- INTERACTIVE:learning -->
 
@@ -124,7 +124,7 @@ All variants receive the same calibration trajectory and time budget. The held-o
 - onsets at 9 s and 12.5 s, plus a late-onset (17.5 s) amendment registered after the first results;
 - loads (0, 0.18) and (0.06, 0.14), seeds 201–203.
 
-The correction was active in only half of the late-onset runs. The payload-change challenge was **not executed**, so the gate's challenge criterion is `incomplete`. Safety statements are limited to these evaluated conditions and this exact configuration. None of this changes the benefit failure.
+The correction was usable after onset in only 23/48 candidate challenge runs, and never in the 9 s-onset yaw B/C sets, so most challenge runs exercise the baseline. The payload-change challenge was **not executed**, so the gate's challenge criterion is `incomplete`. Safety statements are limited to these evaluated conditions and this exact configuration. None of this changes the benefit failure.
 
 **What would change the choice:** a redesigned estimator that acquires useful correction reliably, passes a newly registered held-out comparison and completes the remaining adaptive stress challenges. Preserve the current results; do not tune against them and relabel them unseen. No feed-forward estimator can hold a truly infeasible static load above the actuator's capacity.
 

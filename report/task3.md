@@ -1,6 +1,6 @@
 # Task 3 — Decide whether learning belongs
 
-**Decision: reject the tested adaptive candidate for this submission and retain the frozen deterministic baseline.** This rejection is now based on the registered matched comparison, not on missing evidence. The result applies to the frozen estimator configuration and feed-forward-only adapter; it does not claim that every future learning design is useless.
+**Decision: reject the tested adaptive candidate for this submission and retain the frozen deterministic baseline.** This rejection is based on the registered matched comparison, not on missing evidence. *Ordering evidence:* the protocol's loads, seeds, metric and 10% gate are cited in commit `9554de8` (10:38), before the candidate was run. The plan file itself was first committed together with the adaptive results (`35a8aae`/`4ae154a`, 16:05). The result applies to the frozen estimator configuration and feed-forward-only adapter; it does not claim that every future learning design is useless.
 
 The candidate was a two-parameter effective gravity-like residual,
 
@@ -72,9 +72,9 @@ The candidate therefore fails on availability rather than on the value of the co
 
 | Adaptive vs `int1`, 50 held-out pairs | Pairs |
 |---|---:|
-| Bit-identical: no correction reached the scored samples | **30** |
+| Bit-identical: the correction never changed a scored command | **30** |
 | — estimate never usable | 13 |
-| — first usable only at 18.3–21.6 s, after or at the end of the scored test dwells | 17 |
+| — first usable only at 18.3–21.6 s, at the end of the test. In 2 of these, usable inside the last scored dwell, but at constant reference, where the bumpless transfer (`integ -= bump`) cancels the change | 17 |
 | Improved | 20: twelve by 0.1–5.4%, eight by 42–79% |
 | Worse | **0** |
 
@@ -82,13 +82,13 @@ The candidate therefore fails on availability rather than on the value of the co
 - **Mean (secondary, not registered):** the mean paired reduction is 9.5%.
 - **Takeaway:** the candidate never hurt, and helped substantially when it was on in time. It was simply off in most runs. The gate uses the median by registration, and the change that would matter is earlier or more reliable availability, not a larger correction.
 
-**Completion.** Both `int1` and the candidate complete 40/50 held-out test sequences. The 10 incomplete runs of each are all at load (−0.06, +0.14). They reach every waypoint but overshoot the ±65° range by 5.65–6.89° (by seed), against the 5° allowed; the peak is on the +65° test move. They are not failures to reach a target.
+**Completion.** Both `int1` and the candidate complete 40/50 held-out test sequences. The 10 incomplete runs of each are all at load (−0.06, +0.14). They reach every waypoint but overshoot the ±65° range by 5.65–6.89° (by seed), against the 5° allowed; the peak is on the +65° test move. They are not failures to reach a target. The phase-aware scorer ([R1](packets/R1.md)) is stricter than the old one in one respect: an intermediate target reached only after the governor clock has left its window is not credited. No L4 verdict depends on this.
 
 **Safety scope.** No safety criterion failed. That holds only in the evaluated conditions:
 
 - **Held-out set:** 5 loads × 2 limits × 5 seeds.
 - **Supplementary challenges:** registered yaw B and C, a 60 ms feedback outage and a 3.2 → 2.4 A derate, at 9, 12.5 and (late-onset amendment) 17.5 s; loads (0, 0.18) and (0.06, 0.14); seeds 201–203.
-- **What those runs showed:** the correction was active in half of the late-onset challenge runs, with no limit, fault or waypoint regression. See [challenge numbers](task3_challenges_numbers.md).
+- **What those runs showed:** there was no limit, fault or waypoint regression. The gate compares every event type per pair, not only watchdog trips. The correction was usable after onset in only **23 of 48** candidate challenge runs, and in none of the 9 s-onset yaw B/C runs; the gate reports this per onset set. So most challenge runs exercise the baseline, not the learned correction. See [challenge numbers](task3_challenges_numbers.md).
 - **Not executed:** payload change mid-run, which the frozen simulator cannot represent without a harness patch.
 - **Configuration:** all results are for the exact frozen configuration, `AdaptiveController(est_seed = seed)` with the L1 stationarity gate.
 

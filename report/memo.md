@@ -3,18 +3,18 @@
 **Recommendation.** Take the frozen deterministic baseline (fingerprint `7d857df507c389c9`) to hardware qualification, and do not deploy the tested adaptive load correction.
 
 - **In simulation:** the baseline tracks the A–C scenarios to 0.3–0.7° RMS with no faults and slows the loaded D/E requests rather than saturating blindly.
-- **Infeasible requests:** it rejects, stops or suspends them instead of pretending to track.
+- **Infeasible requests:** it restricts or rejects those it can see; an unknown overload is attempted first, then caught and suspended.
 
 **Labels:** *Observed* = the brief's five summaries only; *Calculated* = the supplied model; *Simulated* = our simulator, not hardware; *Proposed* = not yet done.
 
-`python3 run_all.py` reproduces everything from a clean checkout. The full answers are in [task1](task1.md)–[task5](task5.md).
+`python3 run_all.py` regenerates all evidence; it was verified from a `git archive` snapshot in one environment. The full answers are in [task1](task1.md)–[task5](task5.md).
 
 ## 1. Understanding the failure
 
 **What the motor permits (Calculated).**
 
 - **Torque ceiling:** K<sub>t</sub>I<sub>max</sub> = 0.448 N·m at 3.2 A and 0.336 N·m derated.
-- **Run A has headroom:** its 2.1 A peak is 0.294 N·m, 66% of the ceiling. At 45°, gravity plus the friction and disturbance allowances need only 0.175 N·m. So A's 2.8° RMS error is a response problem, not a capacity problem.
+- **Run A has headroom:** its 2.1 A peak is 0.294 N·m, 66% of the ceiling. At 45°, gravity plus the friction and disturbance allowances need only 0.175 N·m. So A's 2.8° RMS error points to response, not current capacity (voltage and trajectory feasibility are not excluded).
 - **Yaw coupling (±75°):** 0.008 q̇<sub>y</sub> + 0.0008 q̈<sub>y</sub> peaks at 0.136 N·m at 1.5 Hz (B) and 0.247 N·m at 2.2 Hz (C). Including the 0.05 N·m disturbance and friction allowances, B needs 50% of nominal capacity. C needs 75% of nominal but 100.3% of derated: holdable at 3.2 A, marginal at 2.4 A.
 - **Payload:** the 35 mm centre-of-mass shift adds 0.343·m N·m. The mass is not given, so D/E feasibility cannot be settled from the summaries.
 
@@ -24,7 +24,7 @@
 - **D:** its +4.6° signed mean is 26% of the mean-square error, consistent with an unmodelled gravity load.
 - **E:** 25% less torque gives 38% more error, assuming E keeps D's payload, which the brief does not state.
 
-**What the summaries cannot prove:** the original controller and whether it has an integrator (E's cycling does not prove windup), the payload mass and direction, trajectory timing, what "clipped" counts, voltage use and thermal history. Our reconstructed legacy controller matches the RMS ordering only to about 25% and misses the peaks and the sign of D's mean. It is a consistency check, not identification.
+**What the summaries cannot prove:** the original controller (E's cycling does not prove windup), payload mass and direction, trajectory timing, what "clipped" counts, voltage use and thermal history. Our reconstructed legacy controller matches RMS ordering only to about 25%: a consistency check, not identification.
 
 **The experiment that would most change this view:** hold roll near zero and sweep yaw in frequency within a qualified envelope. Log synchronized encoders, current command and measurement, active limit, timestamps and bus voltage. Fit the roll torque residual against yaw velocity and acceleration, and validate at a held-out frequency.
 
@@ -52,6 +52,7 @@
 
 - **Margins (Calculated):** 49.4° phase margin and 13.5 dB gain margin at 7 ms; 32.1° and 6.1 dB at the 11 ms corner with J −30% and K<sub>t</sub> +15%; 37.8 ms pure-delay margin.
 - **Stress tests (Simulated):** 60 ms outages in either or both directions, burst storms, 5% message loss, the combined corner, and 20 V with R +25% are event-free or re-arm automatically. The 20 V fast sweep is reshaped to 58% progress.
+- **Sampled plants (20 per scenario):** A/B/C have no events but meet the tracking threshold in 13, 20 and 15 of 20; D/E have events in 5 and 6 of 20.
 - **Quantization:** about 31 mA of current jitter in Run B (7.6 mA at 24 bits), with no instability. Hunting at hold is about 0.2° of friction stick-slip.
 - **Not proven:** stability under deep saturation with an unknown load, the main residual risk given negative gravity stiffness.
 
@@ -64,7 +65,7 @@
 - **What it changes:** feed-forward only, ≤ 0.20 N·m. The governor, limits and faults keep the nominal model.
 - **When it is ignored:** on stale, invalid, faulted, saturated, mismatched, under-covered or expired data.
 
-**Registered comparison (Simulated).** We fixed the protocol, the untuned held-out loads (5 loads × 2 limits × 5 seeds), the metric (RMS over the first 0.5 s of each test dwell) and the gate before testing. The gate requires ≥ 10% median paired improvement over the best retuned deterministic comparator, ≥ 80% availability, and no safety or completion regression.
+**Registered comparison (Simulated).** The protocol, untuned held-out loads (5 loads × 2 limits × 5 seeds), metric (RMS over the first 0.5 s of each test dwell) and gate are cited in a commit made before the candidate was run; the plan file itself was first committed together with the results. The gate requires ≥ 10% median paired improvement over the best retuned deterministic comparator, ≥ 80% availability, and no safety or completion regression.
 
 | 50 held-out pairs | Median primary | vs `int1` | Completed |
 |---|---:|---:|---:|
@@ -73,21 +74,16 @@
 | **Adaptive candidate** | 2.088° | **0.0%** | 40/50 |
 | Known-load feed-forward oracle (not deployable) | 0.499° | +76.9% | 50/50 |
 
-- **The 0.0% is exact:** the candidate is `int1` plus the learned term on the same seed. In 30 of 50 pairs no correction reached the scored samples (never usable: 13; first usable at 18.3–21.6 s: 17), so they are bit-identical to `int1`.
+- **The 0.0% is exact:** the candidate is `int1` plus the learned term on the same seed. In 30 of 50 pairs the correction never changed a scored command: never usable (13), or first usable at 18.3–21.6 s (17), at the end of the test where bumpless transfer cancels a change at constant reference. These pairs are bit-identical to `int1`.
 - **When it was on in time, it helped:** 20 pairs improved, 8 of them by 42–79%, and none got worse (mean +9.5%, not registered).
-- **Gate:** fails on benefit and on availability (74%). All safety criteria pass across the held-out runs and 96 registered challenge runs (yaw B/C, feedback loss, derating). Mid-run payload change was not tested.
+- **Gate:** fails on benefit and on availability (74%). No safety criterion fails in the held-out runs or in 96 registered challenge runs (yaw B/C, feedback loss, derating). But the correction was active in only 23/48 candidate challenge runs, and never in the 9 s-onset yaw B/C sets, so most challenge runs test the baseline. Mid-run payload change was not tested.
 - **Incomplete runs:** the 10 in each variant reach every waypoint but overshoot the ±65° range by 5.65–6.89° (5° allowed).
 
-**What would change the choice:** an estimator that becomes usable reliably during calibration, since the oracle shows the load law is worth about 77%. It would have to pass a newly registered held-out comparison, including payload change. No feed-forward can hold a static load above capacity.
+**What would change the choice:** an estimator that is reliably usable during calibration (the oracle shows the load law is worth about 77%), passing a newly registered held-out comparison including payload change.
 
 ## 4. Evidence
 
-**Simulator.** The plant is integrated at 10 kHz, with:
-
-- the current lag, the command delay, and CAN latency with bursts and loss;
-- 14-bit encoders and multirate timing;
-- current limits and voltage limiting (R 1.8 Ω ± 25%, L 0.45 mH ± 20%, K<sub>e</sub> = K<sub>t</sub>, bus down to 20 V);
-- uncertainty in J ± 30%, K<sub>t</sub> ± 15%, friction, payload, coupling and latency.
+**Simulator:** 10 kHz plant integration; current lag, command delay, CAN latency with bursts and loss; 14-bit encoders; multirate timing; current and voltage limits (R 1.8 Ω ± 25%, L 0.45 mH ± 20%, K<sub>e</sub> = K<sub>t</sub>, bus to 20 V). Uncertainty covers J ± 30%, K<sub>t</sub> ± 15%, friction, payload, coupling and latency.
 
 | Scenario (5-seed median) | Legacy RMS | Final governed RMS | Original-request RMS | Progress | At limit | Tracked |
 |---|---:|---:|---:|---:|---:|---:|
@@ -102,16 +98,16 @@
 
 **Right answer is not to track:**
 
-- **INF-P:** 1.2 kg at +35 mm, derated, needs 0.41 N·m of static torque against 0.336 N·m available. The nominal-model baseline cannot know this: it attempts the move, trips, catches and suspends, a reported limitation. A truth-informed governor rejects such a load outright.
+- **INF-P:** 1.2 kg at +35 mm, derated, needs 0.41 N·m of static torque against 0.336 N·m available. The nominal-model baseline cannot know this: it attempts the move, sags to about −58°, trips, and is held near −49° after the catch, suspended. This is a reported limitation. A truth-informed governor rejects such a load outright.
 - **INF-R:** roll hold under 2.8 Hz yaw. The governor reduces yaw to 0.36× and holds roll within ±1.1°.
 - **Loaded M2:** trips and stays suspended rather than cycling.
 - **Fallback:** local damping does not hold against gravity; a loaded 100 ms outage moves the axis up to 42°.
 
-**Reproducibility.** A `git archive` snapshot with no git history ran all 10 steps. It matched the published evidence exactly: 0 value differences and 18/18 figures byte-identical ([R4](packets/R4.md)). 257 unit tests pass.
+**Reproducibility.** A `git archive` snapshot with no git history ran all 10 steps. Every result value matched the published evidence (wall-clock timings excluded), and 18/18 figures were byte-identical ([R4](packets/R4.md)). 257 unit tests pass.
 
 ## 5. Testing the explanation
 
-**Registered prediction (Calculated).** In Run B, weaken the true K<sub>t</sub> and K<sub>e</sub> by 10% with the controller unchanged. Predicted: coupling peak 0.1356 N·m (0.969 A), extra ideal current +0.108 A (±0.15 A), and an uncancelled coupling residual of +0.0136 N·m (±0.01).
+**Registered prediction (Calculated; the registration and the results were first committed together, so git gives no ordering evidence).** In Run B, weaken the true K<sub>t</sub> and K<sub>e</sub> by 10% with the controller unchanged. Predicted: coupling peak 0.1356 N·m (0.969 A), extra ideal current +0.108 A (±0.15 A), and an uncancelled coupling residual of +0.0136 N·m (±0.01).
 
 **Result (Simulated: 3 seeds, feed-forward on/off pairs, 2–8 s).** A windowing and unit bug in our first analysis was found and corrected retrospectively ([R2](packets/R2.md)).
 
@@ -127,12 +123,7 @@
 
 **Hardware confirmation:** torque-versus-current fixture identification, then the roll-held yaw sweep ([qualification plan](hardware_qualification_plan.md)).
 
-**Risks carried to hardware:**
-
-- the drive voltage convention (V<sub>bus</sub> vs V<sub>bus</sub>/√3);
-- the loaded fallback excursion;
-- the nominal-model governor admitting an unknown-load move that later trips;
-- the assumed thermal thresholds.
+**Risks carried to hardware:** the drive voltage convention (V<sub>bus</sub> vs V<sub>bus</sub>/√3), the loaded fallback excursion, admission of unknown-load moves that later trip, and assumed thermal thresholds.
 
 ---
 
